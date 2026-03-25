@@ -27,7 +27,13 @@ fi
 
 echo "[lenses setup] Done."
 if [[ -x "$ROOT/scripts/lenses-startup.sh" ]]; then
-  REPO_ROOT="$ROOT" "$ROOT/scripts/lenses-startup.sh" || true
+  # Submodule checkouts use a .git file; host repo should run lenses-startup at its root.
+  # Running here would duplicate dirs and dirty the submodule for every developer.
+  if [[ -f "$ROOT/.git" ]]; then
+    echo "[lenses setup] Skipping lenses-startup (submodule checkout; run ./forge-lenses/scripts/lenses-startup.sh at host repo root)."
+  else
+    REPO_ROOT="$ROOT" "$ROOT/scripts/lenses-startup.sh" || true
+  fi
 fi
 echo "  Build docs:  python3 generator/build-lenses-docs.py"
 echo "  Run server:  ./scripts/run-lenses.sh"
