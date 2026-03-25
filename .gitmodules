@@ -1,6 +1,6 @@
 [submodule "kitchensink"]
 	path = kitchensink
-	url = ../forgesdlc-kitchensink
+	url = https://github.com/autowww/forgesdlc-kitchensink.git
 [submodule "blueprints"]
 	path = blueprints
-	url = ../blueprints
+	url = https://github.com/autowww/blueprints.git
