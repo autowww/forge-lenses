@@ -49,3 +49,13 @@ For a multi-repo folder, set `LENSES_WORKSPACE_ROOT` to that parent.
 ## External sites
 
 The dashboard links to the published **Handbook** and **Forge** sites; it does not embed them.
+
+## Reference (Python package)
+
+These handbook pages are generated from Markdown under **`lenses/website/`** and describe current v1 behavior:
+
+- [Package architecture](architecture.html)
+- [HTTP API and routes](http-api-and-routes.html)
+- [Workspace scan contract](workspace-scan-contract.html)
+- [Registry configuration](registry-configuration.html)
+- [Dashboard pages](dashboard-pages.html)

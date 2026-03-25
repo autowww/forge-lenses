@@ -20,6 +20,7 @@ except ImportError:
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_SRC = REPO_ROOT / "docs"
+WEBSITE_DOCS = REPO_ROOT / "lenses" / "website"
 OUTPUT_DIR = REPO_ROOT / "lenses-docs"
 KS_ROOT = REPO_ROOT / "kitchensink"
 
@@ -34,24 +35,28 @@ def _slug_from_stem(stem: str) -> str:
     return stem.lower().replace(" ", "-")
 
 
+def _page_dict_from_md(md: Path) -> dict:
+    slug = "index" if md.stem.lower() in ("index", "readme") else _slug_from_stem(md.stem)
+    text = md.read_text(encoding="utf-8")
+    title_match = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else md.stem.replace("-", " ").title()
+    return {
+        "slug": slug,
+        "title": title,
+        "source": md,
+        "text": text,
+    }
+
+
 def _load_pages() -> list[dict]:
+    """Handbook sources: docs/*.md first, then lenses/website/*.md (package reference)."""
     pages: list[dict] = []
-    if not DOCS_SRC.is_dir():
-        return pages
-    for md in sorted(DOCS_SRC.glob("*.md")):
-        slug = "index" if md.stem.lower() in ("index", "readme") else _slug_from_stem(md.stem)
-        text = md.read_text(encoding="utf-8")
-        title_match = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
-        title = title_match.group(1).strip() if title_match else md.stem.replace("-", " ").title()
-        pages.append(
-            {
-                "slug": slug,
-                "title": title,
-                "source": md,
-                "text": text,
-            }
-        )
-    # Ensure single index
+    if DOCS_SRC.is_dir():
+        for md in sorted(DOCS_SRC.glob("*.md")):
+            pages.append(_page_dict_from_md(md))
+    if WEBSITE_DOCS.is_dir():
+        for md in sorted(WEBSITE_DOCS.glob("*.md")):
+            pages.append(_page_dict_from_md(md))
     by_slug: dict[str, dict] = {}
     for p in pages:
         by_slug[p["slug"]] = p
@@ -176,9 +181,10 @@ def main() -> None:
         sys.exit(1)
     pages = _load_pages()
     if not pages:
-        print("[lenses-docs] No markdown in docs/ — creating minimal index")
+        print("[lenses-docs] No markdown in docs/ or lenses/website/", file=sys.stderr)
         DOCS_SRC.mkdir(parents=True, exist_ok=True)
-        print("Add docs/*.md and re-run.", file=sys.stderr)
+        WEBSITE_DOCS.mkdir(parents=True, exist_ok=True)
+        print("Add docs/*.md (and optional lenses/website/*.md) and re-run.", file=sys.stderr)
         sys.exit(1)
 
     if OUTPUT_DIR.exists():

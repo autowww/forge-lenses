@@ -4,7 +4,7 @@ This page is a **placeholder** for later **lenses** capabilities (extra panels, 
 
 ## Hook points (planned)
 
-- Optional **`workspace-registry.json`** at the **lenses** repo root for URL overrides and ignored top-level directory names.
+- Optional **`workspace-registry.json`** at the **forge-lenses** repo root — already supported in v1 for URL overrides, ignored top-level directories, and website labels. See [Registry configuration](registry-configuration.html) (handbook) / `lenses/website/registry-configuration.md` (source).
 - A future **`lenses/extensions/`** directory or documented plugin entry points may be added without changing the core scan contract.
 
-v1 ships the placeholder only; no extension API is implemented yet.
+v1 ships registry overrides and this roadmap page; a full plugin API is not implemented yet.
