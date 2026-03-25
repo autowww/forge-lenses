@@ -22,8 +22,8 @@ Local workspace visualization for development aligned with **Blueprints** and **
 
 ```bash
 ./scripts/setup.sh
-# Markdown (for docs build). On PEP 668 systems use a venv or: pip install --user markdown
-pip install markdown
+# Markdown (for docs build). Prefer: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+pip install -r requirements.txt
 python3 generator/build-lenses-docs.py   # optional if run-lenses.sh will run it
 ./scripts/run-lenses.sh
 ```
