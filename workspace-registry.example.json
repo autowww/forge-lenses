@@ -1,0 +1,11 @@
+{
+  "external_urls": {
+    "handbook": "https://blueprints.forgesdlc.com/",
+    "forge": "https://forgesdlc.com/"
+  },
+  "ignore_paths": ["package_audit_report"],
+  "website_labels": {
+    "blueprints-website": "Handbook generator (bpw)",
+    "forgesdlc": "Forge product site"
+  }
+}

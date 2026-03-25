@@ -1,0 +1,4 @@
+from lenses.serve import main
+
+if __name__ == "__main__":
+    main()

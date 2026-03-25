@@ -1,0 +1,6 @@
+[submodule "kitchensink"]
+	path = kitchensink
+	url = ../forgesdlc-kitchensink
+[submodule "blueprints"]
+	path = blueprints
+	url = ../blueprints
