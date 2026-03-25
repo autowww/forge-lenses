@@ -1,0 +1,2 @@
+# For generator/build-lenses-docs.py only (dashboard server is stdlib).
+markdown>=3.5
