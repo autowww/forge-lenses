@@ -25,6 +25,9 @@ if ! python3 -c "import markdown" 2>/dev/null; then
 fi
 
 echo "[lenses setup] Done."
+if [[ -x "$ROOT/scripts/lenses-startup.sh" ]]; then
+  REPO_ROOT="$ROOT" "$ROOT/scripts/lenses-startup.sh" || true
+fi
 echo "  Build docs:  python3 generator/build-lenses-docs.py"
 echo "  Run server:  ./scripts/run-lenses.sh"
 echo "  Workspace:   export LENSES_WORKSPACE_ROOT=/path/to/workspace   (optional)"

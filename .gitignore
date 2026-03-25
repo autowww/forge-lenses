@@ -1,3 +1,6 @@
+# Machine-local lenses data (forge-lenses checkout)
+.lenses-local/
+
 lenses-docs/
 __pycache__/
 *.py[cod]

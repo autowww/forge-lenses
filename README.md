@@ -1,49 +1,64 @@
-# lenses
+# forge-lenses
 
-Local workspace visualization for development aligned with **Blueprints** and **ForgeSDLC**: see sibling git repos, root-level toolset scripts, Firebase site repos, and WBS files under `docs/requirements/`.
+Public repo: **`autowww/forge-lenses`** on GitHub — local workspace visualization for **Blueprints** / **ForgeSDLC** development (Python server on **:8080**, dynamic dashboard, ks-built docs under `/docs/`).
 
-- **Dynamic dashboard** at `http://127.0.0.1:8080/` — reload to refresh (no server-side cache in v1).
-- **Documentation** — kitchensink-generated static site under `/docs/` (build with `generator/build-lenses-docs.py`).
-- **Not deployed to Firebase** — run on your machine only.
+- **Dynamic dashboard** — reload to refresh (no server-side cache in v1).
+- **Documentation** — run `generator/build-lenses-docs.py`, served as static files under `/docs/`.
+- **Not deployed to Firebase.**
+
+The Python package inside this repo is still named **`lenses`** (`python3 -m lenses.serve`).
 
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
-| `kitchensink/` | Submodule (Forge design system) — used to build docs |
-| `blueprints/` | Submodule (framework source) — optional reference in checkout |
+| `kitchensink/` | Submodule (Forge design system) — docs build |
+| `blueprints/` | Submodule (framework source) |
 | `lenses/` | Python package (`serve`, `scan`, …) |
-| `generator/build-lenses-docs.py` | Builds `lenses-docs/` from `docs/*.md` |
-| `docs/` | Markdown source for lenses documentation |
-| `scripts/setup.sh` | Init submodules + checks |
-| `scripts/run-lenses.sh` | Build docs (if `markdown` installed) + start server |
+| `generator/build-lenses-docs.py` | Builds `lenses-docs/` |
+| `docs/` | Markdown source for docs |
+| `scripts/setup.sh` | Init nested submodules + optional `lenses-startup.sh` |
+| `scripts/lenses-startup.sh` | Host-repo `.lenses-local/` + `.lenses-repo/<github-login>/` |
+| `scripts/run-lenses.sh` | Build docs (if `markdown`) + start server |
 
-## Quick start
+## Quick start (standalone clone)
 
 ```bash
+git clone https://github.com/autowww/forge-lenses.git
+cd forge-lenses
 ./scripts/setup.sh
-# Markdown (for docs build). Prefer: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-pip install -r requirements.txt
-python3 generator/build-lenses-docs.py   # optional if run-lenses.sh will run it
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python3 generator/build-lenses-docs.py
 ./scripts/run-lenses.sh
 ```
 
-Open the dashboard: [http://127.0.0.1:8080/](http://127.0.0.1:8080/)  
-JSON API: [http://127.0.0.1:8080/api/workspace-state](http://127.0.0.1:8080/api/workspace-state)
+Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) · JSON: [http://127.0.0.1:8080/api/workspace-state](http://127.0.0.1:8080/api/workspace-state)
 
 ## Submodule in another project
 
 ```bash
-git submodule add <url-to-lenses> lenses
-cd lenses && ./scripts/setup.sh
+git submodule add https://github.com/autowww/forge-lenses.git forge-lenses
+git submodule update --init --recursive
+./forge-lenses/scripts/lenses-startup.sh
 ```
 
-Set `LENSES_WORKSPACE_ROOT` to your multi-repo parent if **lenses** lives inside a single product repo but you want to scan all siblings.
+`lenses-startup.sh` creates **`.lenses-local/`** (gitignored) and **`.lenses-repo/<your-github-login>/`** (tracked, with `.gitkeep`). Login from `gh api user` or `origin` URL.
+
+Then from **`forge-lenses/`**: `./scripts/setup.sh` for nested submodules.
+
+Set `LENSES_WORKSPACE_ROOT` to your multi-repo parent when **forge-lenses** lives inside one product repo but should scan siblings.
+
+## Host repo data directories
+
+| Path | Committed? | Purpose |
+|------|------------|---------|
+| `.lenses-local/` | No | Machine-only caches, notes, local config |
+| `.lenses-repo/<github-login>/` | Yes | Per-contributor shared material for this repo |
 
 ## Configuration
 
-Copy `workspace-registry.example.json` to `workspace-registry.json` to override handbook/forge URLs, ignore top-level directory names, or label website repos.
+Copy `workspace-registry.example.json` to `workspace-registry.json` in **forge-lenses** to override handbook/forge URLs and ignore paths.
 
 ## Development
 
-- Edits to **kitchensink** or **blueprints** belong in their **standalone** repositories; bump submodules here after upstream changes.
+- Edit **kitchensink** / **blueprints** in their **standalone** repos; bump submodules here after upstream changes.

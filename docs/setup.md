@@ -3,37 +3,45 @@
 ## Standalone clone
 
 ```bash
-git clone <lenses-remote-url> lenses
-cd lenses
+git clone https://github.com/autowww/forge-lenses.git
+cd forge-lenses
 ./scripts/setup.sh
 ```
 
-`setup.sh` initializes nested submodules **kitchensink** and **blueprints** (read-only copies; edit those frameworks in their standalone repositories).
+`setup.sh` initializes nested submodules **kitchensink** and **blueprints** and runs **`lenses-startup.sh`** for this repo (adds `.lenses-local/` to `.gitignore` and creates `.lenses-repo/<login>/` if `gh` or `origin` resolves).
 
-## As a submodule in another repo
+## As a submodule (`forge-lenses/`)
 
 From your product repository:
 
 ```bash
-git submodule add <lenses-remote-url> lenses
+git submodule add https://github.com/autowww/forge-lenses.git forge-lenses
 git submodule update --init --recursive
+./forge-lenses/scripts/lenses-startup.sh
 ```
 
-Then run setup from inside the **lenses** submodule:
+Then:
 
 ```bash
-cd lenses
-./scripts/setup.sh
+cd forge-lenses && ./scripts/setup.sh
 ```
+
+## Host repo folders (next to `forge-lenses/`)
+
+After **`lenses-startup.sh`** at the **host** repo root:
+
+- **`.lenses-local/`** — gitignored; local-only.
+- **`.lenses-repo/<github-login>/`** — committed (starts with `.gitkeep`). GitHub login from **`gh api user`**, else **`git remote get-url origin`** (`github.com/owner/...`).
 
 ## Dependencies
 
 - **Python 3**
-- **pip package `markdown`** — required only to run `generator/build-lenses-docs.py`
+- **`markdown`** (pip) — for `generator/build-lenses-docs.py` only
 
 ## Running
 
 ```bash
+cd forge-lenses
 ./scripts/run-lenses.sh
 ```
 
@@ -46,4 +54,4 @@ export LENSES_WORKSPACE_ROOT=/path/to/workspace
 
 ## Security
 
-The server reads the filesystem only under the configured **workspace root** for dashboard and WBS views. Static docs are served only from **lenses-docs/** inside the **lenses** repo.
+The server reads the workspace only under the configured **workspace root**. Static docs are served only from **lenses-docs/** inside **forge-lenses**.

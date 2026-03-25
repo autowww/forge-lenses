@@ -1,6 +1,8 @@
-# lenses
+# forge-lenses
 
-**lenses** is a local tool that shows what lives in your development workspace: git repos, orchestration scripts at the workspace root, Firebase-backed site repos, and Blueprint-style WBS files under `docs/requirements/`.
+**forge-lenses** (Python package **lenses**) is a local tool that shows what lives in your development workspace: git repos, orchestration scripts at the workspace root, Firebase-backed site repos, and Blueprint-style WBS files under `docs/requirements/`.
+
+Public repository: **github.com/autowww/forge-lenses**.
 
 ## How it works
 
@@ -10,7 +12,7 @@
 
 ## Quick start
 
-From the **lenses** repository root:
+From the **forge-lenses** repository root:
 
 ```bash
 ./scripts/setup.sh
@@ -21,15 +23,28 @@ python3 generator/build-lenses-docs.py
 
 Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) for the dashboard and use **Docs** in the top bar for this handbook.
 
+## Host repo data (submodule consumers)
+
+When **forge-lenses** is a submodule at **`forge-lenses/`**, run at the **host** repo root:
+
+```bash
+./forge-lenses/scripts/lenses-startup.sh
+```
+
+This creates:
+
+- **`.lenses-local/`** — gitignored; machine-only.
+- **`.lenses-repo/<github-login>/`** — committed (`.gitkeep`); per-user shared files. Login from **`gh api user`**, else **`origin`** on GitHub.
+
 ## Workspace root
 
 Resolution order:
 
 1. `--workspace-root` CLI flag  
 2. `LENSES_WORKSPACE_ROOT` environment variable  
-3. **Heuristic:** parent directory of the **lenses** checkout (siblings = other repos), or the superproject root when **lenses** is a **git submodule**
+3. **Heuristic:** parent of the **forge-lenses** checkout, or superproject root when embedded as a submodule  
 
-For a multi-repo folder (many siblings), point `LENSES_WORKSPACE_ROOT` at that parent even if **lenses** lives inside one product repo.
+For a multi-repo folder, set `LENSES_WORKSPACE_ROOT` to that parent.
 
 ## External sites
 
