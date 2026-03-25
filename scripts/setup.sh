@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Initialize nested submodules and check Python 3.
+# Does not modify .lenses-local/ or .lenses-repo/ except by invoking lenses-startup.sh at the end.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

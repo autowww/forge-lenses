@@ -31,7 +31,7 @@ cd forge-lenses && ./scripts/setup.sh
 After **`lenses-startup.sh`** at the **host** repo root:
 
 - **`.lenses-local/`** — gitignored; local-only.
-- **`.lenses-repo/<github-login>/`** — committed (starts with `.gitkeep`). GitHub login from **`gh api user`**, else **`git remote get-url origin`** (`github.com/owner/...`).
+- **`.lenses-repo/<github-login>/`** — committed (starts with `.gitkeep`; optional `README.txt` added only if missing). This is the commit-friendly “shared with the repo” area (some people think of it as a lenses-shared slot; the directory name is **`.lenses-repo/`**). GitHub login from **`gh api user`**, else **`git remote get-url origin`** (`github.com/owner/...`).
 
 ## Dependencies
 

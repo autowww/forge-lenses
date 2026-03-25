@@ -42,7 +42,7 @@ git submodule update --init --recursive
 ./forge-lenses/scripts/lenses-startup.sh
 ```
 
-`lenses-startup.sh` creates **`.lenses-local/`** (gitignored) and **`.lenses-repo/<your-github-login>/`** (tracked, with `.gitkeep`). Login from `gh api user` or `origin` URL.
+`lenses-startup.sh` creates **`.lenses-local/`** (gitignored) and **`.lenses-repo/<your-github-login>/`** (tracked, with `.gitkeep` and a short `README.txt` if missing). That folder is the place for team-visible files you commit; **`.lenses-local/`** stays private. Login from `gh api user` or `origin` URL.
 
 Then from **`forge-lenses/`**: `./scripts/setup.sh` for nested submodules.
 
@@ -53,7 +53,7 @@ Set `LENSES_WORKSPACE_ROOT` to your multi-repo parent when **forge-lenses** live
 | Path | Committed? | Purpose |
 |------|------------|---------|
 | `.lenses-local/` | No | Machine-only caches, notes, local config |
-| `.lenses-repo/<github-login>/` | Yes | Per-contributor shared material for this repo |
+| `.lenses-repo/<github-login>/` | Yes | Commit-friendly “shared with the repo” area (per-contributor slot); not named `.lenses-shared` |
 
 ## Configuration
 

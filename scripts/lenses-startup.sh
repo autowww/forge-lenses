@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 # Create .lenses-local/ (gitignored) and .lenses-repo/<github-login>/ (tracked) at a host repo root.
+#
+# Non-overwrite policy: never truncate user content. This script only:
+#   - mkdir -p for .lenses-local and .lenses-repo/<login>/
+#   - creates .gitkeep if absent
+#   - appends one .gitignore line if missing (never replaces an existing .gitignore)
+#   - creates README.txt under .lenses-repo/<login>/ only if absent
+#
+# Works when REPO_ROOT is a submodule ( .git may be a file, not a directory ).
+#
 # GitHub login: gh api user → else parse origin (github.com).
 set -euo pipefail
 
@@ -46,7 +55,7 @@ sanitize_login() {
 }
 
 REPO_ROOT="$(resolve_repo_root)"
-if [[ ! -d "$REPO_ROOT/.git" ]]; then
+if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "Not a git repository: $REPO_ROOT" >&2
   exit 1
 fi
@@ -80,6 +89,19 @@ if [[ ! -f "$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN/.gitkeep" ]]; then
   : >"$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN/.gitkeep"
 fi
 
+README="$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN/README.txt"
+if [[ ! -f "$README" ]]; then
+  cat >"$README" <<'EOF'
+# This folder (.lenses-repo/<login>/)
+
+Put files here that should be committed with the repository (team-visible).
+
+The sibling .lenses-local/ at the repository root is gitignored for machine-only state.
+
+See forge-lenses README (Host repo data directories) for details.
+EOF
+fi
+
 GIGN="$REPO_ROOT/.gitignore"
 LINE=".lenses-local/"
 if [[ -f "$GIGN" ]]; then
@@ -93,4 +115,4 @@ fi
 echo "[lenses-startup] repo:    $REPO_ROOT"
 echo "[lenses-startup] login:   $GITHUB_LOGIN"
 echo "[lenses-startup] created: .lenses-local/"
-echo "[lenses-startup] created: .lenses-repo/$GITHUB_LOGIN/ (.gitkeep)"
+echo "[lenses-startup] created: .lenses-repo/$GITHUB_LOGIN/ (.gitkeep, README.txt if absent)"
