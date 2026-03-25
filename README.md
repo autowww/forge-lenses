@@ -59,6 +59,10 @@ Set `LENSES_WORKSPACE_ROOT` to your multi-repo parent when **forge-lenses** live
 
 Copy `workspace-registry.example.json` to `workspace-registry.json` in **forge-lenses** to override handbook/forge URLs and ignore paths.
 
+## Publishing to GitHub
+
+If `git push` fails with **repository not found**, create the public repo first — see [`docs/publish-github.md`](docs/publish-github.md).
+
 ## Development
 
 - Edit **kitchensink** / **blueprints** in their **standalone** repos; bump submodules here after upstream changes.
