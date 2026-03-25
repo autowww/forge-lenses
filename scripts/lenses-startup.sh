@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Create .lenses-local/ (gitignored) and .lenses-repo/<github-login>/ (tracked) at a host repo root.
+# Create .lenses-local/ (gitignored) and .lenses-repo/<github-login>/ (tracked) at the
+# parent/host git repo root — not inside forge-lenses/ when forge-lenses is a submodule.
+# Standalone forge-lenses clone: data dirs stay at this repo root.
 #
 # Non-overwrite policy: never truncate user content. This script only:
 #   - mkdir -p for .lenses-local and .lenses-repo/<login>/
@@ -54,10 +56,32 @@ sanitize_login() {
   printf '%s\n' "$s"
 }
 
-REPO_ROOT="$(resolve_repo_root)"
+# If cwd (or REPO_ROOT) is a submodule checkout, use superproject root for .lenses-* .
+elevate_to_host_repo_if_submodule() {
+  local initial="$1"
+  local super
+  super="$(git -C "$initial" rev-parse --show-superproject-working-tree 2>/dev/null || true)"
+  super="${super//$'\r'/}"
+  super="${super//$'\n'/}"
+  if [[ -z "$super" ]]; then
+    printf '%s\n' "$initial"
+    return
+  fi
+  if git -C "$super" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    (cd "$super" && pwd)
+    return
+  fi
+  printf '%s\n' "$initial"
+}
+
+INITIAL_ROOT="$(resolve_repo_root)"
+REPO_ROOT="$(elevate_to_host_repo_if_submodule "$INITIAL_ROOT")"
 if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "Not a git repository: $REPO_ROOT" >&2
   exit 1
+fi
+if [[ "$REPO_ROOT" != "$INITIAL_ROOT" ]]; then
+  echo "[lenses-startup] host repo: $REPO_ROOT  (submodule checkout was: $INITIAL_ROOT)" >&2
 fi
 
 RAW_LOGIN=""

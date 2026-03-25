@@ -25,16 +25,12 @@ Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) for the dashboard and use 
 
 ## Host repo data (submodule consumers)
 
-When **forge-lenses** is a submodule at **`forge-lenses/`**, run at the **host** repo root:
-
-```bash
-./forge-lenses/scripts/lenses-startup.sh
-```
+When **forge-lenses** is a submodule, run **`lenses-startup`** from the host (e.g. `./forge-lenses/scripts/lenses-startup.sh`) or from inside **`forge-lenses/`** — the script **detects the git superproject** and creates data dirs on the **parent product repo root**, not under `forge-lenses/`.
 
 This creates:
 
 - **`.lenses-local/`** — gitignored; machine-only.
-- **`.lenses-repo/<github-login>/`** — committed (`.gitkeep`); per-user shared files. Login from **`gh api user`**, else **`origin`** on GitHub.
+- **`.lenses-repo/<github-login>/`** — committed (`.gitkeep`); per-user shared files. Login from **`gh api user`**, else **`origin`** on the **host** repo.
 
 ## Workspace root
 
