@@ -26,6 +26,17 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 
 There is no server-side cache in v1: reloading a page re-runs the scan.
 
+## Extending the dashboard (SSR-first)
+
+The dashboard is **server-rendered**: each relevant `GET` builds HTML in Python (mainly `render.py`) and returns a document. Prefer that model for new screens.
+
+- **New routes** — Dispatch in `serve.py` (`do_GET` / `do_POST`); implement the page body as a `page_*` helper (or split module) next to existing dashboard pages; wrap with the kitchensink `showcase_page` shell when present (`ks_layout.py`).
+- **JSON** — Use `/api/…` when a feature needs async updates (sticker board, git, toolset). That complements SSR; it does not mean turning the whole UI into a client-rendered SPA.
+- **Client JS** — Keep interactive snippets in `lenses/static/js/`; avoid moving the entire page shell to client-only rendering unless there is a strong reason.
+- **Privileged actions** — New `POST` handlers should follow the same session, allowlist, and loopback patterns as `git_actions` / sticker board.
+
+Edits to `lenses/**/*.py` require **restarting** the `python3 -m lenses` process to load new code; a browser reload alone is not enough for handler or render changes.
+
 ## Related docs
 
 - [HTTP API and routes](http-api-and-routes.html)

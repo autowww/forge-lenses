@@ -78,3 +78,5 @@ If `git push` fails with **repository not found**, create the public repo first 
 ## Development
 
 - Edit **kitchensink** / **blueprints** in their **standalone** repos; bump submodules here after upstream changes.
+
+**Dashboard (server-rendered HTML).** New full pages: add routing in [`lenses/serve.py`](lenses/serve.py) and HTML builders in [`lenses/render.py`](lenses/render.py) (or a small focused module if `render.py` grows), reusing the kitchensink showcase shell via [`lenses/ks_layout.py`](lenses/ks_layout.py). Targeted async behavior can use `GET`/`POST` under `/api/…` and static JS under [`lenses/static/js/`](lenses/static/js/) (`/__lenses/js/…`); keep default navigation as full HTML responses, not a SPA. After changing **Python** in `lenses/`, restart the server (e.g. [`scripts/restart-lenses.sh`](scripts/restart-lenses.sh)) so the process reloads code.
