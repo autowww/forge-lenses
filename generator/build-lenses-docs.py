@@ -4,9 +4,16 @@
 Run from lenses repo root:
     pip install markdown
     python3 generator/build-lenses-docs.py
+
+Optional reference-page PNG previews (``docs/index.md`` linked ``*.html`` only):
+    pip install html2image
+    LENSES_BUILD_DOC_PREVIEWS=1 python3 generator/build-lenses-docs.py --previews
+    # Requires Chromium/Chrome. Uses a local HTTP server on 127.0.0.1:8090–8200.
 """
 from __future__ import annotations
 
+import argparse
+import os
 import re
 import shutil
 import sys
@@ -19,16 +26,27 @@ except ImportError:
     sys.exit(1)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+GEN_ROOT = Path(__file__).resolve().parent
+_REPO_STR = str(REPO_ROOT)
+if _REPO_STR not in sys.path:
+    sys.path.insert(0, _REPO_STR)
 DOCS_SRC = REPO_ROOT / "docs"
 WEBSITE_DOCS = REPO_ROOT / "lenses" / "website"
 OUTPUT_DIR = REPO_ROOT / "lenses-docs"
 KS_ROOT = REPO_ROOT / "kitchensink"
 
+sys.path.insert(0, str(GEN_ROOT))
 sys.path.insert(0, str(KS_ROOT / "components"))
 sys.path.insert(0, str(KS_ROOT / "generator"))
 
 from components import e  # noqa: E402
 from layouts import showcase_page  # noqa: E402
+
+from doc_previews import (  # noqa: E402
+    capture_reference_previews,
+    reference_preview_gallery_html,
+    reference_preview_slugs,
+)
 
 
 def _slug_from_stem(stem: str) -> str:
@@ -134,10 +152,16 @@ def _footer() -> str:
     )
 
 
-def _render_page(page: dict, all_pages: list[dict]) -> str:
+def _render_page(
+    page: dict,
+    all_pages: list[dict],
+    *,
+    body_suffix: str = "",
+) -> str:
     body_html = _render_body_md(page["text"])
     toc_html = _toc_from_html(body_html)
     sidebar_html = _build_sidebar(all_pages, page["slug"])
+    doc_wrap = f'<div class="lenses-doc-body">{body_html}</div>{body_suffix}'
     return showcase_page(
         browser_title=f'{page["title"]} — lenses docs',
         brand_name="lenses",
@@ -145,7 +169,7 @@ def _render_page(page: dict, all_pages: list[dict]) -> str:
         page_title=page["title"],
         breadcrumb_html=_breadcrumb(page),
         sidebar_html=sidebar_html,
-        body_html=f'<div class="lenses-doc-body">{body_html}</div>',
+        body_html=doc_wrap,
         toc_html=toc_html,
         footer_html=_footer(),
         extra_css="",
@@ -175,7 +199,22 @@ def _copy_assets() -> None:
         shutil.copytree(svg_src, svg_out)
 
 
+def _wants_previews(args: argparse.Namespace) -> bool:
+    if args.previews:
+        return True
+    v = os.environ.get("LENSES_BUILD_DOC_PREVIEWS", "").strip().lower()
+    return v in ("1", "true", "yes")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Build lenses-docs static handbook.")
+    parser.add_argument(
+        "--previews",
+        action="store_true",
+        help="Capture PNG previews for reference pages linked from docs/index.md (needs html2image + Chrome).",
+    )
+    args = parser.parse_args()
+
     if not KS_ROOT.is_dir():
         print("[lenses-docs] kitchensink submodule missing; run scripts/setup.sh", file=sys.stderr)
         sys.exit(1)
@@ -187,17 +226,42 @@ def main() -> None:
         print("Add docs/*.md (and optional lenses/website/*.md) and re-run.", file=sys.stderr)
         sys.exit(1)
 
+    built_slugs = {p["slug"] for p in pages}
+    titles_by_slug = {p["slug"]: p["title"] for p in pages}
+    index_md = DOCS_SRC / "index.md"
+    ref_slugs = reference_preview_slugs(index_md, built_slugs)
+    want_previews = _wants_previews(args)
+
     if OUTPUT_DIR.exists():
         shutil.rmtree(OUTPUT_DIR)
     OUTPUT_DIR.mkdir(parents=True)
     _copy_assets()
     print("[lenses-docs] Assets copied")
 
-    for page in pages:
+    index_page = next((p for p in pages if p["slug"] == "index"), None)
+    others = [p for p in pages if p["slug"] != "index"]
+
+    for page in others:
         slug = page["slug"]
         html = _render_page(page, pages)
         (OUTPUT_DIR / f"{slug}.html").write_text(html, encoding="utf-8")
         print(f"  ✓ {slug}.html")
+
+    if index_page:
+        html_idx = _render_page(index_page, pages)
+        (OUTPUT_DIR / "index.html").write_text(html_idx, encoding="utf-8")
+        print("  ✓ index.html")
+
+    if want_previews and ref_slugs:
+        ok_slugs = capture_reference_previews(OUTPUT_DIR, ref_slugs)
+        gallery_order = [s for s in ref_slugs if s in set(ok_slugs)]
+        if index_page and gallery_order:
+            gallery_html = reference_preview_gallery_html(gallery_order, titles_by_slug, e)
+            html_idx = _render_page(index_page, pages, body_suffix=gallery_html)
+            (OUTPUT_DIR / "index.html").write_text(html_idx, encoding="utf-8")
+            print("  ✓ index.html (with reference preview gallery)")
+    elif want_previews and not ref_slugs:
+        print("[lenses-docs] previews: no reference *.html links in docs/index.md — skipping", file=sys.stderr)
 
     print(f"[lenses-docs] Done → {OUTPUT_DIR}/")
 

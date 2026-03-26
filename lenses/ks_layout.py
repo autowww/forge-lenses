@@ -88,6 +88,37 @@ def ks_theme_links() -> str:
         "  .lenses-sticker-modal { max-width: 32rem; width: 100%; padding: 1rem 1.25rem; border-radius: 10px; "
         "border: 1px solid var(--forge-border, #1e293b); background: var(--bs-body-bg, #0f172a); }\n"
         "  .lenses-sticker-status { font-size: 0.8rem; opacity: 0.8; }\n"
+        "  .lenses-sticker-board-meta { font-size: 0.8rem; opacity: 0.9; margin-bottom: 0.5rem; }\n"
+        "  .lenses-sticker-hub-root { min-height: 8rem; }\n"
+        "  .lenses-sticker-hub-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }\n"
+        "  .lenses-sticker-hub-list { display: flex; flex-direction: column; gap: 0.75rem; }\n"
+        "  .lenses-sticker-hub-card {\n"
+        "    display: flex; flex-wrap: wrap; align-items: stretch; gap: 1rem; padding: 0.75rem;\n"
+        "    border: 1px solid var(--forge-border, #1e293b); border-radius: 8px; background: rgba(15,23,42,0.35);\n"
+        "  }\n"
+        "  .lenses-sticker-hub-thumb {\n"
+        "    flex: 0 0 7.5rem; width: 7.5rem; height: 4.7rem; border-radius: 6px; overflow: hidden;\n"
+        "    background: var(--bs-body-bg, #0f172a); border: 1px solid var(--forge-border, #1e293b);\n"
+        "    display: flex; align-items: center; justify-content: center; font-size: 0.65rem;\n"
+        "    color: var(--bs-secondary-color, #94a3b8);\n"
+        "  }\n"
+        "  .lenses-sticker-hub-thumb img { width: 100%; height: 100%; object-fit: cover; }\n"
+        "  .lenses-sticker-hub-main { flex: 1 1 12rem; min-width: 0; }\n"
+        "  .lenses-sticker-hub-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; "
+        "margin-bottom: 0.35rem; }\n"
+        "  .lenses-sticker-hub-project-pill {\n"
+        "    font-size: 0.7rem; padding: 0.15rem 0.45rem; border-radius: 999px;\n"
+        "    background: rgba(6,182,212,0.12); color: var(--bs-info, #06b6d4);\n"
+        "    border: 1px solid rgba(6,182,212,0.25);\n"
+        "  }\n"
+        "  .lenses-sticker-hub-actions {\n"
+        "    flex: 0 0 auto; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;\n"
+        "    justify-content: flex-start;\n"
+        "  }\n"
+        "  .lenses-sticker-hub-badge-local { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; "
+        "color: var(--bs-secondary-color, #94a3b8); }\n"
+        "  .lenses-sticker-hub-badge-shared { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; "
+        "color: var(--bs-info, #06b6d4); }\n"
         "  .lenses-overview-lede { font-size: 1.08rem; line-height: 1.6; max-width: 52rem; }\n"
         "  .lenses-overview-kpi { min-height: 100%; transition: border-color 0.15s ease; }\n"
         "  .lenses-overview-kpi:hover { border-color: rgba(6,182,212,0.45) !important; }\n"
@@ -129,6 +160,26 @@ def ks_theme_links() -> str:
     )
 
 
+def board_thumb_capture_extra_css() -> str:
+    """Head fragment: hide chrome when capturing board PNGs (body.lenses-board-thumb-capture)."""
+    return (
+        "<style>\n"
+        "  body.lenses-board-thumb-capture #ks-sidebar-aside { display: none !important; }\n"
+        "  body.lenses-board-thumb-capture .btn[data-bs-target='#docNavOffcanvas'] { "
+        "display: none !important; }\n"
+        "  body.lenses-board-thumb-capture .site-header { display: none !important; }\n"
+        "  body.lenses-board-thumb-capture main#main.doc-main,\n"
+        "  body.lenses-board-thumb-capture main.doc-main {\n"
+        "    flex: 0 0 100% !important; max-width: 100% !important;\n"
+        "    padding-top: 0.75rem !important;\n"
+        "  }\n"
+        "  body.lenses-board-thumb-capture .lenses-dash .forge-support { display: none; }\n"
+        "  body.lenses-board-thumb-capture .lenses-sticker-toolbar { display: none; }\n"
+        "  body.lenses-board-thumb-capture .lenses-dash footer { display: none; }\n"
+        "</style>\n"
+    )
+
+
 def lenses_showcase_page(
     lenses_repo_root: Path,
     *,
@@ -139,10 +190,15 @@ def lenses_showcase_page(
     body_html: str,
     toc_html: str = "",
     footer_html: str = "",
+    body_extra_class: str = "",
+    dashboard_extra_css: str = "",
 ) -> str | None:
     showcase_page = get_showcase_page(lenses_repo_root)
     if showcase_page is None:
         return None
+    extra = ks_theme_links()
+    if dashboard_extra_css:
+        extra = extra + dashboard_extra_css
     return showcase_page(
         browser_title=browser_title,
         brand_name="lenses",
@@ -153,10 +209,11 @@ def lenses_showcase_page(
         body_html=f'<div class="lenses-dash">{body_html}</div>',
         toc_html=toc_html,
         footer_html=footer_html,
-        extra_css=ks_theme_links(),
+        extra_css=extra,
         extra_js=[],
         theme_css_href="/__ks/css/forge-theme.css",
         theme_js_href="/__ks/js/forge-theme.js",
         has_mermaid=False,
         has_ks_diagram=False,
+        body_extra_class=body_extra_class,
     )

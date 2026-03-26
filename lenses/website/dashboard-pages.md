@@ -4,7 +4,7 @@ The UI is server-generated HTML from `lenses/render.py`. When the **kitchensink*
 
 ## Overview (`/`)
 
-**Hero** — When kitchensink is present, the top of the page uses **`render_product_landing_hero`**: workspace path and scan time sit in the clarification line; **Browse projects** and **Lenses docs** CTAs link to **`/projects`** and **`/docs/index.html`**. Without kitchensink, a compact fallback title block is used.
+**Hero** — When kitchensink is present, the top of the page uses **`render_product_landing_hero`**: workspace path and scan time sit in the clarification line; **Browse projects** and **Lenses docs** CTAs link to **`/projects`** and **`/docs/index.html`**; a muted **Tutorials** link below the buttons goes to **`/tutorials`**. Without kitchensink, the fallback title block includes inline links: Browse projects · Lenses docs · Tutorials.
 
 **KPI row** — Counts for top-level folders, Firebase sites, WBS files, root **`*.sh`** scripts, plus a fifth tile **Approx. lines (sum)** — the sum of per-repo approximate tracked newlines (same caps as project stats).
 
@@ -12,7 +12,7 @@ The UI is server-generated HTML from `lenses/render.py`. When the **kitchensink*
 
 - **Badges** — clean/dirty, branch, Firebase, published site (**Web**), and **Submodules: N** when a **`.gitmodules`** file exists at the repo root (section count only).
 - **Facts line** — For git repos: **HEAD** short hash (linked when `origin` parses to a known host), **Updated** (relative time from **`commit_unix` / `commit_date`**), one-line **Latest** subject, **commits (7d)** (sum of **`commits_by_day_dict`**), **+additions / −deletions (7d)** from **`git_numstat_since`**, and **~LoC** (**`approx_tracked_lines`**).
-- **Quick links** — **Project** (`/projects/<name>`), **Live** when **`project_urls`** lists a URL, **Preview** (`/local-site/<name>/…`) when that folder is a detected Firebase site.
+- **Quick links** — **Project** (`/projects/<name>`), **Live** when **`project_urls`** lists a URL, **Preview** (`/local-site/<name>/…`) when that folder is a detected Firebase site, and **one link per detected handbook** (new tab) when the child has **`tutorial/index.html`**, **`tutorials/index.html`**, or **`lenses/tutorials/index.html`** (`list_child_handbooks` in `tutorial_index.py`).
 - **File mix** — Top **five** extensions from **`file_extension_counts`** for that repo (percent of that repo’s tracked files, with full counts in the pill **`title`**).
 - **Description** — Registry **`project_summaries`** override the README source when set. Long text (**> ~400 characters**, **> 4** non-empty lines, or ASCII-tree markers such as **`├──` / `└──`**) shows a short **lede** plus a **`<details>`** block (“Full description” or “Architecture & full notes”) so large blurbs stay collapsible without JavaScript. Shorter text stays a single paragraph (truncated to ~720 characters when below the threshold).
 
@@ -36,6 +36,16 @@ The UI is server-generated HTML from `lenses/render.py`. When the **kitchensink*
 
 Git work on Overview uses parallel subprocess calls per repo; very large workspaces may take a few seconds on first load.
 
+**Forge-autodoc handbooks** — Per workspace child, **`list_child_handbooks`** detects **`<repo>/tutorial/index.html`** (optional rsync target after **`build-fa-tutorials.sh`**), **`<repo>/tutorials/index.html`** (typical **`output_dir`** e.g. aw3), and **`<repo>/lenses/tutorials/index.html`** (forge-lenses build without rsync). If both root **`tutorials/`** and **`lenses/tutorials/`** exist, the URL prefix **`tutorials/`** maps to the root directory first. Served as **`/local-site/<name>/tutorial/…`** and **`/local-site/<name>/tutorials/…`** (not part of **`/websites`** indexing). For Firebase sites, page titles from the scan may override default labels (**Tutorial** / **Engineer handbook**). The nav **Tutorials** item opens **`/tutorials`**, which lists **each** handbook (a repo can appear more than once if it has both **`tutorial/`** and **`tutorials/`**).
+
+## Navigation (sidebar and compact top bar)
+
+Workspace band: **Overview**, **Projects**, **Tutorials**, **Toolset**, **Websites**, **Sticker board**, **WBS**. **Reference** band: **Lenses docs** (**`/docs/index.html`** — product reference handbook). **Published** band: **Handbook** and **Forge** (external).
+
+## Tutorials (`/tutorials`)
+
+Lists **each** handbook found under top-level workspace children (**`tutorial/`**, **`tutorials/`**, or **`lenses/tutorials/`**), with **Open tutorial** or **Open engineer handbook** and **Project dashboard** links. Empty state lists the path patterns and points to **Lenses docs**.
+
 ## Projects (`/projects`)
 
 **Vertical stack** of full-width panels (same hero chrome as **`/websites`**: `lenses-site-hero-section`, `_lenses_vertical_hero_styles` in `lenses/render.py`), sorted by **last commit** (**`commit_unix`**, newest git repos first; non-git folders last, by name). **`_prefetch_portal_repo_metrics`** runs **`approx_tracked_lines`** and **`git_numstat_since(..., 7)`** in parallel across repos so the portal stays responsive.
@@ -53,7 +63,7 @@ Each panel highlights **high-level** context (not branch/SHA/origin on this page
 
 Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_vertical_hero_styles` / `lenses-site-hero-section` in `lenses/render.py`):
 
-- **Identity hero** — Kicker (*Git repository* vs *Workspace folder*), title, absolute **path**, optional blurb from **`project_summaries`** in the workspace registry (when set); otherwise a **README preview** appears in its **own** panel below (not duplicated in the hero). **Pill badges**: clean/dirty, branch, short revision; **Firebase site** / **WBS ×N** when applicable. **Stat strip**: approximate **LoC**, relative **last update**, **+additions / −deletions (7d)** from **`git log --numstat`**, **total commits**, **tracked files** (from the same stats payload as the API). **Last commit** line with host link when `origin` parses. **CTAs**: repository, commit, **project site** (`project_urls`), **Preview in lenses** / **Open local site root** / **Firebase sites list** when this child is a Firebase hosting repo, **WBS** when requirement files are rooted under this folder, **← All projects**. Expandable **Technical** block: commit date and raw **origin** URL.
+- **Identity hero** — Kicker (*Git repository* vs *Workspace folder*), title, absolute **path**, optional blurb from **`project_summaries`** in the workspace registry (when set); otherwise a **README preview** appears in its **own** panel below (not duplicated in the hero). **Quick links** (button row directly under the blurb when any apply): **one button per detected handbook** (`list_child_handbooks`), then **Preview in lenses** and **Open local site** for Firebase children, **Project site** when **`project_urls`** has a URL, **Docs site** when **`docs/index.html`** exists at the repo root. **What’s here** (between quick links and stat strip): a small grid summarizing **Documentation** (links for each handbook under **`/local-site/<name>/tutorial/…`** or **`…/tutorials/…`**, else a muted note with path hints; optional **Docs site** line to **`/local-site/<name>/docs/index.html`** when that file exists), **Website** (Firebase Hosting child with inline **Preview in lenses** / **Open local site root** links, or a muted line if not a Firebase child), **Planning** (WBS file count + **View WBS** link, or muted when none), **Sticker boards** (count from **`.lenses-local/sticker-board-registry.json`** for that project name, plus **Sticker board hub** → **`/board?project=<name>`**). **Pill badges**: clean/dirty, branch, short revision; **Firebase site** / **WBS ×N** when applicable. **Stat strip**: approximate **LoC**, relative **last update**, **+additions / −deletions (7d)** from **`git log --numstat`**, **total commits**, **tracked files** (same payload as the API). **Last commit** line with host link when `origin` parses. **CTAs** are grouped under labels **Source**, **Ship / preview**, **Learn & plan**, and **Navigate** (repository, commit; project site, preview/local/Firebase list when applicable; **Learn & plan** includes every handbook link plus WBS and sticker board; **← All projects**). Expandable **Technical** block: commit date and raw **origin** URL.
 - **Activity (90 days)** — SVG commits-by-ISO-week bars (unchanged data).
 - **Activity (7 days)** — Commits per calendar day: **`commits_by_day_dict`** aligned with **`workspace_commits_daily_series`**, rendered with **`svg_commit_daily_bar_chart`**.
 - **Contributors** — Table from project stats.
@@ -66,17 +76,21 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 
 **`/toolset/<name>`** — Run screen for one script: full comment header (up to a length cap), warning about local execution, **Run script…** (browser **confirm** first), then **`POST /api/toolset/run`**; combined **stdout** / **stderr** appear in a tall console `<pre>` (same loopback policy as project git actions unless **`LENSES_ALLOW_GIT_ACTIONS=1`**). Only basenames of **`*.sh`** files directly under the workspace root are accepted.
 
-## Sticker board (`/board`)
+## Sticker board (`/board` and `/board/<id>`)
 
-**Kanban** (three columns, HTML5 drag-and-drop) or **freeform** (pointer drag on a canvas). Each sticker has **title** + **details**; the card shows a preview. **Hover** shows **edit** (pencil) and **delete** (×); double-click still opens the editor.
+**Hub (`/board`)** — Single list of all boards (flat), each row shows **storage** badge, **label**, **project** pill, optional **PNG thumbnail**, and actions: **Open**, **Rename**, **Delete**, **Move to project** (any source project). Filter dropdown: all projects, **Unassigned** only, or one workspace child. **Create board** still picks project + local/shared up front. Optional **`?project=<name>`** pre-selects the filter (same as the link from each **project dashboard**). Script: **`/__lenses/js/sticker-board-hub.js`**.
 
-**Board storage:** **Local** — everything in **`<workspace_root>/.lenses-local/sticker-board.json`**. **Shared** — shared stickers and layout in **`<workspace_root>/.lenses-repo/<expected-login>/sticker-board.json`**, private stickers for that board in **`<workspace_root>/.lenses-local/sticker-board-shared-local.json`**, and a small marker file under `.lenses-local`. Shared mode needs the same **expected GitHub login** resolution as PAT actions (registry, single **`.lenses-repo/<login>/`**, or **`gh`**). **Local boards cannot contain shared-scope stickers** (validated on POST).
+**Thumbnails** — After a successful **`POST /api/sticker-board`**, the server may (debounced) run **html2image** + Chromium against **`/board/<id>?thumb=1`** and write **`<workspace>/.lenses-local/sticker-board-previews/<id>.png`**. Disable with **`LENSES_BOARD_PREVIEWS=0`**. Hub loads images from **`GET /board-preview/<id>.png`**. Requires **`pip install html2image`** and a Chromium/Chrome the library can find (same idea as handbook reference previews).
 
-**Saving:** **`POST /api/sticker-board`**; loopback unless **`LENSES_ALLOW_GIT_ACTIONS=1`**. **Last write wins** across tabs. Script: **`/__lenses/js/sticker-board.js`**; the page sets **`data-shared-available`** when a login is configured.
+**Editor (`/board/<board_id>`)** — **Kanban** (three columns, HTML5 drag-and-drop) or **freeform** (pointer drag on a canvas). Each sticker has **title** + **details**; the card shows a preview. **Hover** shows **edit** (pencil) and **delete** (×); double-click still opens the editor. Toolbar shows **Local only** vs **Shared board**, board label, and opaque **board id** (for sharing the URL or the tracked file). Query **`?thumb=1`** serves a minimal-chrome layout for automated screenshots only.
+
+**Board storage:** Registry **`sticker-board-registry.json`**. Per board: **`sticker-boards/<board_id>.json`** (local), or shared repo file + **`…-shared-local.json`** overlay + **`.marker.json`**. Legacy single **`sticker-board.json`** / **`sticker-board-shared-local.json`** is migrated on first access. Shared mode needs the same **expected GitHub login** resolution as PAT actions. **Local boards cannot contain shared-scope stickers** (validated on POST).
+
+**Saving:** **`POST /api/sticker-board?board_id=…`**; loopback unless **`LENSES_ALLOW_GIT_ACTIONS=1`**. **Last write wins** across tabs. Editor script: **`/__lenses/js/sticker-board.js`**.
 
 ## Websites (`/websites` and `/websites/browse`)
 
-**`/websites`** — **Full-width vertical hero sections** (stacked one per Firebase Hosting repo): git badges, README excerpt, stat chips (HTML counts, indexed vs total when capped, `index.html` mtime, **`hosting.public`**, Firebase **site** id), last-commit line with link when `origin` parses, an always-visible **Key pages** grid (links to **`/local-site/<repo>/…`**), **Preview in lenses** (iframe shell), copyable **build** / **deploy** one-liners, optional **Published site** from **`project_urls`**, and **global search** across site names, README text, and indexed page titles.
+**`/websites`** — **Full-width vertical hero sections** (stacked one per Firebase Hosting repo): git badges, README excerpt, stat chips (HTML counts, indexed vs total when capped, `index.html` mtime, **`hosting.public`**, Firebase **site** id), last-commit line with link when `origin` parses, an always-visible **Key pages** grid (links to **`/local-site/<repo>/…`**; **top-level HTML only** — nested paths under **`hosting.public`** are not listed here), **Preview in lenses** (iframe shell), copyable **build** / **deploy** one-liners, optional **Published site** from **`project_urls`**, and **global search** across site names, README text, and indexed page titles. There is **no** separate **Tutorial** subsection on this page; **forge-autodoc** handbooks (**`/local-site/<repo>/tutorial/…`** or **`/local-site/<repo>/tutorials/…`**) are opened from **Overview** / **project** / **`/tutorials`**, not as part of the Firebase **Key pages** grid.
 
 **GitHub PAT sign-in** (when expected login is configured) enables **Run …** buttons for allowlisted actions from **`registry["actions"]`** (see [Registry configuration](registry-configuration.html)).
 
@@ -87,6 +101,6 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 - **`/wbs`** — Table (or list) of all `docs/requirements/WBS.md` and `WBS.csv` files found under the workspace.  
 - **`/wbs/view?p=…`** — Read-only preview of a single file; path validated so only workspace-local requirement trees are accessible.
 
-## Docs link
+## Lenses docs link
 
-The sidebar **Docs** target is **`/docs/`**, which serves pre-built HTML from **`lenses-docs/`** (build with `generator/build-lenses-docs.py`).
+The sidebar **Lenses docs** target is **`/docs/`**, which serves pre-built HTML from **`lenses-docs/`** (build with `generator/build-lenses-docs.py`). Workspace forge-autodoc handbooks are **not** here; use **Tutorials** in the nav or per-repo links under **`/local-site/<name>/tutorial/…`** or **`/local-site/<name>/tutorials/…`**. When the handbook is built with **`--previews`** or **`LENSES_BUILD_DOC_PREVIEWS=1`** (and **html2image** + Chromium are available), **`docs/index.html`** can include a **Reference page previews** grid: PNG thumbnails for the top-level reference pages linked from **`docs/index.md`**, stored under **`lenses-docs/previews/`**.

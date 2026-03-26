@@ -4,3 +4,6 @@
 [submodule "blueprints"]
 	path = blueprints
 	url = https://github.com/autowww/blueprints.git
+[submodule "forge-autodoc"]
+	path = forge-autodoc
+	url = https://github.com/autowww/forge-autodoc.git

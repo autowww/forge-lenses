@@ -14,8 +14,15 @@ from typing import Any
 
 from lenses.git_urls import commit_url_for_remote, remote_to_https_repo_url
 from lenses.scan import shell_script_comment_detail
+from lenses.sticker_board import board_count_for_project
+from lenses.tutorial_index import (
+    HandbookRef,
+    list_child_handbooks,
+    repo_tutorials_link_label_from_pages,
+    tutorial_link_label_from_pages,
+)
 from lenses.toolset_actions import resolve_toolset_script
-from lenses.ks_layout import lenses_showcase_page
+from lenses.ks_layout import board_thumb_capture_extra_css, lenses_showcase_page
 from lenses.project_stats import (
     approx_tracked_lines,
     collect_project_stats,
@@ -35,6 +42,22 @@ from lenses.project_stats import (
 
 def esc(s: str) -> str:
     return html.escape(s, quote=True)
+
+
+# Same path as kitchensink ``LANDING_FORGE_SPECTRAL_SVG`` — static sites resolve it
+# under site root; Lenses only serves that file under ``/__ks/``.
+_LENSES_HERO_SPECTRAL_REL = (
+    "assets/svg/backgrounds/sinusoids/bg-fourier-forge-spectral-animated-01.svg"
+)
+
+
+def _rewrite_lenses_hero_spectral_img_src(html: str) -> str:
+    """Rewrite hero ``img`` src so it loads from ``/__ks/`` on the Lenses server."""
+    rel = _LENSES_HERO_SPECTRAL_REL.replace("\\", "/")
+    needle = f'src="{rel}"'
+    if needle not in html:
+        return html
+    return html.replace(needle, f'src="/__ks/{rel}"', 1)
 
 
 def _lenses_vertical_hero_styles() -> str:
@@ -77,6 +100,37 @@ def _lenses_vertical_hero_styles() -> str:
   min-height: 12rem;
   padding-top: 1.5rem;
   padding-bottom: 1.65rem;
+}
+.lenses-project-whats-here-grid {
+  display: grid;
+  gap: 0.75rem 1.25rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 576px) {
+  .lenses-project-whats-here-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.lenses-project-whats-here-k {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.lenses-project-cta-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.lenses-project-cta-group {
+  padding-left: 0.65rem;
+  border-left: 3px solid rgba(148, 163, 184, 0.35);
+}
+.lenses-project-cta-group-label {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--forge-text-4, #64748b);
+  font-weight: 600;
+  margin-bottom: 0.35rem;
 }
 .lenses-portal-preview-wrap {
   display: inline-block;
@@ -135,6 +189,14 @@ def local_site_href(site: str, rel_path: str) -> str:
     segs = [urllib.parse.quote(s, safe="") for s in rel_path.split("/") if s]
     tail = "/".join(segs) if segs else urllib.parse.quote("index.html", safe="")
     return f"/local-site/{urllib.parse.quote(site, safe='')}/{tail}"
+
+
+def _handbook_display_label(book: HandbookRef, pages: Any, is_site: bool) -> str:
+    if not is_site:
+        return book.label_default
+    if book.kind == "tutorial":
+        return tutorial_link_label_from_pages(pages)
+    return repo_tutorials_link_label_from_pages(pages)
 
 
 def _fmt_mtime(ts: object) -> str:
@@ -533,6 +595,7 @@ def _overview_repo_section_html(
     ext_total: int,
     project_urls: dict[str, Any],
     website_names: set[str],
+    handbook_quick_links: list[tuple[str, str]] | None = None,
 ) -> str:
     sm_count = _gitmodules_submodule_count(repo_path)
     if sm_count > 0:
@@ -596,6 +659,12 @@ def _overview_repo_section_html(
         link_parts.append(
             f'<a href="{esc(local_site_href(name, ""))}">Preview</a>'
         )
+    if handbook_quick_links:
+        for hb_label, hb_rel in handbook_quick_links:
+            link_parts.append(
+                f'<a href="{esc(local_site_href(name, hb_rel))}" '
+                f'target="_blank" rel="noopener">{esc(hb_label)}</a>'
+            )
     links_html = (
         f'<p class="lenses-overview-quick-links forge-support small mb-2">'
         f'{" · ".join(link_parts)}</p>'
@@ -747,9 +816,10 @@ def lenses_sidebar_html(nav_active: str, handbook_url: str, forge_url: str) -> s
     items = [
         ("overview", "/", "Overview"),
         ("projects", "/projects", "Projects"),
+        ("tutorials", "/tutorials", "Tutorials"),
         ("toolset", "/toolset", "Toolset"),
         ("websites", "/websites", "Websites"),
-        ("board", "/board", "Board"),
+        ("board", "/board", "Sticker board"),
         ("wbs", "/wbs", "WBS"),
     ]
     lines = [
@@ -761,9 +831,15 @@ def lenses_sidebar_html(nav_active: str, handbook_url: str, forge_url: str) -> s
         lines.append(
             f'<a class="doc-sidebar-link{cls}" href="{esc(href)}">{esc(label)}</a>'
         )
+    lines.append("</div>")
+    lines.append('<p class="nav-section-label">Reference</p>')
+    lines.append('<div class="nav-rail">')
     lines.append(
-        '<a class="doc-sidebar-link" href="/docs/index.html">Docs</a>'
+        '<a class="doc-sidebar-link" href="/docs/index.html">Lenses docs</a>'
     )
+    lines.append("</div>")
+    lines.append('<p class="nav-section-label">Published</p>')
+    lines.append('<div class="nav-rail">')
     lines.append(
         f'<a class="doc-sidebar-link" href="{esc(handbook_url)}" target="_blank" rel="noopener">Handbook</a>'
     )
@@ -802,9 +878,10 @@ def nav_bar(
     items = [
         ("overview", "/", "Overview"),
         ("projects", "/projects", "Projects"),
+        ("tutorials", "/tutorials", "Tutorials"),
         ("toolset", "/toolset", "Toolset"),
         ("websites", "/websites", "Websites"),
-        ("board", "/board", "Board"),
+        ("board", "/board", "Sticker board"),
         ("wbs", "/wbs", "WBS"),
     ]
     links = []
@@ -814,7 +891,7 @@ def nav_bar(
             f'<a class="lenses-nav-link{cls}" href="{esc(href)}">{esc(label)}</a>'
         )
     links.append(
-        f'<a class="lenses-nav-link lenses-nav-docs" href="/docs/index.html">Docs</a>'
+        f'<a class="lenses-nav-link lenses-nav-docs" href="/docs/index.html">Lenses docs</a>'
     )
     links.append(
         f'<a class="lenses-nav-link lenses-nav-external" href="{esc(handbook_url)}" target="_blank" rel="noopener">Handbook</a>'
@@ -963,6 +1040,8 @@ def _wrap_dashboard(
     body_inner: str,
     handbook_url: str,
     forge_url: str,
+    body_extra_class: str = "",
+    dashboard_extra_css: str = "",
 ) -> str:
     sidebar = lenses_sidebar_html(nav_active, handbook_url, forge_url)
     footer = lenses_footer_html()
@@ -974,6 +1053,8 @@ def _wrap_dashboard(
         sidebar_html=sidebar,
         body_html=body_inner,
         footer_html=footer,
+        body_extra_class=body_extra_class,
+        dashboard_extra_css=dashboard_extra_css,
     )
     if ks is not None:
         return ks
@@ -1026,6 +1107,28 @@ def page_overview(
     project_urls = registry.get("project_urls") or {}
     project_summaries = registry.get("project_summaries") or {}
     website_names = {str(w.get("name", "")) for w in websites if isinstance(w, dict)}
+    website_pages_by_name: dict[str, Any] = {}
+    for w in websites:
+        if not isinstance(w, dict):
+            continue
+        wn = str(w.get("name", "")).strip()
+        if not wn:
+            continue
+        website_pages_by_name[wn] = w.get("pages")
+    handbook_links_by_name: dict[str, list[tuple[str, str]]] = {}
+    for c in children:
+        cn = str(c.get("name", "")).strip()
+        if not cn:
+            continue
+        cpath = Path(str(c.get("path", "")))
+        books = list_child_handbooks(cpath)
+        if not books:
+            continue
+        pages = website_pages_by_name.get(cn)
+        is_site = cn in website_names
+        handbook_links_by_name[cn] = [
+            (_handbook_display_label(b, pages, is_site), b.local_site_rel) for b in books
+        ]
     workspace_root_str = str(state.get("workspace_root", ""))
     resolved_str = str(state.get("resolved_at", ""))
 
@@ -1092,8 +1195,10 @@ def page_overview(
                 primary_cta_label="Browse projects",
                 secondary_cta_href="/docs/index.html",
                 secondary_cta_label="Lenses docs",
+                secondary_links=[("Tutorials", "/tutorials")],
                 support_points=support_points,
             )
+            hero_html = _rewrite_lenses_hero_spectral_img_src(hero_html)
         except ImportError:
             hero_html = ""
     if not hero_html:
@@ -1102,7 +1207,12 @@ def page_overview(
             '<p class="small text-cyan text-uppercase mb-1">lenses</p>'
             '<h1 class="h2 font-display forge-gradient-text mb-2">Workspace overview</h1>'
             f'<p class="forge-support mb-2">{esc(tagline)}</p>'
-            f'<p class="forge-support small mb-0">{esc(clarification)}</p>'
+            f'<p class="forge-support small mb-2">{esc(clarification)}</p>'
+            '<p class="forge-support small mb-0">'
+            '<a href="/projects">Browse projects</a> · '
+            '<a href="/docs/index.html">Lenses docs</a> · '
+            '<a href="/tutorials">Tutorials</a>'
+            "</p>"
             "</div>"
         )
 
@@ -1184,6 +1294,7 @@ def page_overview(
                 ext_total=ext_total,
                 project_urls=project_urls,
                 website_names=website_names,
+                handbook_quick_links=handbook_links_by_name.get(name),
             )
         )
 
@@ -1478,6 +1589,103 @@ def page_projects(
     )
 
 
+def page_tutorials(
+    state: dict[str, Any],
+    _registry: dict[str, Any],
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+) -> str:
+    children: list[dict[str, Any]] = [
+        c for c in (state.get("children") or []) if isinstance(c, dict)
+    ]
+    website_pages_by_name: dict[str, Any] = {}
+    websites_list = state.get("websites") or []
+    for w in websites_list:
+        if not isinstance(w, dict):
+            continue
+        wn = str(w.get("name", "")).strip()
+        if not wn:
+            continue
+        website_pages_by_name[wn] = w.get("pages")
+    website_names = {str(w.get("name", "")) for w in websites_list if isinstance(w, dict)}
+
+    cards: list[str] = []
+    for c in sorted(children, key=lambda x: str(x.get("name", "")).lower()):
+        cn = str(c.get("name", "")).strip()
+        if not cn:
+            continue
+        cpath = Path(str(c.get("path", "")))
+        books = list_child_handbooks(cpath)
+        if not books:
+            continue
+        pages = website_pages_by_name.get(cn)
+        is_site = cn in website_names
+        proj_href = f"/projects/{urllib.parse.quote(cn, safe='')}"
+        for b in books:
+            label = _handbook_display_label(b, pages, is_site)
+            href = local_site_href(cn, b.local_site_rel)
+            open_label = (
+                "Open engineer handbook"
+                if b.kind == "tutorials"
+                else "Open tutorial"
+            )
+            cards.append(
+                '<section class="lenses-site-hero-section forge-card mb-3">'
+                f'<h2 class="h5 text-cyan mb-2">{esc(cn)}</h2>'
+                f'<p class="forge-support small mb-2"><span class="text-body-secondary">'
+                f'{esc(b.label_default)}</span> — {esc(label)}</p>'
+                '<div class="d-flex flex-wrap gap-2">'
+                f'<a class="btn btn-sm btn-forge" href="{esc(href)}" '
+                f'target="_blank" rel="noopener">{esc(open_label)}</a>'
+                f'<a class="btn btn-sm btn-outline-secondary" href="{esc(proj_href)}">'
+                "Project dashboard</a>"
+                "</div></section>"
+            )
+
+    if not cards:
+        body_stack = (
+            "<p class=\"forge-support mb-3\">No workspace repositories have a detected "
+            "forge-autodoc handbook (<code>tutorial/index.html</code>, "
+            "<code>tutorials/index.html</code>, or <code>lenses/tutorials/index.html</code>). "
+            "Run <code>./build-fa-tutorials.sh</code> in each repo, then refresh this page.</p>"
+            '<p class="forge-support small mb-0">See also '
+            '<a href="/docs/index.html">Lenses docs</a> for setup and the HTTP API reference.</p>'
+        )
+    else:
+        body_stack = (
+            "<p class=\"forge-support mb-3\">Handbooks are served on this host as "
+            "<code>/local-site/&lt;repo&gt;/tutorial/…</code> or "
+            "<code>/local-site/&lt;repo&gt;/tutorials/…</code> (same origin as the dashboard).</p>"
+            + "".join(cards)
+        )
+
+    body_inner = _lenses_vertical_hero_styles() + body_stack
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("/tutorials", "Tutorials"))
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title="Tutorials — lenses",
+        nav_active="tutorials",
+        page_title="Tutorials",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+    )
+
+
+def _project_cta_group_html(label: str, buttons: list[str]) -> str:
+    if not buttons:
+        return ""
+    return (
+        '<div class="lenses-project-cta-group">'
+        f'<span class="lenses-project-cta-group-label">{esc(label)}</span>'
+        '<div class="d-flex flex-wrap gap-2">'
+        f'{"".join(buttons)}'
+        "</div></div>"
+    )
+
+
 def page_project_detail(
     state: dict[str, Any],
     registry: dict[str, Any],
@@ -1563,6 +1771,147 @@ def page_project_detail(
     else:
         blurb_block = ""
 
+    wk_tb = _website_by_name(state, project_name) if is_site else None
+    wk_pages = wk_tb.get("pages") if wk_tb else None
+    handbooks = list_child_handbooks(repo_path)
+    browse_href = ""
+    preview_root = ""
+    if is_site:
+        browse_href = f"/websites/browse?site={urllib.parse.quote(project_name, safe='')}"
+        preview_root = local_site_href(project_name, "index.html")
+
+    docs_index_exists = False
+    if repo_path.is_dir():
+        try:
+            rp_docs = repo_path.resolve()
+            doc_idx = (rp_docs / "docs" / "index.html").resolve()
+            doc_idx.relative_to(rp_docs)
+            docs_index_exists = doc_idx.is_file()
+        except (OSError, ValueError):
+            docs_index_exists = False
+
+    ws_root_raw = state.get("workspace_root")
+    board_n = 0
+    if isinstance(ws_root_raw, str) and ws_root_raw.strip():
+        board_n = board_count_for_project(Path(ws_root_raw.strip()), project_name)
+
+    sticker_hub = f"/board?project={urllib.parse.quote(project_name, safe='')}"
+    if handbooks:
+        doc_bits = []
+        for b in handbooks:
+            lbl = _handbook_display_label(b, wk_pages, is_site)
+            href = local_site_href(project_name, b.local_site_rel)
+            doc_bits.append(
+                f'{esc(b.label_default)}: <a href="{esc(href)}" target="_blank" rel="noopener">'
+                f"{esc(lbl)}</a>"
+            )
+        doc_tutorial = " · ".join(doc_bits)
+    else:
+        doc_tutorial = (
+            '<span class="text-body-secondary">No forge-autodoc handbook detected</span> '
+            "(<code>tutorial/index.html</code>, <code>tutorials/index.html</code>, "
+            "or <code>lenses/tutorials/index.html</code>)"
+        )
+    doc_extra = ""
+    if docs_index_exists:
+        dh = local_site_href(project_name, "docs/index.html")
+        doc_extra = (
+            f'<p class="mb-0 mt-1 forge-support">Docs site: '
+            f'<a href="{esc(dh)}" target="_blank" rel="noopener">docs/index.html</a></p>'
+        )
+    doc_inner = f'<div class="forge-support small">{doc_tutorial}</div>{doc_extra}'
+
+    if is_site:
+        web_inner = (
+            f'<p class="mb-0 forge-support small">Firebase Hosting child. '
+            f'<a href="{esc(browse_href)}">Preview in lenses</a> · '
+            f'<a href="{esc(preview_root)}" target="_blank" rel="noopener">'
+            f"Open local site root</a></p>"
+        )
+    else:
+        web_inner = (
+            '<p class="mb-0 forge-support small text-body-secondary">'
+            "Not a Firebase Hosting child in this workspace</p>"
+        )
+
+    nwbs = len(wbs_entries)
+    if has_wbs:
+        plan_inner = (
+            f'<p class="mb-0 forge-support small">{nwbs} requirement file(s) — '
+            f'<a href="/wbs">View WBS</a></p>'
+        )
+    else:
+        plan_inner = (
+            '<p class="mb-0 forge-support small text-body-secondary">'
+            "No WBS rooted here</p>"
+        )
+
+    if board_n:
+        sticker_lead = f"{board_n} board(s) · "
+    else:
+        sticker_lead = '<span class="text-body-secondary">None yet</span> · '
+    sticker_inner = (
+        f'<p class="mb-0 forge-support small">{sticker_lead}'
+        f'<a href="{esc(sticker_hub)}">Sticker board hub</a></p>'
+    )
+
+    docs_site_href = (
+        local_site_href(project_name, "docs/index.html") if docs_index_exists else ""
+    )
+    hero_quick_parts: list[str] = []
+    for b in handbooks:
+        hb_lbl = _handbook_display_label(b, wk_pages, is_site)
+        hb_href = local_site_href(project_name, b.local_site_rel)
+        hero_quick_parts.append(
+            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(hb_href)}" '
+            f'target="_blank" rel="noopener">{esc(hb_lbl)}</a>'
+        )
+    if is_site:
+        hero_quick_parts.append(
+            f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
+        )
+        hero_quick_parts.append(
+            f'<a class="btn btn-sm btn-outline-info" href="{esc(preview_root)}" '
+            f'target="_blank" rel="noopener">Open local site</a>'
+        )
+    if external_url:
+        hero_quick_parts.append(
+            f'<a class="btn btn-sm btn-outline-warning" href="{esc(external_url)}" '
+            f'target="_blank" rel="noopener">Project site</a>'
+        )
+    if docs_site_href:
+        hero_quick_parts.append(
+            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(docs_site_href)}" '
+            f'target="_blank" rel="noopener">Docs site</a>'
+        )
+    hero_quick_html = ""
+    if hero_quick_parts:
+        hero_quick_html = (
+            '<div class="lenses-project-hero-quick d-flex flex-wrap gap-2 mt-2 mb-2" '
+            f'aria-label="Quick links">{"".join(hero_quick_parts)}</div>'
+        )
+
+    whats_here_block = (
+        f'<div class="lenses-project-whats-here mt-3 pt-2 border-top border-secondary '
+        f'border-opacity-25" aria-labelledby="lenses-proj-whats-{esc(sid)}">'
+        f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-whats-{esc(sid)}">'
+        f"What&#8217;s here</h3>"
+        f'<div class="lenses-project-whats-here-grid">'
+        f'<div class="lenses-project-whats-here-item">'
+        f'<div class="lenses-project-whats-here-k small mb-1">Documentation</div>{doc_inner}'
+        f"</div>"
+        f'<div class="lenses-project-whats-here-item">'
+        f'<div class="lenses-project-whats-here-k small mb-1">Website</div>{web_inner}'
+        f"</div>"
+        f'<div class="lenses-project-whats-here-item">'
+        f'<div class="lenses-project-whats-here-k small mb-1">Planning</div>{plan_inner}'
+        f"</div>"
+        f'<div class="lenses-project-whats-here-item">'
+        f'<div class="lenses-project-whats-here-k small mb-1">Sticker boards</div>{sticker_inner}'
+        f"</div>"
+        f"</div></div>"
+    )
+
     stat_bits: list[str] = []
     if is_git:
         loc = approx_tracked_lines(repo_path)
@@ -1620,39 +1969,60 @@ def page_project_detail(
                 + "</p>"
             )
 
-    ctas: list[str] = []
+    grp_source: list[str] = []
     if repo_https:
-        ctas.append(
+        grp_source.append(
             f'<a class="btn btn-sm btn-outline-info" href="{esc(repo_https)}" '
             f'target="_blank" rel="noopener">Repository</a>'
         )
     if commit_url:
-        ctas.append(
+        grp_source.append(
             f'<a class="btn btn-sm btn-outline-info" href="{esc(commit_url)}" '
             f'target="_blank" rel="noopener">Commit</a>'
         )
+
+    grp_ship: list[str] = []
     if external_url:
-        ctas.append(
+        grp_ship.append(
             f'<a class="btn btn-sm btn-outline-warning" href="{esc(external_url)}" '
             f'target="_blank" rel="noopener">Project site</a>'
         )
     if is_site:
-        browse_href = f"/websites/browse?site={urllib.parse.quote(project_name, safe='')}"
-        preview_root = local_site_href(project_name, "index.html")
-        ctas.append(
+        grp_ship.append(
             f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
         )
-        ctas.append(
+        grp_ship.append(
             f'<a class="btn btn-sm btn-outline-info" href="{esc(preview_root)}" '
             f'target="_blank" rel="noopener">Open local site root</a>'
         )
-        ctas.append(
+        grp_ship.append(
             '<a class="btn btn-sm btn-outline-secondary" href="/websites">Firebase sites list</a>'
         )
+
+    grp_learn: list[str] = []
+    for b in handbooks:
+        hb_lbl = _handbook_display_label(b, wk_pages, is_site)
+        hb_href = local_site_href(project_name, b.local_site_rel)
+        grp_learn.append(
+            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(hb_href)}" '
+            f'target="_blank" rel="noopener">{esc(hb_lbl)}</a>'
+        )
     if has_wbs:
-        ctas.append('<a class="btn btn-sm btn-outline-secondary" href="/wbs">WBS</a>')
-    ctas.append('<a class="btn btn-sm btn-link px-0" href="/projects">← All projects</a>')
-    cta_row = f'<div class="d-flex flex-wrap gap-2 mt-3">{"".join(ctas)}</div>'
+        grp_learn.append('<a class="btn btn-sm btn-outline-secondary" href="/wbs">WBS</a>')
+    grp_learn.append(
+        f'<a class="btn btn-sm btn-outline-secondary" href="{esc(sticker_hub)}">Sticker board</a>'
+    )
+
+    grp_nav = ['<a class="btn btn-sm btn-link px-0" href="/projects">← All projects</a>']
+
+    cta_row = (
+        '<div class="lenses-project-cta-groups mt-3">'
+        f'{_project_cta_group_html("Source", grp_source)}'
+        f'{_project_cta_group_html("Ship / preview", grp_ship)}'
+        f'{_project_cta_group_html("Learn & plan", grp_learn)}'
+        f'{_project_cta_group_html("Navigate", grp_nav)}'
+        "</div>"
+    )
 
     technical = ""
     if is_git and origin:
@@ -1689,6 +2059,8 @@ def page_project_detail(
         f'<p class="lenses-hero-kicker mb-0">{esc(kicker)}</p>'
         f'<h2 class="text-cyan" id="lenses-project-title-{esc(sid)}">{esc(project_name)}</h2>'
         f"{path_line}{blurb_block}"
+        f"{hero_quick_html}"
+        f"{whats_here_block}"
         f"{stat_strip}"
         f"{git_line}"
         f"{cta_row}"
@@ -1963,32 +2335,86 @@ def page_toolset_run(
     )
 
 
-def page_sticker_board(
+def page_sticker_board_hub(
     state: dict[str, Any],
     handbook_url: str,
     forge_url: str,
     lenses_repo_root: Path,
     shared_board_available: bool,
+    project_filter: str,
 ) -> str:
     ws = esc(str(state.get("workspace_root", "")))
     sa = "true" if shared_board_available else "false"
     reg = esc("/docs/registry-configuration.html")
-    body_inner = f"""<p class="forge-support">Local boards use <code>.lenses-local/sticker-board.json</code>.
-Shared boards also use <code>.lenses-repo/&lt;login&gt;/sticker-board.json</code> plus a local overlay for private stickers.
+    pf = esc(project_filter.strip())
+    body_inner = f"""<details class="forge-support small mb-3"><summary class="text-cyan" style="cursor:pointer">Storage &amp; sync</summary>
+<p class="mt-2 mb-0">Boards are listed from <code>.lenses-local/sticker-board-registry.json</code>; data under
+<code>.lenses-local/sticker-boards/&lt;id&gt;.json</code>. Shared boards also use
+<code>.lenses-repo/&lt;login&gt;/sticker-boards/&lt;id&gt;.json</code> plus a local overlay for private stickers.
 Workspace: <code>{ws}</code>. <strong>Last write wins</strong> across tabs. POST is loopback-only unless
-<code>LENSES_ALLOW_GIT_ACTIONS=1</code>. Shared mode needs a resolved GitHub login — see <a href="{reg}">registry</a>.</p>
-<div id="lenses-sticker-board" class="lenses-sticker-root" data-api="/api/sticker-board" data-shared-available="{sa}"></div>
-<script src="/__lenses/js/sticker-board.js" defer></script>"""
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Sticker board"))
+<code>LENSES_ALLOW_GIT_ACTIONS=1</code>. Optional PNG thumbnails (after save) need <code>html2image</code> + Chromium and
+<code>LENSES_BOARD_PREVIEWS</code> not set to <code>0</code>. Shared mode needs a resolved GitHub login — see
+<a href="{reg}">registry</a>.</p></details>
+<div id="lenses-sticker-board-hub" class="lenses-sticker-hub-root" data-registry-api="/api/sticker-board-registry"
+  data-project-filter="{pf}" data-shared-available="{sa}"></div>
+<script src="/__lenses/js/sticker-board-hub.js" defer></script>"""
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Stickerboardefo"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="Sticker board — lenses",
+        browser_title="Stickerboardefo — lenses",
         nav_active="board",
-        page_title="Sticker board",
+        page_title="Stickerboardefo",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+    )
+
+
+def page_sticker_board_editor(
+    state: dict[str, Any],
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+    shared_board_available: bool,
+    board_id: str,
+    board_label: str,
+    *,
+    thumb_capture: bool = False,
+) -> str:
+    ws = esc(str(state.get("workspace_root", "")))
+    sa = "true" if shared_board_available else "false"
+    reg = esc("/docs/registry-configuration.html")
+    bid = esc(board_id)
+    blab = esc(board_label or "Board")
+    api = esc(f"/api/sticker-board?board_id={urllib.parse.quote(board_id, safe='')}")
+    thumb_attr = ' data-thumb="1"' if thumb_capture else ""
+    if thumb_capture:
+        intro = ""
+    else:
+        intro = f"""<p class="forge-support">Board <code>{bid}</code> · Workspace <code>{ws}</code>.
+Local vs shared storage is per board; shared stickers need a resolved GitHub login — see <a href="{reg}">registry</a>.</p>
+"""
+    body_inner = f"""{intro}<div id="lenses-sticker-board" class="lenses-sticker-root" data-api="{api}" data-board-id="{bid}"
+  data-board-label="{blab}" data-back-href="/board" data-shared-available="{sa}"{thumb_attr}></div>
+<script src="/__lenses/js/sticker-board.js" defer></script>"""
+    bc = lenses_breadcrumb_html(
+        ("/board", "Stickerboardefo"),
+        ("", board_label or "Board"),
+    )
+    body_cls = "lenses-board-thumb-capture" if thumb_capture else ""
+    dash_css = board_thumb_capture_extra_css() if thumb_capture else ""
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title=f"{board_label or 'Board'} — Stickerboardefo — lenses",
+        nav_active="board",
+        page_title=board_label or "Board",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+        body_extra_class=body_cls,
+        dashboard_extra_css=dash_css,
     )
 
 

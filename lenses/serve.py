@@ -19,6 +19,7 @@ from lenses.local_site_html import (
     local_site_directory_url_path,
 )
 from lenses.expected_github import resolve_expected_github_login
+from lenses.board_preview import schedule_board_preview_capture
 from lenses.git_actions import (
     client_may_run_git_actions,
     client_may_write_sticker_board,
@@ -26,8 +27,15 @@ from lenses.git_actions import (
 )
 from lenses.sticker_board import (
     MAX_BODY_BYTES as STICKER_BOARD_MAX_BODY_BYTES,
+    UNASSIGNED_PROJECT_KEY,
+    board_preview_path,
+    find_board_entry,
+    is_valid_board_id,
     load_board,
+    load_registry_raw,
     normalize_board,
+    registry_apply,
+    registry_snapshot,
     save_board,
     validate_board,
 )
@@ -37,9 +45,11 @@ from lenses.render import (
     page_overview,
     page_project_detail,
     page_projects,
-    page_sticker_board,
+    page_sticker_board_editor,
+    page_sticker_board_hub,
     page_toolset,
     page_toolset_run,
+    page_tutorials,
     page_wbs,
     page_wbs_view,
     page_websites,
@@ -52,12 +62,23 @@ from lenses.scan import (
     scan_workspace,
     workspace_state_json,
 )
+from lenses.tutorial_index import (
+    repo_tutorials_url_tail_matches,
+    resolve_repo_tutorials_site_file,
+    resolve_tutorial_site_file,
+    tutorial_url_tail_matches,
+)
 from lenses.shell_actions import client_may_run_shell_actions, run_allowlisted_action
 from lenses.toolset_actions import run_toolset_script
 
 
 LENSES_REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = LENSES_REPO_ROOT / "lenses-docs"
+
+
+def _board_preview_base_url(handler: BaseHTTPRequestHandler) -> str:
+    _addr, port = handler.server.server_address
+    return f"http://127.0.0.1:{port}"
 
 
 def _safe_wbs_file(workspace_root: Path, rel: str) -> Path | None:
@@ -160,6 +181,16 @@ def _safe_lenses_static_file(lenses_repo_root: Path, url_path: str) -> Path | No
     return candidate
 
 
+def _child_slugs_from_scan(state: dict) -> set[str]:
+    slugs: set[str] = {UNASSIGNED_PROJECT_KEY}
+    for c in state.get("children") or []:
+        if isinstance(c, dict):
+            n = str(c.get("name", "")).strip()
+            if n:
+                slugs.add(n)
+    return slugs
+
+
 def _host_needs_bind_all_ack(host: str) -> bool:
     h = (host or "").strip()
     if h in ("0.0.0.0", "::"):
@@ -196,13 +227,21 @@ def _firebase_public_dir(
 def _safe_local_site_file(
     workspace_root: Path, registry: dict, site_name: str, rel_path: str
 ) -> Path | None:
+    child = resolve_workspace_child_dir(workspace_root, site_name, registry)
+    if child is None:
+        return None
+    rel = (rel_path or "").strip().replace("\\", "/").lstrip("/")
+    if ".." in rel.split("/"):
+        return None
+    if tutorial_url_tail_matches(rel):
+        return resolve_tutorial_site_file(child, rel)
+    if repo_tutorials_url_tail_matches(rel):
+        return resolve_repo_tutorials_site_file(child, rel)
     base = _firebase_public_dir(workspace_root, registry, site_name)
     if base is None:
         return None
-    rel = (rel_path or "").strip().replace("\\", "/").lstrip("/")
-    if not rel or ".." in rel.split("/"):
-        rel = "index.html"
-    candidate = (base / rel).resolve()
+    rel_fb = rel if rel else "index.html"
+    candidate = (base / rel_fb).resolve()
     try:
         candidate.relative_to(base)
     except ValueError:
@@ -326,8 +365,40 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/sticker-board":
-            board = load_board(self.workspace_root, self.expected_github_login)
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            bid_qs = qs.get("board_id", [])
+            board_id = str(bid_qs[0]).strip() if bid_qs else ""
+            if not is_valid_board_id(board_id):
+                self._send_json(
+                    400,
+                    {"ok": False, "error": "missing_or_invalid_board_id"},
+                )
+                return
+            board = load_board(
+                self.workspace_root, self.expected_github_login, board_id
+            )
+            if board.get("board_not_found"):
+                self._send_json(
+                    404,
+                    {"ok": False, "error": "board_not_found"},
+                )
+                return
+            board.pop("board_not_found", None)
             raw = json.dumps(board, indent=2, sort_keys=True).encode("utf-8")
+            self._send(200, raw, "application/json; charset=utf-8")
+            return
+
+        if path == "/api/sticker-board-registry":
+            state = self._scan()
+            slugs = _child_slugs_from_scan(state)
+            snap = registry_snapshot(
+                self.workspace_root, self.expected_github_login, slugs
+            )
+            snap["shared_login_configured"] = bool(self.expected_github_login)
+            snap["workspace_projects"] = sorted(
+                p for p in slugs if p != UNASSIGNED_PROJECT_KEY
+            )
+            raw = json.dumps(snap, indent=2, sort_keys=True).encode("utf-8")
             self._send(200, raw, "application/json; charset=utf-8")
             return
 
@@ -467,6 +538,16 @@ class LensesHandler(BaseHTTPRequestHandler):
             ).encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
             return
+        if path == "/tutorials":
+            html = page_tutorials(
+                state,
+                self.registry,
+                handbook_url,
+                forge_url,
+                LENSES_REPO_ROOT,
+            ).encode("utf-8")
+            self._send(200, html, "text/html; charset=utf-8")
+            return
 
         if path.startswith("/projects/"):
             seg = parsed.path[len("/projects/") :].split("/", 1)[0]
@@ -570,13 +651,76 @@ class LensesHandler(BaseHTTPRequestHandler):
             ).encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
             return
-        if path == "/board":
-            html = page_sticker_board(
+        if path.startswith("/board-preview/") and path.endswith(".png"):
+            rest_png = path[len("/board-preview/") :]
+            stem = rest_png[: -4] if len(rest_png) > 4 else ""
+            board_id = urllib.parse.unquote(stem.strip()) if stem else ""
+            if not board_id or "/" in board_id or not is_valid_board_id(board_id):
+                self._send(404, b"Not found", "text/plain; charset=utf-8")
+                return
+            reg = load_registry_raw(self.workspace_root)
+            if find_board_entry(reg, board_id) is None:
+                self._send(404, b"Not found", "text/plain; charset=utf-8")
+                return
+            fp = board_preview_path(self.workspace_root, board_id)
+            if not fp.is_file():
+                self._send(404, b"Not found", "text/plain; charset=utf-8")
+                return
+            data = fp.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "private, max-age=60")
+            self.send_header("ETag", f'"{int(fp.stat().st_mtime)}"')
+            self.end_headers()
+            self.wfile.write(data)
+            return
+        if path.startswith("/board/"):
+            rest = path[len("/board/") :].strip()
+            board_id = urllib.parse.unquote(rest) if rest else ""
+            if not board_id or "/" in board_id or not is_valid_board_id(board_id):
+                self._send(404, b"Not found", "text/plain; charset=utf-8")
+                return
+            reg = load_registry_raw(self.workspace_root)
+            found = find_board_entry(reg, board_id)
+            board_label = (
+                str(found[1].get("label", "Board")).strip() or "Board"
+                if found
+                else "Board"
+            )
+            qs_board = urllib.parse.parse_qs(parsed.query or "")
+            thumb_qs = qs_board.get("thumb", [])
+            thumb_capture = bool(thumb_qs) and str(thumb_qs[0]).strip().lower() in (
+                "1",
+                "true",
+                "yes",
+            )
+            html = page_sticker_board_editor(
                 state,
                 handbook_url,
                 forge_url,
                 LENSES_REPO_ROOT,
                 bool(self.expected_github_login),
+                board_id,
+                board_label,
+                thumb_capture=thumb_capture,
+            ).encode("utf-8")
+            self._send(200, html, "text/html; charset=utf-8")
+            return
+
+        if path == "/board":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            pre_proj = qs.get("project", [])
+            project_filter = (
+                str(pre_proj[0]).strip() if pre_proj else ""
+            )
+            html = page_sticker_board_hub(
+                state,
+                handbook_url,
+                forge_url,
+                LENSES_REPO_ROOT,
+                bool(self.expected_github_login),
+                project_filter,
             ).encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
             return
@@ -597,7 +741,10 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._post_api_actions_run()
             return
         if post_path == "/api/sticker-board":
-            self._post_api_sticker_board()
+            self._post_api_sticker_board(parsed)
+            return
+        if post_path == "/api/sticker-board-registry":
+            self._post_api_sticker_board_registry()
             return
         if post_path == "/api/toolset/run":
             self._post_api_toolset_run()
@@ -769,7 +916,7 @@ class LensesHandler(BaseHTTPRequestHandler):
         )
         self._send_json(200, {"ok": result.get("ok"), **result})
 
-    def _post_api_sticker_board(self) -> None:
+    def _post_api_sticker_board(self, parsed: urllib.parse.ParseResult) -> None:
         client_ip = self.client_address[0]
         if not client_may_write_sticker_board(client_ip):
             self._send_json(
@@ -783,6 +930,15 @@ class LensesHandler(BaseHTTPRequestHandler):
                 },
             )
             return
+        qs = urllib.parse.parse_qs(parsed.query or "")
+        bid_qs = qs.get("board_id", [])
+        board_id = str(bid_qs[0]).strip() if bid_qs else ""
+        if not is_valid_board_id(board_id):
+            self._send_json(
+                400,
+                {"ok": False, "error": "missing_or_invalid_board_id"},
+            )
+            return
         body = self._read_json_body(max_len=STICKER_BOARD_MAX_BODY_BYTES)
         if not body:
             self._send_json(
@@ -790,6 +946,7 @@ class LensesHandler(BaseHTTPRequestHandler):
                 {"ok": False, "error": "invalid_or_oversized_json"},
             )
             return
+        body.pop("board_id", None)
         ok, err = validate_board(body, self.expected_github_login)
         if not ok:
             self._send_json(400, {"ok": False, "error": err})
@@ -800,12 +957,19 @@ class LensesHandler(BaseHTTPRequestHandler):
                 self.workspace_root,
                 normalized,
                 self.expected_github_login,
+                board_id,
             )
-        except ValueError:
-            self._send_json(
-                400,
-                {"ok": False, "error": "shared_board_login_required"},
-            )
+        except ValueError as exc:
+            err_s = str(exc)
+            if err_s == "board_not_found":
+                self._send_json(400, {"ok": False, "error": "board_not_found"})
+            elif err_s == "invalid_board_id":
+                self._send_json(400, {"ok": False, "error": "invalid_board_id"})
+            else:
+                self._send_json(
+                    400,
+                    {"ok": False, "error": "shared_board_login_required"},
+                )
             return
         except OSError as exc:
             self._send_json(
@@ -814,6 +978,50 @@ class LensesHandler(BaseHTTPRequestHandler):
             )
             return
         self._send_json(200, {"ok": True})
+        schedule_board_preview_capture(
+            public_base_url=_board_preview_base_url(self),
+            workspace_root=self.workspace_root,
+            board_id=board_id,
+        )
+
+    def _post_api_sticker_board_registry(self) -> None:
+        client_ip = self.client_address[0]
+        if not client_may_write_sticker_board(client_ip):
+            self._send_json(
+                403,
+                {
+                    "ok": False,
+                    "error": (
+                        "Sticker board registry changes allowed from loopback only, "
+                        "or set LENSES_ALLOW_GIT_ACTIONS=1"
+                    ),
+                },
+            )
+            return
+        body = self._read_json_body(max_len=64_000)
+        if not body:
+            self._send_json(
+                400,
+                {"ok": False, "error": "invalid_json"},
+            )
+            return
+        action = str(body.get("action", "")).strip().lower()
+        payload = body.get("payload")
+        if not isinstance(payload, dict):
+            payload = {k: v for k, v in body.items() if k != "action"}
+        state = self._scan()
+        slugs = _child_slugs_from_scan(state)
+        ok, err, extra = registry_apply(
+            self.workspace_root,
+            self.expected_github_login,
+            slugs,
+            action,
+            payload,
+        )
+        if not ok:
+            self._send_json(400, {"ok": False, "error": err})
+            return
+        self._send_json(200, {"ok": True, **(extra or {})})
 
     def _post_api_toolset_run(self) -> None:
         client_ip = self.client_address[0]

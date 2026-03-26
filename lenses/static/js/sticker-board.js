@@ -3,9 +3,18 @@
   var root = document.getElementById("lenses-sticker-board");
   if (!root) return;
 
-  var api = root.getAttribute("data-api") || "/api/sticker-board";
+  var api = root.getAttribute("data-api") || "";
+  var boardId = (root.getAttribute("data-board-id") || "").trim();
+  var boardLabel = (root.getAttribute("data-board-label") || "").trim() || "Board";
+  var backHref = root.getAttribute("data-back-href") || "/board";
   var sharedAvailable =
     root.getAttribute("data-shared-available") === "true";
+  var thumbMode = root.getAttribute("data-thumb") === "1";
+
+  if (!api || !boardId) {
+    root.textContent = "Missing board configuration (board id or API URL).";
+    return;
+  }
   var state = null;
   var saveTimer = null;
   var statusEl = null;
@@ -43,6 +52,8 @@
     setStatus("Saving…");
     var payload = JSON.parse(JSON.stringify(state));
     delete payload.shared_board_login_required;
+    delete payload.board_id;
+    delete payload.board_not_found;
     fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -451,9 +462,34 @@
     var tb = document.createElement("div");
     tb.className = "lenses-sticker-toolbar";
 
+    var meta = document.createElement("div");
+    meta.className = "lenses-sticker-board-meta w-100";
+    var back = document.createElement("a");
+    back.className = "btn btn-sm btn-link px-0 me-2";
+    back.href = backHref;
+    back.textContent = "← Stickerboardefo";
+    meta.appendChild(back);
+    var title = document.createElement("span");
+    title.className = "fw-semibold me-2";
+    title.textContent = boardLabel;
+    meta.appendChild(title);
+    var storBadge = document.createElement("span");
+    storBadge.className =
+      state.board_storage === "shared"
+        ? "lenses-sticker-hub-badge-shared me-2"
+        : "lenses-sticker-hub-badge-local me-2";
+    storBadge.textContent =
+      state.board_storage === "shared" ? "Shared board" : "Local only";
+    meta.appendChild(storBadge);
+    var idEl = document.createElement("code");
+    idEl.className = "small forge-support";
+    idEl.textContent = boardId;
+    meta.appendChild(idEl);
+    tb.appendChild(meta);
+
     var bsLab = document.createElement("span");
     bsLab.className = "forge-support small me-1";
-    bsLab.textContent = "Board:";
+    bsLab.textContent = "Storage:";
     tb.appendChild(bsLab);
 
     var locBtn = document.createElement("button");
@@ -572,6 +608,8 @@
   function hydrateState(j) {
     sharedLoginWarn = Boolean(j.shared_board_login_required);
     delete j.shared_board_login_required;
+    delete j.board_not_found;
+    delete j.board_id;
     state = j;
     var v = state.version;
     if (v === 1 || v == null) {
@@ -601,11 +639,29 @@
   function load() {
     fetch(api)
       .then(function (r) {
+        if (r.status === 404) {
+          return r.json().then(function (j) {
+            throw new Error(j.error || "board_not_found");
+          });
+        }
         return r.json();
       })
       .then(function (j) {
+        if (j && j.ok === false && j.error) {
+          throw new Error(j.error);
+        }
         hydrateState(j);
         render();
+        if (thumbMode) {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              document.documentElement.setAttribute(
+                "data-lenses-board-ready",
+                "1"
+              );
+            });
+          });
+        }
       })
       .catch(function (e) {
         root.textContent = "Failed to load board: " + e;

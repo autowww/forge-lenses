@@ -2,6 +2,12 @@
 .lenses-local/
 
 lenses-docs/
+
+# forge-autodoc tutorial output + dashboard sync (see build-fa-tutorials.sh)
+# Remove any local lenses/fa-tutorials/ left from older builds (no longer used).
+lenses/tutorials/
+lenses/fa-tutorials/
+tutorial/
 __pycache__/
 *.py[cod]
 *.egg-info/

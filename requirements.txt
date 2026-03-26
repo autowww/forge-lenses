@@ -1,2 +1,7 @@
-# For generator/build-lenses-docs.py only (dashboard server is stdlib).
+# For generator/build-lenses-docs.py and forge-autodoc tutorial build (dashboard server is stdlib).
 markdown>=3.5
+PyYAML>=6.0
+
+# Optional: PNG previews for handbook reference pages (docs/index.md links).
+# Requires a Chromium-based browser on the machine. Transitive deps: requests, websocket-client.
+# html2image>=2.0.7

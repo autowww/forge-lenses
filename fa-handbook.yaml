@@ -1,0 +1,6 @@
+# forge-autodoc config — paths relative to this file (forge-lenses root).
+content_root: ./lenses/fa-tutorial-md
+output_dir: ./lenses/tutorials
+kitchensink: ./kitchensink
+handbook_name: forge-lenses tutorials
+# canonical_url_prefix: https://github.com/autowww/forge-lenses/blob/main/lenses/fa-tutorial-md

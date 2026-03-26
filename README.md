@@ -3,7 +3,8 @@
 Public repo: **`autowww/forge-lenses`** on GitHub — local workspace visualization for **Blueprints** / **ForgeSDLC** development (Python server on **:8080**, dynamic dashboard, ks-built docs under `/docs/`).
 
 - **Dynamic dashboard** — reload to refresh (no server-side cache in v1).
-- **Documentation** — run `generator/build-lenses-docs.py`, served as static files under `/docs/`.
+- **Reference docs** — `generator/build-lenses-docs.py` → `lenses-docs/`, served under `/docs/`.
+- **Tutorials** — Markdown in `lenses/fa-tutorial-md/`; run `./build-fa-tutorials.sh` (forge-autodoc) → `lenses/tutorials/`, synced to repo-root `tutorial/` for dashboard **Tutorial** links.
 - **Not deployed to Firebase.**
 
 The Python package inside this repo is still named **`lenses`** (`python3 -m lenses`).
@@ -12,12 +13,18 @@ The Python package inside this repo is still named **`lenses`** (`python3 -m len
 
 | Path | Purpose |
 |------|---------|
-| `kitchensink/` | Submodule (Forge design system) — docs build |
+| `kitchensink/` | Submodule (Forge design system) — docs + tutorial builds |
+| `forge-autodoc/` | Submodule (**fa**) — `python3 -m forge_autodoc` for tutorials |
 | `blueprints/` | Submodule (framework source) |
 | `lenses/` | Python package (`serve`, `scan`, …) |
-| `lenses/website/` | Markdown source for **reference** handbook pages (merged into build with `docs/`) |
-| `generator/build-lenses-docs.py` | Builds `lenses-docs/` |
-| `docs/` | Markdown source for docs |
+| `lenses/website/` | Markdown source for **reference** handbook pages (merged with `docs/` in `build-lenses-docs.py`) |
+| `lenses/fa-tutorial-md/` | Markdown source for **forge-autodoc** tutorials |
+| `lenses/tutorials/` | Generated tutorial HTML (gitignored); synced to `tutorial/` at repo root |
+| `tutorial/` | Synced tutorial output for `/local-site/<repo>/tutorial/…` (gitignored) |
+| `generator/build-lenses-docs.py` | Builds `lenses-docs/` for `/docs/` |
+| `build-fa-tutorials.sh` | Builds tutorials via **fa** + rsync to `tutorial/` |
+| `fa-handbook.yaml` | forge-autodoc config (paths under `lenses/`) |
+| `docs/` | Markdown for `/docs/` hub (`index.md`) + merges with reference build |
 | `scripts/setup.sh` | Init nested submodules + optional `lenses-startup.sh` |
 | `scripts/lenses-startup.sh` | Host-repo `.lenses-local/` + `.lenses-repo/<github-login>/` |
 | `scripts/run-lenses.sh` | Build docs (if `markdown`) + start server |
@@ -31,6 +38,7 @@ cd forge-lenses
 ./scripts/setup.sh
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python3 generator/build-lenses-docs.py
+./build-fa-tutorials.sh
 ./scripts/run-lenses.sh
 # or, to replace an already-running instance on :8080:
 # ./scripts/restart-lenses.sh
@@ -73,7 +81,7 @@ Copy `workspace-registry.example.json` to `workspace-registry.json` in **forge-l
 
 ## Publishing to GitHub
 
-If `git push` fails with **repository not found**, create the public repo first — see [`docs/publish-github.md`](docs/publish-github.md).
+If `git push` fails with **repository not found**, create the public repo first — see [`lenses/fa-tutorial-md/publish-github.md`](lenses/fa-tutorial-md/publish-github.md).
 
 ## Development
 
