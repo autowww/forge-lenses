@@ -6,17 +6,23 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 
 | Path | Role |
 |------|------|
-| `lenses/serve.py` | CLI entry (`python3 -m lenses.serve`): `ThreadingHTTPServer`, route dispatch, static `/docs` from `lenses-docs/`. |
-| `lenses/scan.py` | `resolve_workspace_root`, `scan_workspace`, `workspace_state_json`; subprocess calls to `git`. |
-| `lenses/render.py` | Builds HTML for dashboard pages (nav bar, overview, projects, toolset, websites, WBS list and viewer). |
+| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**. |
+| `lenses/scan.py` | `resolve_workspace_root`, `resolve_workspace_child_dir`, `scan_workspace`, `workspace_state_json`; subprocess calls to `git`; toolset **`script_cards`** / comment blurbs for root **`*.sh`**. |
+| `lenses/toolset_actions.py` | Allowlisted workspace-root shell script execution for **`POST /api/toolset/run`** (bash, fixed path, no user shell). |
+| `lenses/render.py` | HTML for dashboard pages; **`showcase_page`** shell when kitchensink is present, else fallback layout. |
+| `lenses/ks_layout.py` | Kitchensink path checks and `lenses_showcase_page` wrapper. |
+| `lenses/git_urls.py` | Map `origin` to HTTPS repo / commit URLs (GitHub, GitLab-style hosts). |
+| `lenses/project_stats.py` | Git log / `ls-files` aggregations and SVG chart helpers for project dashboards. |
+| `lenses/git_actions.py` | Allowlisted `git` subprocess actions for the POST API; shared loopback policy helper for sticker board writes. |
+| `lenses/sticker_board.py` | Load/save/validate sticker boards: **local** file under **`.lenses-local/`**; **shared** split across **`.lenses-repo/<login>/`** and a local overlay + marker. |
 | `lenses/registry.py` | Loads `workspace-registry.json` from the **forge-lenses** repo root and merges with defaults. |
 | `lenses/website/*.md` | Source for **reference** handbook pages (this section); consumed by `generator/build-lenses-docs.py`. |
 
 ## Data flow
 
 1. **Startup** — Resolve `workspace_root` (CLI, `LENSES_WORKSPACE_ROOT`, or heuristic). Load registry from **forge-lenses** checkout.
-2. **Each GET** (except static `/docs`) — Run `scan_workspace(workspace_root, lenses_repo_root, registry)` and pass the resulting dict into a render function.
-3. **JSON API** — `GET /api/workspace-state` returns the same structure as JSON (pretty-printed, sorted keys).
+2. **Each GET** (except static `/docs`, `/__ks/…`, and project stats JSON) — Run `scan_workspace(..., git_extended=True)` for HTML so project cards include revision hints; the workspace JSON API uses `git_extended` only when `?git_extended=1` is passed.
+3. **JSON API** — `GET /api/workspace-state` returns the scan dict; `GET /api/project/<name>/stats` returns repo statistics; `POST /api/project/<name>/git` runs allowlisted git commands (loopback-gated by default); `POST /api/toolset/run` runs an allowlisted workspace-root **`*.sh`** (same loopback gate as git by default); `GET`/`POST /api/sticker-board` reads/writes merged board state (local or shared split files; POST loopback-gated like git by default).
 
 There is no server-side cache in v1: reloading a page re-runs the scan.
 

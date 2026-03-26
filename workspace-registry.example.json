@@ -7,5 +7,37 @@
   "website_labels": {
     "blueprints-website": "Handbook generator (bpw)",
     "forgesdlc": "Forge product site"
+  },
+  "project_urls": {
+    "forgesdlc": "https://forgesdlc.com/",
+    "blueprints-website": "https://blueprints.forgesdlc.com/"
+  },
+  "project_summaries": {
+    "forgesdlc": "Forge SDLC product site generator and knowledge base."
+  },
+  "overview_metrics_manual": {
+    "human_hours_week": 24,
+    "estimated_hours_without_genai": 40,
+    "estimated_hours_genai_potential": 18,
+    "methodology_note": "Rough estimates for weekly stand-up; replace with your methodology."
+  },
+  "github_login": "",
+  "actions": {
+    "forgesdlc": {
+      "build": {
+        "argv": ["python3", "generator/build-site.py"],
+        "cwd_relative": "forgesdlc"
+      }
+    },
+    "blueprints-website": {
+      "build": {
+        "argv": ["python3", "generator/build-handbook.py", "--all"],
+        "cwd_relative": "blueprints-website"
+      },
+      "inject_nav": {
+        "argv": ["python3", "generator/inject-portal-nav.py"],
+        "cwd_relative": "blueprints-website"
+      }
+    }
   }
 }

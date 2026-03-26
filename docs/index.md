@@ -1,6 +1,6 @@
 # forge-lenses
 
-**forge-lenses** (Python package **lenses**) is a local tool that shows what lives in your development workspace: git repos, orchestration scripts at the workspace root, Firebase-backed site repos, and Blueprint-style WBS files under `docs/requirements/`.
+**forge-lenses** (Python package **lenses**) is a local tool that shows what lives in your development workspace: git repos, orchestration scripts at the workspace root, Firebase-backed site repos, Blueprint-style WBS files under `docs/requirements/`, and an optional **sticker board** ([`/board`](http://127.0.0.1:8080/board)) for Kanban or freeform notes — **local-only** or **shared** (under **`.lenses-repo/<login>/`** plus a local overlay for private stickers).
 
 Public repository: **github.com/autowww/forge-lenses**.
 
@@ -34,7 +34,7 @@ This creates:
 
 ## Workspace root
 
-Resolution order:
+Resolution order (server scan):
 
 1. `--workspace-root` CLI flag  
 2. `LENSES_WORKSPACE_ROOT` environment variable  
@@ -42,9 +42,15 @@ Resolution order:
 
 For a multi-repo folder, set `LENSES_WORKSPACE_ROOT` to that parent.
 
+**`lenses-startup.sh`** also honors **`LENSES_WORKSPACE_ROOT`**: when set, it creates **`.lenses-local/`** and **`.lenses-repo/`** on that directory instead of only at the git repo root (login still comes from `gh` or **`origin`** on the resolved git checkout).
+
 ## External sites
 
-The dashboard links to the published **Handbook** and **Forge** sites; it does not embed them.
+The dashboard links to the published **Handbook** and **Forge** sites in new tabs; it does not embed those production URLs.
+
+## Local site previews
+
+Built static output for Firebase site repos (typically **`website/`**) is served on the same server under **`/local-site/<repo>/…`** (default host **127.0.0.1**). Use **Websites** → **Preview in lenses** for an iframe shell that keeps the dashboard navigation visible.
 
 ## Reference (Python package)
 

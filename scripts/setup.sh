@@ -32,4 +32,4 @@ if [[ -x "$ROOT/scripts/lenses-startup.sh" ]]; then
 fi
 echo "  Build docs:  python3 generator/build-lenses-docs.py"
 echo "  Run server:  ./scripts/run-lenses.sh"
-echo "  Workspace:   export LENSES_WORKSPACE_ROOT=/path/to/workspace   (optional)"
+echo "  Workspace:   export LENSES_WORKSPACE_ROOT=/path/to/parent   (optional; server scan + lenses-startup.sh data dirs)"

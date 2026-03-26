@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Create .lenses-local/ (gitignored) and .lenses-repo/<github-login>/ (tracked) at the
 # parent/host git repo root — not inside forge-lenses/ when forge-lenses is a submodule.
-# Standalone forge-lenses clone: data dirs stay at this repo root.
+# Standalone forge-lenses clone: data dirs stay at this repo root by default.
+#
+# Multi-repo folder (sibling checkouts): set LENSES_WORKSPACE_ROOT to that parent directory
+# so .lenses-* live next to forge-lenses/ and other repos. GitHub login still uses the
+# resolved git repo (REPO_ROOT): gh api user, else origin on that repo.
 #
 # Non-overwrite policy: never truncate user content. This script only:
 #   - mkdir -p for .lenses-local and .lenses-repo/<login>/
@@ -84,6 +88,17 @@ if [[ "$REPO_ROOT" != "$INITIAL_ROOT" ]]; then
   echo "[lenses-startup] host repo: $REPO_ROOT  (submodule checkout was: $INITIAL_ROOT)" >&2
 fi
 
+# Where to create .lenses-* (may differ from REPO_ROOT when using a multi-repo workspace parent).
+DATA_ROOT="$REPO_ROOT"
+if [[ -n "${LENSES_WORKSPACE_ROOT:-}" ]]; then
+  if [[ ! -d "$LENSES_WORKSPACE_ROOT" ]]; then
+    echo "[lenses-startup] LENSES_WORKSPACE_ROOT is not a directory: $LENSES_WORKSPACE_ROOT" >&2
+    exit 1
+  fi
+  DATA_ROOT="$(cd "$LENSES_WORKSPACE_ROOT" && pwd)"
+  echo "[lenses-startup] data dirs -> $DATA_ROOT  (git context: $REPO_ROOT)" >&2
+fi
+
 RAW_LOGIN=""
 if RAW_LOGIN="$(login_via_gh)"; then
   RAW_LOGIN="${RAW_LOGIN//$'\r'/}"
@@ -107,26 +122,26 @@ if [[ -z "$GITHUB_LOGIN" ]]; then
   exit 1
 fi
 
-mkdir -p "$REPO_ROOT/.lenses-local"
-mkdir -p "$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN"
-if [[ ! -f "$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN/.gitkeep" ]]; then
-  : >"$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN/.gitkeep"
+mkdir -p "$DATA_ROOT/.lenses-local"
+mkdir -p "$DATA_ROOT/.lenses-repo/$GITHUB_LOGIN"
+if [[ ! -f "$DATA_ROOT/.lenses-repo/$GITHUB_LOGIN/.gitkeep" ]]; then
+  : >"$DATA_ROOT/.lenses-repo/$GITHUB_LOGIN/.gitkeep"
 fi
 
-README="$REPO_ROOT/.lenses-repo/$GITHUB_LOGIN/README.txt"
+README="$DATA_ROOT/.lenses-repo/$GITHUB_LOGIN/README.txt"
 if [[ ! -f "$README" ]]; then
   cat >"$README" <<'EOF'
 # This folder (.lenses-repo/<login>/)
 
 Put files here that should be committed with the repository (team-visible).
 
-The sibling .lenses-local/ at the repository root is gitignored for machine-only state.
+The sibling .lenses-local/ next to .lenses-repo/ is gitignored for machine-only state.
 
 See forge-lenses README (Host repo data directories) for details.
 EOF
 fi
 
-GIGN="$REPO_ROOT/.gitignore"
+GIGN="$DATA_ROOT/.gitignore"
 LINE=".lenses-local/"
 if [[ -f "$GIGN" ]]; then
   if ! grep -qxF "$LINE" "$GIGN" 2>/dev/null; then
@@ -136,7 +151,8 @@ else
   printf '# lenses — machine-local state (forge-lenses)\n%s\n' "$LINE" >"$GIGN"
 fi
 
-echo "[lenses-startup] repo:    $REPO_ROOT"
+echo "[lenses-startup] git:     $REPO_ROOT"
+echo "[lenses-startup] data:    $DATA_ROOT"
 echo "[lenses-startup] login:   $GITHUB_LOGIN"
 echo "[lenses-startup] created: .lenses-local/"
 echo "[lenses-startup] created: .lenses-repo/$GITHUB_LOGIN/ (.gitkeep, README.txt if absent)"

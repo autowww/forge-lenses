@@ -30,8 +30,17 @@ cd forge-lenses && ./scripts/setup.sh
 
 After **`lenses-startup.sh`** (from the host tree or from inside `forge-lenses/`; submodule checkouts are redirected to the superproject):
 
-- **`.lenses-local/`** — gitignored; local-only.
-- **`.lenses-repo/<github-login>/`** — committed (starts with `.gitkeep`; optional `README.txt` added only if missing). This is the commit-friendly “shared with the repo” area (some people think of it as a lenses-shared slot; the directory name is **`.lenses-repo/`**). GitHub login from **`gh api user`**, else **`git remote get-url origin`** (`github.com/owner/...`).
+- **`.lenses-local/`** — gitignored; local-only (sessions cache, **`sticker-board.json`** marker or full local board, **`sticker-board-shared-local.json`** overlay when using a shared board, etc.).
+- **`.lenses-repo/<github-login>/`** — committed (starts with `.gitkeep`; optional `README.txt` added only if missing). This is the commit-friendly “shared with the repo” area (some people think of it as a lenses-shared slot; the directory name is **`.lenses-repo/`**). GitHub login from **`gh api user`**, else **`git remote get-url origin`** on the **resolved git repo** (`github.com/owner/...`).
+
+### Multi-repo workspace parent (sibling repos)
+
+If **forge-lenses** is a checkout next to other repos (not a submodule of a meta-repo), set **`LENSES_WORKSPACE_ROOT`** to that parent directory so **`.lenses-local/`** and **`.lenses-repo/`** are created there (same variable the server uses for scanning). Example:
+
+```bash
+export LENSES_WORKSPACE_ROOT=/path/to/workspace
+cd /path/to/workspace/forge-lenses && ./scripts/setup.sh
+```
 
 ## Dependencies
 
