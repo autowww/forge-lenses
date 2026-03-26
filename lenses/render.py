@@ -6,6 +6,7 @@ import html
 import json
 import re
 import urllib.parse
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,16 +19,101 @@ from lenses.ks_layout import lenses_showcase_page
 from lenses.project_stats import (
     approx_tracked_lines,
     collect_project_stats,
+    commits_by_day_dict,
     extension_heatmap_html,
+    file_extension_counts,
     git_numstat_since,
     git_recent_commits,
     svg_commit_bar_chart,
+    svg_commit_daily_bar_chart,
     svg_loc_added_horizontal_bars,
+    svg_loc_share_donut,
+    svg_repo_total_loc_bars,
+    workspace_commits_daily_series,
 )
 
 
 def esc(s: str) -> str:
     return html.escape(s, quote=True)
+
+
+def _lenses_vertical_hero_styles() -> str:
+    """Shared CSS for websites stacked heroes and project dashboard panels."""
+    return """<style>
+.lenses-sites-stack { display: flex; flex-direction: column; gap: 0; }
+.lenses-site-hero-section {
+  border-left: 4px solid var(--bs-cyan, #06b6d4);
+  background: linear-gradient(105deg, rgba(6, 182, 212, 0.07) 0%, transparent 45%);
+  border-radius: 10px;
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 1.5rem;
+}
+.lenses-site-hero-section .lenses-hero-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--forge-text-4, #64748b);
+  font-weight: 600;
+}
+.lenses-site-hero-section h2 { font-size: 1.35rem; margin: 0.35rem 0 0.25rem; }
+.lenses-site-stat-strip { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.85rem 0 0.25rem; align-items: center; }
+.lenses-site-stat-strip .badge { font-weight: 500; }
+.lenses-key-pages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.65rem 1.15rem;
+  margin: 0.5rem 0 0;
+}
+.lenses-key-pages-grid .lenses-key-page-link {
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--bs-body-color, var(--forge-text, #e2e8f0));
+}
+.lenses-key-pages-grid .lenses-key-page-link:hover {
+  color: var(--bs-cyan, #06b6d4);
+  text-decoration: none;
+}
+.lenses-site-hero-section.lenses-project-portal-section {
+  min-height: 12rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.65rem;
+}
+.lenses-portal-preview-wrap {
+  display: inline-block;
+  margin-top: 0.15rem;
+}
+a.lenses-portal-preview-trigger.fs-topic-preview-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  margin-top: 0;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 0.375rem;
+  background: transparent;
+  text-decoration: none;
+  max-width: min(100%, 22rem);
+}
+a.lenses-portal-preview-trigger.fs-topic-preview-card:hover {
+  border-color: var(--bs-cyan, #06b6d4);
+}
+a.lenses-portal-preview-trigger .fs-topic-preview-card__eyebrow {
+  display: none;
+}
+a.lenses-portal-preview-trigger .fs-topic-preview-card__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+a.lenses-portal-preview-trigger .fs-topic-preview-card__desc {
+  display: none;
+}
+a.lenses-portal-preview-trigger .fs-topic-preview-card__hint {
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+</style>"""
 
 
 def _child_by_name(state: dict[str, Any], name: str) -> dict[str, Any] | None:
@@ -108,92 +194,197 @@ def _portal_last_update_label(gi: dict[str, Any]) -> str:
     return "—"
 
 
-def _project_portal_card_inner_html(
-    lenses_repo_root: Path,
+def _portal_first_sentence(text: str, max_len: int = 140) -> str:
+    t = " ".join((text or "").split())
+    if not t:
+        return ""
+    for sep in ".!?":
+        i = t.find(sep)
+        if 12 < i < max_len + 40:
+            return t[: i + 1]
+    return _truncate_plain(t, max_len)
+
+
+def _prefetch_portal_repo_metrics(
+    rows: list[dict[str, Any]],
+) -> dict[str, tuple[int | None, tuple[int, int]]]:
+    """Per-repo approx LoC and 7d numstat for the projects portal (parallel)."""
+    out: dict[str, tuple[int | None, tuple[int, int]]] = {}
+
+    def job(c: dict[str, Any]) -> tuple[str, int | None, tuple[int, int]]:
+        name = str(c.get("name", ""))
+        path = Path(str(c.get("path", "")))
+        if not c.get("is_git"):
+            return name, None, (0, 0)
+        loc = approx_tracked_lines(path)
+        add_d, del_d = git_numstat_since(path, 7)
+        return name, loc, (add_d, del_d)
+
+    if not rows:
+        return out
+    max_workers = min(12, max(1, len(rows)))
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        for name, loc, nd in pool.map(job, rows):
+            out[name] = (loc, nd)
+    return out
+
+
+def _project_portal_panel_html(
     *,
     name: str,
     path: Path,
     c: dict[str, Any],
     website_names: set[str],
+    website_labels: dict[str, Any],
     project_urls: dict[str, Any],
+    project_summaries: dict[str, Any],
+    wbs_count: int,
     card_href: str,
+    loc: int | None,
+    numstat: tuple[int, int],
+    ks_preview: bool,
 ) -> str:
     gi = c.get("git") or {}
     is_git = bool(c.get("is_git"))
-    loc = approx_tracked_lines(path) if is_git else None
-    preview_raw = _readme_excerpt(path)
-    last_lbl = _portal_last_update_label(gi) if is_git else "—"
-    loc_lbl = f"~{loc:,} lines (approx.)" if loc is not None else "LoC —"
+    origin = str(gi.get("origin_url", ""))
+    head_full = str(gi.get("head_full", ""))
+    commit_url = commit_url_for_remote(origin, head_full) if head_full else ""
+    sid = re.sub(r"[^a-z0-9_-]+", "-", name.lower()).strip("-") or "proj"
 
-    status_bits: list[str] = []
-    if is_git:
-        status_bits.append("Dirty" if gi.get("dirty") else "Clean")
-        br = str(gi.get("branch", "")).strip()
-        if br:
-            status_bits.append(br)
-        hs = str(gi.get("head_short", "")).strip()
-        if hs:
-            status_bits.append(hs)
-    else:
-        status_bits.append("Not a git repo")
     if name in website_names:
-        status_bits.append("Firebase")
-    if project_urls.get(name):
-        status_bits.append("Web")
-    status_line = " · ".join(status_bits)
+        wl = str(website_labels.get(name, "") or "").strip()
+        kicker = wl if wl else "Firebase hosting site"
+    else:
+        kicker = "Project"
 
-    desc_parts = [status_line, loc_lbl, f"Updated {last_lbl}"]
-    if preview_raw:
-        excerpt = preview_raw if len(preview_raw) <= 160 else preview_raw[:157] + "…"
-        desc_parts.append(excerpt)
-    description = " · ".join(desc_parts)
+    reg_sum = (
+        str(project_summaries.get(name, "")).strip()
+        if isinstance(project_summaries, dict)
+        else ""
+    )
+    if reg_sum:
+        blurb = reg_sum
+    else:
+        blurb = _readme_excerpt(path, max_len=360) if path.is_dir() else ""
+    blurb_html = (
+        f'<p class="forge-support small mb-0 mt-2">{esc(blurb)}</p>' if blurb else ""
+    )
 
-    get_showcase = __import__("lenses.ks_layout", fromlist=["get_showcase_page"]).get_showcase_page
-    if get_showcase(lenses_repo_root) is not None:
+    role_bits: list[str] = []
+    if name in website_names:
+        role_bits.append(
+            '<span class="badge rounded-pill text-bg-info">Firebase site</span>'
+        )
+    pub = str(project_urls.get(name, "")).strip()
+    if pub:
+        role_bits.append(
+            f'<a class="badge rounded-pill text-bg-warning text-decoration-none" '
+            f'href="{esc(pub)}" target="_blank" rel="noopener">Published site</a>'
+        )
+    if wbs_count > 0:
+        role_bits.append(
+            f'<a class="badge rounded-pill text-bg-dark border border-secondary text-decoration-none" '
+            f'href="/wbs">WBS · {wbs_count} file{"s" if wbs_count != 1 else ""}</a>'
+        )
+    role_row = (
+        f'<div class="d-flex flex-wrap gap-1 mb-1">{"".join(role_bits)}</div>'
+        if role_bits
+        else ""
+    )
+
+    stat_bits: list[str] = []
+    if is_git and loc is not None:
+        stat_bits.append(
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+            f"~{loc:,} lines (approx.)</span>"
+        )
+    if is_git:
+        stat_bits.append(
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+            f"updated {_portal_last_update_label(gi)}</span>"
+        )
+    add_d, del_d = numstat
+    if is_git and (add_d or del_d):
+        stat_bits.append(
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+            f"+{add_d:,} / −{del_d:,} lines (7d)</span>"
+        )
+    stat_strip = (
+        f'<div class="lenses-site-stat-strip">{"".join(stat_bits)}</div>'
+        if stat_bits
+        else ""
+    )
+
+    dirty_note = ""
+    if is_git and gi.get("dirty"):
+        dirty_note = (
+            '<p class="forge-support small mb-0 mt-2 text-warning-emphasis">'
+            "Uncommitted changes in the working tree.</p>"
+        )
+
+    subj = str(gi.get("commit_subject", "")).strip()
+    if len(subj) > 160:
+        subj = subj[:157].rstrip() + "…"
+    commit_link = ""
+    if commit_url:
+        commit_link = (
+            f' <a href="{esc(commit_url)}" target="_blank" rel="noopener">Open commit</a>'
+        )
+    last_line = ""
+    if is_git and subj:
+        last_line = (
+            f'<p class="forge-support small mb-0 mt-2"><strong>Last change</strong> '
+            f"{esc(subj)}{commit_link}</p>"
+        )
+    elif is_git:
+        last_line = (
+            f'<p class="forge-support small mb-0 mt-2">{commit_link.strip()}</p>'
+            if commit_link
+            else ""
+        )
+
+    preview_desc = _portal_first_sentence(blurb) or f"Open {name} dashboard"
+    preview_block = ""
+    if ks_preview:
         try:
             from components import render_topic_preview_trigger  # noqa: WPS433
 
-            return render_topic_preview_trigger(
+            raw_prev = render_topic_preview_trigger(
                 href=card_href,
                 title=name,
-                description=description,
+                description=preview_desc,
                 eyebrow="Project",
             )
+            preview_block = raw_prev.replace(
+                'class="fs-topic-preview-card"',
+                'class="fs-topic-preview-card lenses-portal-preview-trigger"',
+                1,
+            )
+            preview_block = (
+                f'<div class="lenses-portal-preview-wrap">{preview_block}</div>'
+            )
         except ImportError:
-            pass
+            preview_block = ""
 
-    badges: list[str] = []
-    if is_git:
-        dirty = gi.get("dirty")
-        pill = (
-            '<span class="badge rounded-pill text-bg-warning">Dirty</span>'
-            if dirty
-            else '<span class="badge rounded-pill text-bg-success">Clean</span>'
-        )
-        badges.append(pill)
-        br = str(gi.get("branch", ""))
-        if br:
-            badges.append(f'<span class="badge rounded-pill text-bg-secondary">{esc(br)}</span>')
-        hs = str(gi.get("head_short", ""))
-        if hs:
-            badges.append(f'<code class="small">{esc(hs)}</code>')
-    else:
-        badges.append('<span class="badge rounded-pill text-bg-secondary">Not a git repo</span>')
-    if name in website_names:
-        badges.append('<span class="badge rounded-pill text-bg-info">Firebase site</span>')
-    if project_urls.get(name):
-        badges.append('<span class="badge rounded-pill text-bg-primary">Web</span>')
-    preview_html = esc(preview_raw) if preview_raw else (
-        '<span class="forge-support">No README preview</span>'
+    actions = (
+        f'<div class="d-flex flex-wrap gap-2 align-items-start mt-3">'
+        f'<a class="btn btn-sm btn-forge" href="{esc(card_href)}">Open dashboard</a>'
+        f"{preview_block}"
+        f"</div>"
     )
-    meta_line = f'<p class="forge-support small mb-1">{esc(loc_lbl)} · Updated {esc(last_lbl)}</p>'
+
     return (
-        f'<a class="forge-card breathe-link d-block h-100 text-decoration-none" href="{esc(card_href)}">'
-        f'<p class="card-label text-cyan mb-2 d-flex lenses-pill-row align-items-center">{"".join(badges)}</p>'
-        f'<h3 class="h5 mt-0 mb-2">{esc(name)}</h3>'
-        f"{meta_line}"
-        f'<p class="forge-support small mb-0">{preview_html}</p>'
-        f"</a>"
+        f'<section class="lenses-site-hero-section lenses-project-portal-section forge-card" '
+        f'id="lenses-portal-{esc(sid)}" aria-labelledby="lenses-portal-title-{esc(sid)}">'
+        f"{role_row}"
+        f'<p class="lenses-hero-kicker mb-0">{esc(kicker)}</p>'
+        f'<h2 class="text-cyan" id="lenses-portal-title-{esc(sid)}">{esc(name)}</h2>'
+        f"{blurb_html}"
+        f"{stat_strip}"
+        f"{dirty_note}"
+        f"{last_line}"
+        f"{actions}"
+        f"</section>"
     )
 
 
@@ -241,15 +432,202 @@ def _overview_child_sort_key(ch: dict[str, Any]) -> tuple[bool, int, str]:
 
 def _gather_overview_repo_row(
     c: dict[str, Any],
-) -> tuple[str, Path, dict[str, Any], list[dict[str, str]], tuple[int, int] | None, int | None]:
+) -> tuple[
+    str,
+    Path,
+    dict[str, Any],
+    list[dict[str, str]],
+    tuple[int, int] | None,
+    int | None,
+    dict[str, int],
+    tuple[list[tuple[str, int]], int],
+]:
     name = str(c.get("name", ""))
     path = Path(str(c.get("path", "")))
     if not c.get("is_git"):
-        return (name, path, c, [], None, None)
+        return (name, path, c, [], None, None, {}, ([], 0))
     commits = git_recent_commits(path, 5)
     add_d = git_numstat_since(path, 7)
     loc = approx_tracked_lines(path)
-    return (name, path, c, commits, add_d, loc)
+    day_dict = commits_by_day_dict(path, 7)
+    ext_rows, ext_total = file_extension_counts(path, limit=120)
+    return (name, path, c, commits, add_d, loc, day_dict, (ext_rows, ext_total))
+
+
+def _gitmodules_submodule_count(repo_path: Path) -> int:
+    p = repo_path / ".gitmodules"
+    if not p.is_file():
+        return 0
+    try:
+        text = p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return 0
+    return sum(1 for line in text.splitlines() if line.strip().startswith("[submodule"))
+
+
+def _looks_like_ascii_tree(text: str) -> bool:
+    if not text:
+        return False
+    if "├──" in text or "└──" in text:
+        return True
+    if "|--" in text or "`--" in text:
+        return True
+    return False
+
+
+def _overview_readme_raw(dir_path: Path) -> str:
+    for fn in ("README.md", "README.MD", "readme.md"):
+        p = dir_path / fn
+        if p.is_file():
+            return p.read_text(encoding="utf-8", errors="replace")
+    return ""
+
+
+def _overview_repo_description_block(repo_path: Path, reg_sum: str) -> str:
+    raw = reg_sum.strip() if reg_sum.strip() else _overview_readme_raw(repo_path)
+    stripped = raw.strip()
+    if not stripped:
+        return '<p class="forge-support small mb-2">No README summary yet.</p>'
+    lines = raw.splitlines()
+    n_nonempty = sum(1 for ln in lines if ln.strip())
+    n_chars = len(stripped)
+    tree = _looks_like_ascii_tree(raw)
+    needs_details = n_chars > 400 or n_nonempty > 4 or tree
+    if not needs_details:
+        return (
+            f'<p class="mb-2 lenses-overview-repo-lede">{esc(_truncate_plain(raw, 720))}</p>'
+        )
+    first_line = ""
+    for ln in lines:
+        t = ln.strip()
+        if t:
+            first_line = t
+            break
+    if not first_line:
+        lede = _truncate_plain(" ".join(raw.split()), 220)
+    else:
+        lede = _truncate_plain(first_line, 220)
+    summary_label = "Architecture & full notes" if tree else "Full description"
+    return (
+        f'<p class="mb-2 lenses-overview-repo-lede">{esc(lede)}</p>'
+        f'<details class="lenses-overview-repo-details mb-2">'
+        f'<summary class="forge-support small">{esc(summary_label)}</summary>'
+        f'<div class="lenses-overview-repo-desc-full forge-support small mt-2 mb-0">{esc(raw)}</div>'
+        "</details>"
+    )
+
+
+def _overview_repo_section_html(
+    *,
+    name: str,
+    repo_path: Path,
+    phref: str,
+    is_git: bool,
+    gi: dict[str, Any],
+    badges: list[str],
+    reg_sum: str,
+    add_del: tuple[int, int] | None,
+    loc: int | None,
+    day_dict: dict[str, int],
+    ext_rows: list[tuple[str, int]],
+    ext_total: int,
+    project_urls: dict[str, Any],
+    website_names: set[str],
+) -> str:
+    sm_count = _gitmodules_submodule_count(repo_path)
+    if sm_count > 0:
+        badges = badges + [
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary" '
+            f'title="Entries in .gitmodules at repo root">{esc(f"Submodules: {sm_count}")}</span>'
+        ]
+
+    meta_items: list[str] = []
+    if is_git:
+        hf = str(gi.get("head_full", "") or "").strip()
+        hs = str(gi.get("head_short", "") or "").strip()
+        ou = str(gi.get("origin_url", "") or "").strip()
+        c_url = commit_url_for_remote(ou, hf) if hf else ""
+        disp = hs or (hf[:12] if len(hf) >= 12 else hf) or "—"
+        if c_url and disp != "—":
+            head_html = (
+                f'<a href="{esc(c_url)}" target="_blank" rel="noopener"><code>{esc(disp)}</code></a>'
+            )
+        else:
+            head_html = f"<code>{esc(disp)}</code>"
+        meta_items.append(f"<span>HEAD {head_html}</span>")
+        meta_items.append(f"<span>Updated {_portal_last_update_label(gi)}</span>")
+        subj = str(gi.get("commit_subject", "") or "").strip()
+        if subj:
+            meta_items.append(f"<span>Latest: {esc(_truncate_plain(subj, 120))}</span>")
+        n_commits = sum(day_dict.values())
+        meta_items.append(f"<span>{n_commits} commit{'s' if n_commits != 1 else ''} (7d)</span>")
+        if add_del is not None:
+            a, d = add_del
+            meta_items.append(
+                f"<span><strong>+{a}</strong> / <strong>-{d}</strong> lines (7d)</span>"
+            )
+        if loc is not None:
+            meta_items.append(f"<span>~{loc:,} lines (approx.)</span>")
+    elif add_del is not None or loc is not None:
+        if add_del is not None:
+            a, d = add_del
+            meta_items.append(
+                f"<span><strong>+{a}</strong> / <strong>-{d}</strong> lines (7d)</span>"
+            )
+        if loc is not None:
+            meta_items.append(f"<span>~{loc:,} lines (approx.)</span>")
+
+    meta_html = ""
+    if meta_items:
+        meta_html = (
+            f'<div class="lenses-overview-repo-meta forge-support small mb-2" '
+            f'role="group" aria-label="Repository facts">{" · ".join(meta_items)}</div>'
+        )
+
+    link_parts: list[str] = [
+        f'<a href="{esc(phref)}">Project</a>',
+    ]
+    pub = str(project_urls.get(name, "") or "").strip()
+    if pub:
+        link_parts.append(
+            f'<a href="{esc(pub)}" target="_blank" rel="noopener">Live</a>'
+        )
+    if name in website_names:
+        link_parts.append(
+            f'<a href="{esc(local_site_href(name, ""))}">Preview</a>'
+        )
+    links_html = (
+        f'<p class="lenses-overview-quick-links forge-support small mb-2">'
+        f'{" · ".join(link_parts)}</p>'
+    )
+
+    ext_html = ""
+    if ext_total > 0 and ext_rows:
+        pills: list[str] = []
+        for ext, cnt in ext_rows[:5]:
+            pct = 100.0 * float(cnt) / float(ext_total)
+            label = ext if ext else "(no ext)"
+            title = f"{cnt} tracked files ({pct:.0f}% of {ext_total})"
+            pills.append(
+                f'<span class="badge rounded-pill text-bg-dark border border-secondary '
+                f'lenses-overview-ext-pill" title="{esc(title)}">{esc(label)} {pct:.0f}%</span>'
+            )
+        ext_html = (
+            '<div class="lenses-overview-ext-row d-flex flex-wrap align-items-center gap-1 mb-2">'
+            '<span class="forge-support small me-1">File mix:</span>'
+            f'{"".join(pills)}'
+            "</div>"
+        )
+
+    desc_block = _overview_repo_description_block(repo_path, reg_sum)
+
+    return (
+        f'<section class="lenses-overview-repo-card mb-4 p-3 lenses-overview-aside-block">'
+        f'<div class="d-flex flex-wrap align-items-center gap-2 mb-2 lenses-pill-row">{"".join(badges)}</div>'
+        f'<h3 class="h5 mb-2"><a href="{esc(phref)}">{esc(name)}</a></h3>'
+        f"{meta_html}{links_html}{ext_html}{desc_block}"
+        "</section>"
+    )
 
 
 def _overview_manual_bar_rows(manual: dict[str, Any]) -> list[tuple[str, float, str]]:
@@ -554,6 +932,15 @@ def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge
     @media (min-width: 992px) {{
       .lenses-overview-newsfeed-sticky {{ position: sticky; top: 0.75rem; max-height: calc(100vh - 1.5rem); overflow-y: auto; }}
     }}
+    .lenses-overview-donut-wrap {{ display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }}
+    .lenses-overview-donut-swatch {{ display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 2px; }}
+    .lenses-overview-repo-meta {{ line-height: 1.55; }}
+    .lenses-overview-quick-links a {{ color: var(--accent); text-decoration: none; }}
+    .lenses-overview-quick-links a:hover {{ text-decoration: underline; }}
+    .lenses-overview-ext-pill {{ font-weight: 500; }}
+    .lenses-overview-repo-details summary {{ cursor: pointer; color: var(--accent); }}
+    .lenses-overview-repo-desc-full {{ white-space: pre-wrap; word-break: break-word; line-height: 1.45; }}
+    .lenses-overview-repo-lede {{ line-height: 1.5; }}
     .text-cyan {{ color: var(--accent); }}
   </style>
 </head>
@@ -721,22 +1108,13 @@ def page_overview(
 
     def kpi_tile(href: str, label: str, value: str, cta: str) -> str:
         return (
-            f'<div class="col-6 col-md-3">'
+            f'<div class="col">'
             f'<a class="forge-card breathe-link d-block h-100 text-decoration-none lenses-overview-kpi" href="{esc(href)}">'
             f'<p class="forge-support small text-uppercase mb-1">{esc(label)}</p>'
             f'<p class="h3 mb-2">{value}</p>'
             f'<p class="small text-cyan mb-0">{esc(cta)}</p>'
             f"</a></div>"
         )
-
-    kpi_row = (
-        '<div class="row g-3 mb-4 lenses-overview-kpi-row">'
-        + kpi_tile("/projects", "Top-level folders", esc(str(n_children)), "Open Projects →")
-        + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Websites →")
-        + kpi_tile("/wbs", "WBS files", esc(str(n_wbs)), "WBS →")
-        + kpi_tile("/toolset", "Root scripts", esc(str(n_scripts)), "Toolset →")
-        + "</div>"
-    )
 
     sorted_children = sorted(children, key=_overview_child_sort_key)
     max_workers = min(12, max(1, len(sorted_children)))
@@ -746,22 +1124,29 @@ def page_overview(
     repo_blocks: list[str] = []
     loc_chart_rows: list[tuple[str, int]] = []
     newsfeed_sections: list[str] = []
+    agg_ext: Counter[str] = Counter()
+    workspace_tracked_files = 0
+    day_maps: list[dict[str, int]] = []
+    total_loc_sum = 0
+    loc_total_rows: list[tuple[str, int]] = []
 
     for row in rows_data:
-        name, path, c, commits, add_del, loc = row
+        name, path, c, commits, add_del, loc, day_dict, (ext_rows, ext_total) = row
+        day_maps.append(day_dict)
+        workspace_tracked_files += ext_total
+        for ext, cnt in ext_rows:
+            agg_ext[ext] += cnt
+        if loc is not None:
+            total_loc_sum += loc
+            loc_total_rows.append((name, loc))
         if not name:
             continue
         phref = f"/projects/{urllib.parse.quote(name, safe='')}"
         reg_sum = str(project_summaries.get(name, "")).strip()
-        if reg_sum:
-            desc_html = esc(_truncate_plain(reg_sum, 720))
-        else:
-            excerpt = _readme_excerpt(path, max_len=520)
-            desc_html = esc(excerpt) if excerpt else '<span class="forge-support">No README summary yet.</span>'
 
         gi = c.get("git") or {}
         is_git = bool(c.get("is_git"))
-        badges: list[str] = []
+        badges = []
         if is_git:
             dirty = gi.get("dirty")
             badges.append(
@@ -779,25 +1164,27 @@ def page_overview(
         if project_urls.get(name):
             badges.append('<span class="badge rounded-pill text-bg-primary">Web</span>')
 
-        stat_bits: list[str] = []
         if add_del is not None:
-            a, d = add_del
+            a, _d = add_del
             loc_chart_rows.append((name, a))
-            stat_bits.append(f"<strong>+{a}</strong> / <strong>-{d}</strong> lines (7d)")
-        if loc is not None:
-            stat_bits.append(f"~{loc:,} lines tracked (approx.)")
 
         repo_blocks.append(
-            f'<section class="lenses-overview-repo-card mb-4 p-3 lenses-overview-aside-block">'
-            f'<div class="d-flex flex-wrap align-items-center gap-2 mb-2 lenses-pill-row">{"".join(badges)}</div>'
-            f'<h3 class="h5 mb-2"><a href="{esc(phref)}">{esc(name)}</a></h3>'
-            f'<p class="mb-2">{desc_html}</p>'
-            + (
-                f'<p class="forge-support small mb-0">{" · ".join(stat_bits)}</p>'
-                if stat_bits
-                else ""
+            _overview_repo_section_html(
+                name=name,
+                repo_path=path,
+                phref=phref,
+                is_git=is_git,
+                gi=gi,
+                badges=badges,
+                reg_sum=reg_sum,
+                add_del=add_del,
+                loc=loc,
+                day_dict=day_dict,
+                ext_rows=ext_rows,
+                ext_total=ext_total,
+                project_urls=project_urls,
+                website_names=website_names,
             )
-            + "</section>"
         )
 
         if is_git:
@@ -836,16 +1223,77 @@ def page_overview(
 
     loc_chart_rows.sort(key=lambda x: -x[1])
     loc_chart_rows = loc_chart_rows[:40]
-    loc_chart_svg = svg_loc_added_horizontal_bars(loc_chart_rows)
+    loc_added_svg = svg_loc_added_horizontal_bars(loc_chart_rows)
+
+    loc_total_sorted = sorted(loc_total_rows, key=lambda x: -x[1])[:40]
+    total_loc_bars_svg = svg_repo_total_loc_bars(loc_total_sorted)
+    donut_html = svg_loc_share_donut(loc_total_rows, top_n=8)
+
+    daily_series = workspace_commits_daily_series(day_maps, days=7)
+    daily_commits_svg = svg_commit_daily_bar_chart(daily_series)
+
+    ext_top = sorted(agg_ext.items(), key=lambda x: -x[1])[:15]
+    ext_denom = workspace_tracked_files if workspace_tracked_files > 0 else max(1, sum(agg_ext.values()))
+    ext_heat_html = extension_heatmap_html(ext_top, ext_denom)
+
+    kpi_row = (
+        '<div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4 lenses-overview-kpi-row">'
+        + kpi_tile("/projects", "Top-level folders", esc(str(n_children)), "Open Projects →")
+        + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Websites →")
+        + kpi_tile("/wbs", "WBS files", esc(str(n_wbs)), "WBS →")
+        + kpi_tile("/toolset", "Root scripts", esc(str(n_scripts)), "Toolset →")
+        + kpi_tile(
+            "/projects",
+            "Approx. lines (sum)",
+            esc(f"~{total_loc_sum:,}"),
+            "Newlines, capped per repo →",
+        )
+        + "</div>"
+    )
+
+    analytics_block = (
+        '<section class="lenses-overview-charts mt-2 mb-4">'
+        '<h2 class="h5 text-cyan mb-2">Workspace analytics</h2>'
+        '<p class="forge-support small mb-3">Total approx. tracked lines (sum of per-repo samples): '
+        f"<strong>~{total_loc_sum:,}</strong>. "
+        "Same caveats as project stats: newline-based estimate, file count/size caps, binary skips — "
+        "not equivalent to <code>cloc</code>.</p>"
+        '<div class="row g-4">'
+        '<div class="col-lg-6">'
+        '<h3 class="h6 text-cyan mb-2">Commits by day (7 days)</h3>'
+        '<p class="forge-support small mb-2">Summed across all git repos; UTC calendar days; '
+        'git window is <code>--since="7 days ago"</code>.</p>'
+        f"{daily_commits_svg}"
+        "</div>"
+        '<div class="col-lg-6">'
+        '<h3 class="h6 text-cyan mb-2">Lines added by repository (7 days)</h3>'
+        '<p class="forge-support small mb-2">From <code>git log --numstat</code>; binary and some merge '
+        "lines excluded; additions only.</p>"
+        f"{loc_added_svg}"
+        "</div>"
+        '<div class="col-lg-6">'
+        '<h3 class="h6 text-cyan mb-2">Repository size (approx. LoC)</h3>'
+        '<p class="forge-support small mb-2">Per-repo newline counts (sampled/capped).</p>'
+        f"{total_loc_bars_svg}"
+        '<h4 class="h6 text-cyan mt-3 mb-2">Share of workspace lines</h4>'
+        '<p class="forge-support small mb-2">Top 8 repositories by approx. lines; remainder grouped as Other.</p>'
+        f'<div class="lenses-overview-donut-wrap">{donut_html}</div>'
+        "</div>"
+        '<div class="col-lg-6">'
+        '<h3 class="h6 text-cyan mb-2">File types (workspace)</h3>'
+        '<p class="forge-support small mb-2">Extension histogram merged from each repo (top 120 extensions '
+        f"per repo). Tracked files (sum of repo totals): <strong>{workspace_tracked_files:,}</strong>. "
+        "Bar width is share of that total; rare types may be omitted.</p>"
+        f"{ext_heat_html}"
+        "</div>"
+        "</div></section>"
+    )
 
     main_col = (
         '<div class="col-lg-7 mb-4 mb-lg-0">'
         '<h2 class="h5 text-cyan mb-3">Repositories</h2>'
         + ("".join(repo_blocks) if repo_blocks else '<p class="forge-support">No folders found.</p>')
-        + '<h2 class="h5 text-cyan mb-2 mt-4">Lines added (7 days)</h2>'
-        + '<p class="forge-support small mb-2">From <code>git log --numstat</code>; binary files and some merges '
-        "are excluded. Counts are additions only (not net churn).</p>"
-        + loc_chart_svg
+        + analytics_block
         + "</div>"
     )
 
@@ -939,7 +1387,21 @@ def page_projects(
     lenses_repo_root: Path,
 ) -> str:
     website_names = {str(w.get("name", "")) for w in (state.get("websites") or [])}
+    website_labels = registry.get("website_labels") or {}
+    if not isinstance(website_labels, dict):
+        website_labels = {}
     project_urls = registry.get("project_urls") or {}
+    project_summaries = registry.get("project_summaries") or {}
+    if not isinstance(project_summaries, dict):
+        project_summaries = {}
+    wbs_counts: dict[str, int] = {}
+    for w in state.get("wbs") or []:
+        if not isinstance(w, dict):
+            continue
+        hint = str(w.get("repo_hint", "")).strip()
+        if hint:
+            wbs_counts[hint] = wbs_counts.get(hint, 0) + 1
+
     rows: list[dict[str, Any]] = [
         c for c in (state.get("children") or []) if isinstance(c, dict) and str(c.get("name", "")).strip()
     ]
@@ -955,32 +1417,53 @@ def page_projects(
 
     rows.sort(key=_portal_sort_key)
 
-    cards: list[str] = []
+    metrics = _prefetch_portal_repo_metrics(rows)
+
+    get_showcase = __import__("lenses.ks_layout", fromlist=["get_showcase_page"]).get_showcase_page
+    ks_preview = False
+    if get_showcase(lenses_repo_root) is not None:
+        try:
+            import components as _ks_components  # noqa: WPS433
+
+            ks_preview = hasattr(_ks_components, "render_topic_preview_trigger")
+        except ImportError:
+            ks_preview = False
+
+    sections: list[str] = []
     for c in rows:
         name = str(c.get("name", ""))
         path = Path(str(c.get("path", "")))
         card_href = f"/projects/{urllib.parse.quote(name, safe='')}"
-        inner = _project_portal_card_inner_html(
-            lenses_repo_root,
-            name=name,
-            path=path,
-            c=c,
-            website_names=website_names,
-            project_urls=project_urls,
-            card_href=card_href,
+        loc, numstat = metrics.get(name, (None, (0, 0)))
+        sections.append(
+            _project_portal_panel_html(
+                name=name,
+                path=path,
+                c=c,
+                website_names=website_names,
+                website_labels=website_labels,
+                project_urls=project_urls,
+                project_summaries=project_summaries,
+                wbs_count=wbs_counts.get(name, 0),
+                card_href=card_href,
+                loc=loc,
+                numstat=numstat,
+                ks_preview=ks_preview,
+            )
         )
-        cards.append(f'<div class="col-md-6 col-xl-4 mb-3 d-flex">{inner}</div>')
-    grid = (
-        '<div class="row g-3">' + "".join(cards) + "</div>"
-        if cards
+
+    stack = (
+        '<div class="lenses-sites-stack" id="lenses-projects-stack">' + "".join(sections) + "</div>"
+        if sections
         else '<p class="forge-support">No directories found.</p>'
     )
     body_inner = (
-        '<p class="forge-support">Sorted by last commit (newest first). '
-        "LoC is an approximate count of newlines in tracked text files (capped per repo). "
-        "Click a card to open the project dashboard in a preview window; use "
-        "<strong>Open full page</strong> in the toolbar for a separate tab.</p>"
-        + grid
+        f"{_lenses_vertical_hero_styles()}"
+        '<p class="forge-support">Sorted by last commit (newest first). Each panel summarizes the repo at a glance '
+        "(registry summary or README, size, recent activity). "
+        "<strong>Open dashboard</strong> goes to the full project page; "
+        "when the design system is present, <strong>Preview on this page</strong> opens an embedded view.</p>"
+        f"{stack}"
     )
     bc = lenses_breadcrumb_html(("/", "Overview"), ("/projects", "Projects"))
     return _wrap_dashboard(
@@ -1016,99 +1499,270 @@ def page_project_detail(
     repo_https = remote_to_https_repo_url(origin)
     commit_url = commit_url_for_remote(origin, head_full)
     project_urls = registry.get("project_urls") or {}
+    project_summaries = registry.get("project_summaries") or {}
+    reg_summary = (
+        str(project_summaries.get(project_name, "")).strip()
+        if isinstance(project_summaries, dict)
+        else ""
+    )
     external_url = str(project_urls.get(project_name, "")).strip()
     website_names = {str(w.get("name", "")) for w in (state.get("websites") or [])}
     is_site = project_name in website_names
+    wbs_entries = [
+        w
+        for w in (state.get("wbs") or [])
+        if isinstance(w, dict) and str(w.get("repo_hint", "")) == project_name
+    ]
+    has_wbs = bool(wbs_entries)
+    sid = re.sub(r"[^a-z0-9_-]+", "-", project_name.lower()).strip("-") or "project"
 
-    meta_rows: list[str] = []
+    stats: dict[str, Any] = {}
     if is_git:
-        pill = (
-            '<span class="badge text-bg-warning">Dirty</span>'
-            if gi.get("dirty")
-            else '<span class="badge text-bg-success">Clean</span>'
+        stats = collect_project_stats(repo_path)
+
+    badges: list[str] = []
+    if is_git:
+        dirty = gi.get("dirty")
+        badges.append(
+            '<span class="badge rounded-pill text-bg-warning">Dirty</span>'
+            if dirty
+            else '<span class="badge rounded-pill text-bg-success">Clean</span>'
         )
-        meta_rows.append(f"<tr><th>Tree</th><td>{pill}</td></tr>")
-        meta_rows.append(
-            f"<tr><th>Branch</th><td><code>{esc(str(gi.get('branch', '')))}</code></td></tr>"
-        )
+        br = str(gi.get("branch", ""))
+        if br:
+            badges.append(
+                f'<span class="badge rounded-pill text-bg-secondary">{esc(br)}</span>'
+            )
         if head_short:
-            link = f'<a href="{esc(commit_url)}" target="_blank" rel="noopener">{esc(head_short)}</a>' if commit_url else esc(head_short)
-            meta_rows.append(f"<tr><th>Revision</th><td>{link}</td></tr>")
-        if gi.get("commit_subject"):
-            meta_rows.append(
-                f"<tr><th>Last commit</th><td>{esc(str(gi.get('commit_subject', '')))}</td></tr>"
-            )
-        if gi.get("commit_date"):
-            meta_rows.append(
-                f"<tr><th>Commit date</th><td><code>{esc(str(gi.get('commit_date', '')))}</code></td></tr>"
-            )
-        meta_rows.append(
-            f"<tr><th>Origin</th><td><code class=\"small\">{esc(origin)}</code></td></tr>"
-        )
-        if repo_https:
-            meta_rows.append(
-                f'<tr><th>Remote</th><td><a href="{esc(repo_https)}" target="_blank" rel="noopener">Open repository</a></td></tr>'
-            )
-        if commit_url:
-            meta_rows.append(
-                f'<tr><th>This commit</th><td><a href="{esc(commit_url)}" target="_blank" rel="noopener">View on host</a></td></tr>'
+            badges.append(
+                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+                f"{esc(head_short)}</span>"
             )
     else:
-        meta_rows.append("<tr><td colspan=\"2\">Not a git repository.</td></tr>")
+        badges.append(
+            '<span class="badge rounded-pill text-bg-secondary">Not a git repo</span>'
+        )
+    if is_site:
+        badges.append(
+            '<span class="badge rounded-pill text-bg-info">Firebase site</span>'
+        )
+    if has_wbs:
+        nw = len(wbs_entries)
+        badges.append(
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+            f"WBS ×{nw}</span>"
+        )
 
-    links_html = '<div class="d-flex flex-wrap gap-2 mb-4">'
+    kicker = "Git repository" if is_git else "Workspace folder"
+    path_line = (
+        f'<p class="forge-support small mb-0">Path: <code>{esc(str(repo_path.resolve()))}</code></p>'
+    )
+
+    if reg_summary:
+        blurb_block = f'<p class="forge-support small mb-0 mt-2">{esc(reg_summary)}</p>'
+    else:
+        blurb_block = ""
+
+    stat_bits: list[str] = []
+    if is_git:
+        loc = approx_tracked_lines(repo_path)
+        if loc is not None:
+            stat_bits.append(
+                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+                f"~{loc:,} lines (approx.)</span>"
+            )
+        stat_bits.append(
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+            f"updated {_portal_last_update_label(gi)}</span>"
+        )
+        add_d, del_d = git_numstat_since(repo_path, 7)
+        if add_d or del_d:
+            stat_bits.append(
+                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+                f"+{add_d:,} / −{del_d:,} lines (7d)</span>"
+            )
+        ct = stats.get("commits_total")
+        if ct is not None:
+            stat_bits.append(
+                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+                f"{esc(str(ct))} commits</span>"
+            )
+        total_tf = int(stats.get("tracked_files") or 0)
+        if total_tf:
+            stat_bits.append(
+                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+                f"{total_tf} tracked files</span>"
+            )
+    stat_strip = (
+        f'<div class="lenses-site-stat-strip">{"".join(stat_bits)}</div>'
+        if stat_bits
+        else ""
+    )
+
+    git_line = ""
+    if is_git:
+        subj = str(gi.get("commit_subject", ""))
+        if len(subj) > 140:
+            subj = subj[:137].rstrip() + "…"
+        c_url = commit_url_for_remote(origin, head_full) if head_full else ""
+        rev_html = (
+            f'<a href="{esc(c_url)}" target="_blank" rel="noopener">{esc(head_short)}</a>'
+            if c_url and head_short
+            else esc(head_short)
+            if head_short
+            else ""
+        )
+        parts = [x for x in (rev_html, esc(subj) if subj else "") if x]
+        if parts:
+            git_line = (
+                '<p class="forge-support small mb-0 mt-2"><strong>Last commit</strong> '
+                + " · ".join(parts)
+                + "</p>"
+            )
+
+    ctas: list[str] = []
     if repo_https:
-        links_html += (
+        ctas.append(
             f'<a class="btn btn-sm btn-outline-info" href="{esc(repo_https)}" '
             f'target="_blank" rel="noopener">Repository</a>'
         )
     if commit_url:
-        links_html += (
+        ctas.append(
             f'<a class="btn btn-sm btn-outline-info" href="{esc(commit_url)}" '
             f'target="_blank" rel="noopener">Commit</a>'
         )
     if external_url:
-        links_html += (
+        ctas.append(
             f'<a class="btn btn-sm btn-outline-warning" href="{esc(external_url)}" '
             f'target="_blank" rel="noopener">Project site</a>'
         )
     if is_site:
-        links_html += (
+        browse_href = f"/websites/browse?site={urllib.parse.quote(project_name, safe='')}"
+        preview_root = local_site_href(project_name, "index.html")
+        ctas.append(
+            f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
+        )
+        ctas.append(
+            f'<a class="btn btn-sm btn-outline-info" href="{esc(preview_root)}" '
+            f'target="_blank" rel="noopener">Open local site root</a>'
+        )
+        ctas.append(
             '<a class="btn btn-sm btn-outline-secondary" href="/websites">Firebase sites list</a>'
         )
-    links_html += "</div>"
+    if has_wbs:
+        ctas.append('<a class="btn btn-sm btn-outline-secondary" href="/wbs">WBS</a>')
+    ctas.append('<a class="btn btn-sm btn-link px-0" href="/projects">← All projects</a>')
+    cta_row = f'<div class="d-flex flex-wrap gap-2 mt-3">{"".join(ctas)}</div>'
 
-    stats_block = ""
+    technical = ""
+    if is_git and origin:
+        cdate = str(gi.get("commit_date", ""))
+        date_bit = (
+            f'<p class="forge-support small mb-1"><strong>Commit date</strong>: <code>{esc(cdate)}</code></p>'
+            if cdate
+            else ""
+        )
+        technical = f"""<details class="mt-3">
+<summary class="small forge-support">Technical</summary>
+{date_bit}<p class="forge-support small mb-0"><strong>Origin</strong>: <code>{esc(origin)}</code></p>
+</details>"""
+
+    readme_panel = ""
+    if not reg_summary and repo_path.is_dir():
+        prev_long = _readme_excerpt(repo_path, max_len=480)
+        if prev_long:
+            readme_panel = (
+                f'<section class="lenses-site-hero-section forge-card" aria-labelledby="lenses-proj-readme-{esc(sid)}">'
+                f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-readme-{esc(sid)}">README preview</h3>'
+                f'<p class="forge-support small mb-0">{esc(prev_long)}</p>'
+                f"</section>"
+            )
+
+    api_stats_href = f"/api/project/{urllib.parse.quote(project_name, safe='')}/stats"
+    panels: list[str] = []
+
+    hero_section = (
+        f'<section class="lenses-site-hero-section forge-card" '
+        f'id="lenses-project-{esc(sid)}" aria-labelledby="lenses-project-title-{esc(sid)}">'
+        f'<div class="d-flex flex-wrap justify-content-between gap-2 align-items-start mb-1">'
+        f'<div class="lenses-pill-row d-flex flex-wrap gap-1">{"".join(badges)}</div></div>'
+        f'<p class="lenses-hero-kicker mb-0">{esc(kicker)}</p>'
+        f'<h2 class="text-cyan" id="lenses-project-title-{esc(sid)}">{esc(project_name)}</h2>'
+        f"{path_line}{blurb_block}"
+        f"{stat_strip}"
+        f"{git_line}"
+        f"{cta_row}"
+        f"{technical}"
+        f"</section>"
+    )
+    panels.append(hero_section)
+    panels.append(readme_panel)
+
     if is_git:
-        stats = collect_project_stats(repo_path)
         weekly = [(x["week"], x["count"]) for x in stats.get("commits_by_week") or []]
-        chart = svg_commit_bar_chart(weekly)
+        chart_90 = svg_commit_bar_chart(weekly)
+        panels.append(
+            f'<section class="lenses-site-hero-section forge-card" '
+            f'aria-labelledby="lenses-proj-act90-{esc(sid)}">'
+            f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-act90-{esc(sid)}">Activity (90 days)</h3>'
+            f"{chart_90}"
+            f"</section>"
+        )
+
+        day_map = commits_by_day_dict(repo_path, 7)
+        daily_series = workspace_commits_daily_series([day_map], days=7)
+        chart_7 = svg_commit_daily_bar_chart(daily_series, width=520, height=180)
+        panels.append(
+            f'<section class="lenses-site-hero-section forge-card" '
+            f'aria-labelledby="lenses-proj-act7-{esc(sid)}">'
+            f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-act7-{esc(sid)}">Activity (7 days)</h3>'
+            f'<p class="forge-support small mb-2">Commits per calendar day (rolling window).</p>'
+            f"{chart_7}"
+            f"</section>"
+        )
+
         contrib_rows = [
             (str(x["commits"]), str(x["name"])) for x in stats.get("contributors") or []
         ]
         contrib_tbl = _contributors_table_html(lenses_repo_root, contrib_rows)
+        panels.append(
+            f'<section class="lenses-site-hero-section forge-card" '
+            f'aria-labelledby="lenses-proj-contrib-{esc(sid)}">'
+            f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-contrib-{esc(sid)}">Contributors</h3>'
+            f"{contrib_tbl}"
+            f"</section>"
+        )
+
         ext_data = [(x["extension"], x["count"]) for x in stats.get("extensions") or []]
         total_tf = int(stats.get("tracked_files") or 0)
         heat = extension_heatmap_html(ext_data, total_tf)
-        ct = stats.get("commits_total")
-        total_line = f"<p><strong>Total commits</strong>: {esc(str(ct))}</p>" if ct is not None else ""
-        stats_block = f"""
-<h2 class="h5 mt-4 text-cyan">Activity (90 days)</h2>
-{chart}
-<h2 class="h5 mt-4 text-cyan">Contributors</h2>
-{contrib_tbl}
-<h2 class="h5 mt-4 text-cyan">File types</h2>
-<p class="forge-support small">Tracked files: {total_tf}</p>
-{heat}
-{total_line}
-"""
+        ct_val = stats.get("commits_total")
+        total_line = (
+            f'<p class="forge-support small mb-0"><strong>Total commits</strong>: {esc(str(ct_val))}</p>'
+            if ct_val is not None
+            else ""
+        )
+        panels.append(
+            f'<section class="lenses-site-hero-section forge-card" '
+            f'aria-labelledby="lenses-proj-files-{esc(sid)}">'
+            f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-files-{esc(sid)}">File types</h3>'
+            f'<p class="forge-support small mb-2">Tracked files: {total_tf}</p>'
+            f"{heat}"
+            f"{total_line}"
+            f"</section>"
+        )
 
-    api_stats_href = f"/api/project/{urllib.parse.quote(project_name, safe='')}/stats"
     git_panel = ""
     if is_git:
         api_git = f"/api/project/{urllib.parse.quote(project_name, safe='')}/git"
+        lazy_stats = (
+            f'<p class="forge-support small mb-2"><a href="{esc(api_stats_href)}">JSON stats API</a> '
+            f"(same data as charts; useful for tooling).</p>"
+        )
         git_panel = f"""
-<h2 class="h5 mt-4 text-cyan">Git actions</h2>
+<section class="lenses-site-hero-section forge-card" aria-labelledby="lenses-proj-git-{esc(sid)}">
+<h3 class="h6 text-cyan mb-2" id="lenses-proj-git-{esc(sid)}">Git actions</h3>
+{lazy_stats}
 <p class="forge-support small">Runs on this machine against <code>{esc(str(repo_path))}</code>. Fetch and pull need network access.</p>
 <div class="d-flex flex-wrap gap-2 mb-2" id="lenses-git-actions" data-git-api="{esc(api_git)}">
   <button type="button" class="btn btn-sm btn-forge" data-lenses-git="status">Status</button>
@@ -1141,36 +1795,12 @@ def page_project_detail(
   }});
 }})();
 </script>
+</section>
 """
+    panels.append(git_panel)
 
-    readme_note = ""
-    prev = _readme_excerpt(repo_path)
-    if prev:
-        readme_note = (
-            f'<h2 class="h5 mt-4 text-cyan">README preview</h2>'
-            f'<p class="forge-support">{esc(prev)}</p>'
-        )
-
-    lazy_stats = (
-        f'<p class="forge-support small"><a href="{esc(api_stats_href)}">JSON stats API</a> '
-        f"(same data as charts; useful for tooling).</p>"
-        if is_git
-        else ""
-    )
-
-    body_inner = f"""
-{links_html}
-<table class="table table-sm w-auto">
-  <tbody>
-    {"".join(meta_rows)}
-  </tbody>
-</table>
-{readme_note}
-{stats_block}
-{lazy_stats}
-{git_panel}
-<p class="mt-4"><a href="/projects">← All projects</a></p>
-"""
+    stack = '<div class="lenses-sites-stack lenses-project-stack">' + "".join(panels) + "</div>"
+    body_inner = f"{_lenses_vertical_hero_styles()}\n{stack}"
     bc = lenses_breadcrumb_html(
         ("/", "Overview"),
         ("/projects", "Projects"),
@@ -1362,13 +1992,23 @@ Workspace: <code>{ws}</code>. <strong>Last write wins</strong> across tabs. POST
     )
 
 
+def _website_top_level_html_path(path: str) -> bool:
+    """True if path is a single segment under hosting public (e.g. foo.html), not nested dirs."""
+    p = path.replace("\\", "/").strip()
+    if not p or "/" in p:
+        return False
+    pl = p.lower()
+    return pl.endswith(".html") or pl.endswith(".htm")
+
+
 def _website_key_pages_grid(
-    pages: list[Any], *, max_links: int = 18
+    pages: list[Any], *, max_links: int = 8
 ) -> list[dict[str, str]]:
     rows = [
         p
         for p in pages
-        if isinstance(p, dict) and str(p.get("path", "")).strip()
+        if isinstance(p, dict)
+        and _website_top_level_html_path(str(p.get("path", "")).strip())
     ]
     non_idx = [
         p
@@ -1518,13 +2158,14 @@ def page_websites(
             lab = kp["label"]
             ph = local_site_href(name, rel)
             grid_cells.append(
-                f'<div><a href="{esc(ph)}" target="_blank" rel="noopener">{esc(lab)}</a>'
+                f'<div><a class="text-decoration-none lenses-key-page-link" href="{esc(ph)}" '
+                f'target="_blank" rel="noopener">{esc(lab)}</a>'
                 f'<span class="d-block forge-support" style="font-size:0.72rem">{esc(rel)}</span></div>'
             )
         key_grid_html = (
             '<div class="lenses-key-pages-grid">' + "".join(grid_cells) + "</div>"
             if grid_cells
-            else '<p class="forge-support small mb-0">No HTML index yet — run the site generator.</p>'
+            else '<p class="forge-support small mb-0">No top-level HTML pages in index yet — run the site generator, or open <strong>Preview in lenses</strong> for the full tree.</p>'
         )
 
         copy_btns = []
@@ -1558,7 +2199,7 @@ def page_websites(
             f"{pub_line}{readme_block}"
             f'<div class="lenses-site-stat-strip">{"".join(stat_bits)}</div>'
             f"{git_line}"
-            f'<h3 class="h6 text-cyan mt-3 mb-2">Key pages</h3>'
+            f'<h3 class="h6 text-cyan mt-3 mb-2">Top-level pages</h3>'
             f"{key_grid_html}"
             f'<div class="d-flex flex-wrap gap-2 mt-3">'
             f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
@@ -1577,33 +2218,7 @@ def page_websites(
         else '<p class="forge-support">No Firebase site repos detected.</p>'
     )
     body_inner = f"""
-<style>
-.lenses-sites-stack {{ display: flex; flex-direction: column; gap: 0; }}
-.lenses-site-hero-section {{
-  border-left: 4px solid var(--bs-cyan, #06b6d4);
-  background: linear-gradient(105deg, rgba(6, 182, 212, 0.07) 0%, transparent 45%);
-  border-radius: 10px;
-  padding: 1.25rem 1.35rem;
-  margin-bottom: 1.5rem;
-}}
-.lenses-site-hero-section .lenses-hero-kicker {{
-  font-size: 0.72rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--forge-text-4, #64748b);
-  font-weight: 600;
-}}
-.lenses-site-hero-section h2 {{ font-size: 1.35rem; margin: 0.35rem 0 0.25rem; }}
-.lenses-site-stat-strip {{ display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.85rem 0 0.25rem; align-items: center; }}
-.lenses-site-stat-strip .badge {{ font-weight: 500; }}
-.lenses-key-pages-grid {{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 0.65rem 1.15rem;
-  margin: 0.5rem 0 0;
-}}
-.lenses-key-pages-grid a {{ font-size: 0.9rem; }}
-</style>
+{_lenses_vertical_hero_styles()}
 <p class="forge-support">Built static output is served at <code>/local-site/&lt;repo&gt;/…</code> on this same host (default <strong>127.0.0.1</strong>), so you can use <strong>Preview in lenses</strong> and keep the top navigation visible.</p>
 <div class="forge-card p-3 mb-4">
   <div class="row g-2 align-items-end">

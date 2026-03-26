@@ -8,6 +8,7 @@ import time
 from collections import Counter
 from collections.abc import Iterator
 from datetime import datetime, timedelta, timezone
+import math
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,48 @@ def _iter_log_dates_since(cwd: Path, since_days: int = 90) -> Iterator[str]:
         line = line.strip()
         if line:
             yield line
+
+
+def commits_by_day_dict(cwd: Path, days: int = 7) -> dict[str, int]:
+    """Map YYYY-MM-DD -> commit count in *cwd* for git's rolling ``--since={days} days ago`` window."""
+    top = cwd.resolve()
+    if not (top / ".git").exists():
+        return {}
+    since = f"{days} days ago"
+    s = _run_git_text(
+        top,
+        "log",
+        f"--since={since}",
+        "--pretty=format:%ad",
+        "--date=short",
+        timeout=120.0,
+    )
+    if not s:
+        return {}
+    counts: Counter[str] = Counter()
+    for line in s.splitlines():
+        line = line.strip()
+        if line:
+            counts[line] += 1
+    return dict(counts)
+
+
+def workspace_commits_daily_series(
+    per_repo_day_maps: list[dict[str, int]],
+    *,
+    days: int = 7,
+) -> list[tuple[str, int]]:
+    """Merge per-repo day maps; return last *days* UTC calendar days (oldest first) with totals."""
+    merged: Counter[str] = Counter()
+    for m in per_repo_day_maps:
+        merged.update(m)
+    today = datetime.now(timezone.utc).date()
+    out: list[tuple[str, int]] = []
+    for i in range(days - 1, -1, -1):
+        d = today - timedelta(days=i)
+        key = d.isoformat()
+        out.append((key, int(merged.get(key, 0))))
+    return out
 
 
 def commits_by_week_last_n_days(cwd: Path, days: int = 90) -> list[tuple[str, int]]:
@@ -380,6 +423,168 @@ def svg_loc_added_horizontal_bars(
         )
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def svg_repo_total_loc_bars(
+    rows: list[tuple[str, int]],
+    *,
+    width: int = 680,
+    row_height: int = 26,
+    label_width: int = 168,
+    margin_r: int = 64,
+    bar_color: str = "rgba(245,158,11,0.88)",
+) -> str:
+    """Horizontal bars: approx tracked lines per repository (newlines in sampled files)."""
+    if not rows:
+        return '<p class="forge-support mb-0">No line counts (or no git repos).</p>'
+    values = [max(0, int(v)) for _, v in rows]
+    vmax = max(values) if values else 1
+    n = len(rows)
+    height = 28 + n * row_height
+    inner_w = width - label_width - margin_r - 16
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'role="img" aria-label="Approximate tracked lines by repository" '
+        f'style="width:100%;max-width:{width}px;height:auto">',
+        '<rect width="100%" height="100%" fill="transparent"/>',
+    ]
+    for i, (name, v) in enumerate(rows):
+        v = max(0, int(v))
+        y = 20 + i * row_height
+        label = html.escape(name[:48], quote=True)
+        parts.append(
+            f'<text x="4" y="{y + 14}" fill="var(--forge-muted,#94a3b8)" font-size="11" '
+            f'text-anchor="start">{label}</text>'
+        )
+        bw = (v / vmax) * inner_w if vmax else 0
+        bw = max(bw, 1.0) if v > 0 else 0
+        x0 = label_width
+        parts.append(
+            f'<rect x="{x0:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{row_height - 8:.1f}" '
+            f'fill="{bar_color}" rx="3"><title>{label}: ~{v} lines (approx.)</title></rect>'
+        )
+        parts.append(
+            f'<text x="{x0 + inner_w + 6:.1f}" y="{y + 14}" fill="var(--forge-muted,#94a3b8)" '
+            f'font-size="11" text-anchor="start">{v:,}</text>'
+        )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def svg_commit_daily_bar_chart(
+    daily: list[tuple[str, int]],
+    *,
+    width: int = 400,
+    height: int = 200,
+    bar_color: str = "rgba(6,182,212,0.88)",
+) -> str:
+    """Vertical bars: one per calendar day (label YYYY-MM-DD), commit counts."""
+    if not daily:
+        return '<p class="forge-support mb-0">No commits in the last 7 days.</p>'
+    labels = [d[0] for d in daily]
+    values = [int(d[1]) for d in daily]
+    vmax = max(values) if values else 1
+    n = len(values)
+    margin_l, margin_r, margin_t, margin_b = 40, 12, 12, 36
+    inner_w = width - margin_l - margin_r
+    inner_h = height - margin_t - margin_b
+    bw = max(8.0, (inner_w / n) * 0.65)
+    gap = max(2.0, (inner_w / n) * 0.35)
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'role="img" aria-label="Commits by day" style="width:100%;max-width:{width}px;height:auto">',
+        '<rect width="100%" height="100%" fill="transparent"/>',
+    ]
+    for i, v in enumerate(values):
+        x = margin_l + i * (bw + gap) + gap * 0.2
+        h = (v / vmax) * inner_h if vmax else 0
+        y = margin_t + inner_h - h
+        short_lbl = labels[i][5:] if len(labels[i]) >= 10 else labels[i]
+        parts.append(
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{max(h, 1):.1f}" '
+            f'fill="{bar_color}" rx="2"><title>{labels[i]}: {v} commits</title></rect>'
+        )
+        parts.append(
+            f'<text x="{x + bw / 2:.1f}" y="{height - 8}" text-anchor="middle" '
+            f'fill="var(--forge-muted,#94a3b8)" font-size="9">{html.escape(short_lbl, quote=True)}</text>'
+        )
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def svg_loc_share_donut(
+    rows: list[tuple[str, int]],
+    *,
+    top_n: int = 8,
+    size: int = 240,
+    r_outer: float = 92.0,
+    r_inner: float = 52.0,
+) -> str:
+    """Donut of share of total approx LoC; top_n repos + Other."""
+    pairs = [(str(a), max(0, int(b))) for a, b in rows if int(b) > 0]
+    if not pairs:
+        return '<p class="forge-support mb-0">No line counts for donut.</p>'
+    pairs.sort(key=lambda x: -x[1])
+    total_all = sum(b for _, b in pairs)
+    if total_all <= 0:
+        return '<p class="forge-support mb-0">No line counts for donut.</p>'
+    top = pairs[:top_n]
+    other_sum = sum(b for _, b in pairs[top_n:])
+    slices: list[tuple[str, int, str]] = []
+    colors = [
+        "rgba(6,182,212,0.92)",
+        "rgba(245,158,11,0.9)",
+        "rgba(148,163,184,0.9)",
+        "rgba(34,197,94,0.85)",
+        "rgba(168,85,247,0.85)",
+        "rgba(236,72,153,0.85)",
+        "rgba(59,130,246,0.88)",
+        "rgba(234,179,8,0.88)",
+    ]
+    for i, (name, val) in enumerate(top):
+        slices.append((name, val, colors[i % len(colors)]))
+    if other_sum > 0:
+        slices.append(("Other", other_sum, "rgba(71,85,105,0.85)"))
+    cx, cy = size / 2, size / 2
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" '
+        f'role="img" aria-label="Share of workspace lines by repository" '
+        f'style="width:100%;max-width:{size}px;height:auto">',
+        f'<rect width="100%" height="100%" fill="transparent"/>',
+    ]
+    ang = -math.pi / 2
+    for name, val, fill in slices:
+        frac = val / total_all
+        if frac <= 0:
+            continue
+        sweep = 2 * math.pi * frac
+        a0, a1 = ang, ang + sweep
+        x1o, y1o = cx + r_outer * math.cos(a0), cy + r_outer * math.sin(a0)
+        x2o, y2o = cx + r_outer * math.cos(a1), cy + r_outer * math.sin(a1)
+        x1i, y1i = cx + r_inner * math.cos(a1), cy + r_inner * math.sin(a1)
+        x2i, y2i = cx + r_inner * math.cos(a0), cy + r_inner * math.sin(a0)
+        large = 1 if sweep > math.pi else 0
+        d = (
+            f"M {x1o:.2f} {y1o:.2f} A {r_outer:.2f} {r_outer:.2f} 0 {large} 1 {x2o:.2f} {y2o:.2f} "
+            f"L {x1i:.2f} {y1i:.2f} A {r_inner:.2f} {r_inner:.2f} 0 {large} 0 {x2i:.2f} {y2i:.2f} Z"
+        )
+        pct = 100.0 * frac
+        title = f"{html.escape(name, quote=True)}: {val:,} lines ({pct:.1f}%)"
+        parts.append(f'<path d="{d}" fill="{fill}"><title>{title}</title></path>')
+        ang = a1
+    parts.append("</svg>")
+    leg_lines: list[str] = ['<div class="lenses-overview-donut-legend small mt-2">']
+    for name, val, fill in slices:
+        pct = 100.0 * val / total_all
+        nm = html.escape(name[:32], quote=True)
+        leg_lines.append(
+            f'<div class="d-flex align-items-center gap-2 mb-1">'
+            f'<span class="lenses-overview-donut-swatch" style="background:{fill}"></span>'
+            f"<span>{nm}</span>"
+            f'<span class="text-muted ms-auto">{pct:.1f}%</span></div>'
+        )
+    leg_lines.append("</div>")
+    return "\n".join(parts) + "\n" + "\n".join(leg_lines)
 
 
 def extension_heatmap_html(ext_rows: list[tuple[str, int]], total_files: int) -> str:

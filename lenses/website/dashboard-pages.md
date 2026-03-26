@@ -6,9 +6,22 @@ The UI is server-generated HTML from `lenses/render.py`. When the **kitchensink*
 
 **Hero** — When kitchensink is present, the top of the page uses **`render_product_landing_hero`**: workspace path and scan time sit in the clarification line; **Browse projects** and **Lenses docs** CTAs link to **`/projects`** and **`/docs/index.html`**. Without kitchensink, a compact fallback title block is used.
 
-**KPI row** — Same as before: counts for top-level folders, Firebase sites, WBS files, and root **`*.sh`** scripts, linking to **Projects**, **Websites**, **WBS**, and **Toolset**.
+**KPI row** — Counts for top-level folders, Firebase sites, WBS files, root **`*.sh`** scripts, plus a fifth tile **Approx. lines (sum)** — the sum of per-repo approximate tracked newlines (same caps as project stats).
 
-**Main column** — Each top-level child is a **repository card**: badges (clean/dirty, branch, Firebase, published site), optional long description from **`project_summaries`** in the workspace registry (else a longer **README** excerpt than on the Projects portal), approximate tracked **LoC**, and **git numstat** totals for the **last 7 days** (+additions / −deletions). Below that, an **SVG horizontal bar chart** compares **lines added (7d)** across git repos (from **`git log --numstat`**; binary/merge lines excluded).
+**Main column** — **Repositories:** each top-level child is a **repository card**:
+
+- **Badges** — clean/dirty, branch, Firebase, published site (**Web**), and **Submodules: N** when a **`.gitmodules`** file exists at the repo root (section count only).
+- **Facts line** — For git repos: **HEAD** short hash (linked when `origin` parses to a known host), **Updated** (relative time from **`commit_unix` / `commit_date`**), one-line **Latest** subject, **commits (7d)** (sum of **`commits_by_day_dict`**), **+additions / −deletions (7d)** from **`git_numstat_since`**, and **~LoC** (**`approx_tracked_lines`**).
+- **Quick links** — **Project** (`/projects/<name>`), **Live** when **`project_urls`** lists a URL, **Preview** (`/local-site/<name>/…`) when that folder is a detected Firebase site.
+- **File mix** — Top **five** extensions from **`file_extension_counts`** for that repo (percent of that repo’s tracked files, with full counts in the pill **`title`**).
+- **Description** — Registry **`project_summaries`** override the README source when set. Long text (**> ~400 characters**, **> 4** non-empty lines, or ASCII-tree markers such as **`├──` / `└──`**) shows a short **lede** plus a **`<details>`** block (“Full description” or “Architecture & full notes”) so large blurbs stay collapsible without JavaScript. Shorter text stays a single paragraph (truncated to ~720 characters when below the threshold).
+
+**Workspace analytics** (below the cards, 2×2 grid on large screens):
+
+- **Commits by day (7 days)** — Vertical bar chart: **`commits_by_day_dict`** per repo, merged and aligned to the last seven **UTC calendar days** (`workspace_commits_daily_series` in `lenses/project_stats.py`).
+- **Lines added by repository (7 days)** — Horizontal bars from **`git log --numstat`** (additions only).
+- **Repository size (approx. LoC)** — Horizontal bars of per-repo **`approx_tracked_lines`**, plus a **donut** of share of workspace lines (**top 8 repos + Other**).
+- **File types (workspace)** — Merged extension histogram (**`file_extension_counts`**, top 120 extensions per repo) shown as horizontal share bars (`extension_heatmap_html`); denominator is the sum of each repo’s tracked-file count. Captions on the page spell out limitations (sampling, truncation, not `cloc`).
 
 **Right column** — **Recent commits by repository**: for each git child, up to **five** commits with **subject**, **short hash** (link to host when `origin` parses), **relative time**, and the **commit body** excerpt as context (“explanation”). The column is **sticky** on wide viewports (scrollable if tall).
 
@@ -25,30 +38,31 @@ Git work on Overview uses parallel subprocess calls per repo; very large workspa
 
 ## Projects (`/projects`)
 
-Portal-style **card grid**: each top-level workspace folder is sorted by **last commit** (**`commit_unix`**, newest git repos first; non-git folders last, by name). When kitchensink is present, each card is a **topic preview trigger** (`fs-topic-preview-card`): clicking opens the project dashboard in an **in-page modal** (iframe with **`?fs-embed=1`**). Use **Open full page** in the modal toolbar to open **`/projects/<name>`** in a normal tab. Without kitchensink, cards fall back to **forge-card** links (full navigation).
+**Vertical stack** of full-width panels (same hero chrome as **`/websites`**: `lenses-site-hero-section`, `_lenses_vertical_hero_styles` in `lenses/render.py`), sorted by **last commit** (**`commit_unix`**, newest git repos first; non-git folders last, by name). **`_prefetch_portal_repo_metrics`** runs **`approx_tracked_lines`** and **`git_numstat_since(..., 7)`** in parallel across repos so the portal stays responsive.
 
-Each card summarizes:
+Each panel highlights **high-level** context (not branch/SHA/origin on this page):
 
-- **Clean / Dirty**, **branch**, **short revision** (git), plus **Firebase** / **Web** hints in the description line
-- **Approximate LoC** (newline count in tracked text files, with per-repo caps — same idea as **`tracked_lines_approx`** on **`GET /api/project/<name>/stats`**)
-- **Last update** (relative time from **HEAD** commit, same source as **`commit_unix`** / **`commit_date`**)
-- A short **README.md** excerpt when available
+- **Kicker** — **`website_labels`** for Firebase hosting children when set; otherwise *Project*.
+- **Blurb** — **`project_summaries`** from the registry when present; else a longer **README** excerpt (~360 chars).
+- **Role row** — **Firebase site**, **Published site** (from **`project_urls`**), **WBS** file count with link to **`/wbs`** when this repo roots requirement files.
+- **Stat strip** — approximate **LoC**, relative **updated** time, **+add / −del (7d)** when there was churn (hidden when both zero).
+- **Last change** — latest **commit subject** (truncated) plus optional **Open commit** link; a short note when the tree has **uncommitted changes**.
+- **Actions** — **Open dashboard** → **`/projects/<name>`**; when kitchensink is present, a compact **`fs-topic-preview-card`** (class **`lenses-portal-preview-trigger`**) opens the same URL in an **in-page modal** (`?fs-embed=1`). Without kitchensink, only the dashboard button is shown.
 
 ## Project dashboard (`/projects/<name>`)
 
-Per-repo view with:
+Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_vertical_hero_styles` / `lenses-site-hero-section` in `lenses/render.py`):
 
-- Links to **HTTPS repository** and **commit on host** (GitHub / GitLab) when `origin` parses cleanly
-- Optional **project site** button from **`project_urls`**
-- Table: tree state, branch, revision, last commit message and date, raw `origin` URL
-- **README preview**
-- **Stats**: SVG bar chart of commits by ISO week (90 days), contributor table, file-type share bars, total commit count
-- **Git actions** (Status, Fetch, Pull `--ff-only`): POST to **`/api/project/<name>/git`** via in-page `fetch` (loopback-only unless **`LENSES_ALLOW_GIT_ACTIONS=1`**)
-- Link to **`/api/project/<name>/stats`** for the same stats as JSON
+- **Identity hero** — Kicker (*Git repository* vs *Workspace folder*), title, absolute **path**, optional blurb from **`project_summaries`** in the workspace registry (when set); otherwise a **README preview** appears in its **own** panel below (not duplicated in the hero). **Pill badges**: clean/dirty, branch, short revision; **Firebase site** / **WBS ×N** when applicable. **Stat strip**: approximate **LoC**, relative **last update**, **+additions / −deletions (7d)** from **`git log --numstat`**, **total commits**, **tracked files** (from the same stats payload as the API). **Last commit** line with host link when `origin` parses. **CTAs**: repository, commit, **project site** (`project_urls`), **Preview in lenses** / **Open local site root** / **Firebase sites list** when this child is a Firebase hosting repo, **WBS** when requirement files are rooted under this folder, **← All projects**. Expandable **Technical** block: commit date and raw **origin** URL.
+- **Activity (90 days)** — SVG commits-by-ISO-week bars (unchanged data).
+- **Activity (7 days)** — Commits per calendar day: **`commits_by_day_dict`** aligned with **`workspace_commits_daily_series`**, rendered with **`svg_commit_daily_bar_chart`**.
+- **Contributors** — Table from project stats.
+- **File types** — Extension share bars, tracked file count, total commits.
+- **Git actions** (Status, Fetch, Pull `--ff-only`): POST to **`/api/project/<name>/git`** via in-page `fetch` (loopback-only unless **`LENSES_ALLOW_GIT_ACTIONS=1`**), plus link to **`/api/project/<name>/stats`** for the same stats as JSON.
 
 ## Toolset (`/toolset` and `/toolset/<script>.sh`)
 
-**`/toolset`** — Card grid (same **forge-card** / column layout as Projects): each workspace-root **`*.sh`** file gets a card with a **Shell** badge, a short **blurb** parsed from the script’s leading `#` comments (after the shebang), and **Open run screen →** linking to **`/toolset/<url-encoded-name>`**. The **Cursor / IDE** section still shows whether **`.cursor`** exists at the workspace root.
+**`/toolset`** — Card grid (**forge-card** / column layout): each workspace-root **`*.sh`** file gets a card with a **Shell** badge, a short **blurb** parsed from the script’s leading `#` comments (after the shebang), and **Open run screen →** linking to **`/toolset/<url-encoded-name>`**. The **Cursor / IDE** section still shows whether **`.cursor`** exists at the workspace root.
 
 **`/toolset/<name>`** — Run screen for one script: full comment header (up to a length cap), warning about local execution, **Run script…** (browser **confirm** first), then **`POST /api/toolset/run`**; combined **stdout** / **stderr** appear in a tall console `<pre>` (same loopback policy as project git actions unless **`LENSES_ALLOW_GIT_ACTIONS=1`**). Only basenames of **`*.sh`** files directly under the workspace root are accepted.
 

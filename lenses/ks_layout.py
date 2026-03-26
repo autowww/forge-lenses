@@ -114,7 +114,18 @@ def ks_theme_links() -> str:
         "  .lenses-overview-hbar-fill--warning { background: rgba(245,158,11,0.85); }\n"
         "  .lenses-overview-hbar-fill--success { background: rgba(34,197,94,0.8); }\n"
         "  .lenses-overview-metrics-strip { border-radius: 8px; }\n"
-        "  .lenses-overview-repo-card { border-radius: 8px; }</style>\n"
+        "  .lenses-overview-repo-card { border-radius: 8px; }\n"
+        "  .lenses-overview-donut-wrap { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; }\n"
+        "  .lenses-overview-donut-legend { flex: 1 1 10rem; min-width: 8rem; max-width: 18rem; }\n"
+        "  .lenses-overview-donut-swatch { display: inline-block; width: 0.65rem; height: 0.65rem; "
+        "border-radius: 2px; flex-shrink: 0; }\n"
+        "  .lenses-overview-repo-meta { line-height: 1.55; }\n"
+        "  .lenses-overview-quick-links a { color: var(--bs-info, #06b6d4); text-decoration: none; }\n"
+        "  .lenses-overview-quick-links a:hover { text-decoration: underline; }\n"
+        "  .lenses-overview-ext-pill { font-weight: 500; }\n"
+        "  .lenses-overview-repo-details summary { cursor: pointer; color: var(--bs-info, #06b6d4); }\n"
+        "  .lenses-overview-repo-desc-full { white-space: pre-wrap; word-break: break-word; line-height: 1.45; }\n"
+        "  .lenses-overview-repo-lede { line-height: 1.5; }</style>\n"
     )
 
 
