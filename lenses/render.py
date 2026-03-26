@@ -1647,8 +1647,10 @@ def page_tutorials(
         body_stack = (
             "<p class=\"forge-support mb-3\">No workspace repositories have a detected "
             "forge-autodoc handbook (<code>tutorial/index.html</code>, "
-            "<code>tutorials/index.html</code>, or <code>lenses/tutorials/index.html</code>). "
-            "Run <code>./build-fa-tutorials.sh</code> in each repo, then refresh this page.</p>"
+            "<code>tutorials/index.html</code>, <code>lenses/tutorials/index.html</code>, "
+            "or <code>website/tutorials/index.html</code>). "
+            "Run <code>./build-fa-tutorials.sh</code> or your site generator (e.g. forgesdlc "
+            "<code>python3 generator/build-site.py</code>), then refresh this page.</p>"
             '<p class="forge-support small mb-0">See also '
             '<a href="/docs/index.html">Lenses docs</a> for setup and the HTTP API reference.</p>'
         )
@@ -1810,7 +1812,7 @@ def page_project_detail(
         doc_tutorial = (
             '<span class="text-body-secondary">No forge-autodoc handbook detected</span> '
             "(<code>tutorial/index.html</code>, <code>tutorials/index.html</code>, "
-            "or <code>lenses/tutorials/index.html</code>)"
+            "<code>lenses/tutorials/index.html</code>, or <code>website/tutorials/index.html</code>)"
         )
     doc_extra = ""
     if docs_index_exists:

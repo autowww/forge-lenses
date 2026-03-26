@@ -30,7 +30,7 @@ Requests are rejected if the resolved path leaves those subtrees or is not a reg
 
 | Path | Purpose |
 |------|---------|
-| `/local-site/<repo>/…` | (1) Paths **`tutorial`** or **`tutorial/…`** are served from **`<workspace>/<repo>/tutorial/`** for **any** workspace child (Firebase or not): default **`index.html`** when the path is exactly **`tutorial`**, reject `..`, only regular files. (2) Paths **`tutorials`** or **`tutorials/…`** are served from **`<repo>/tutorials/`** when that directory exists with **`index.html`**, else from **`<repo>/lenses/tutorials/`** (forge-lenses-style output without rsync to **`tutorial/`**). Same **`..`** rules. (3) All other paths are served from **`<workspace>/<repo>/<hosting.public>/`** only when **`firebase.json`** exists (default **`index.html`** when the path is empty, reject `..`). Same origin as the dashboard so pages can be shown in an iframe under the lenses chrome (`/websites/browse?site=<repo>`). |
+| `/local-site/<repo>/…` | (1) Paths **`tutorial`** or **`tutorial/…`** are served from **`<workspace>/<repo>/tutorial/`** for **any** workspace child (Firebase or not): default **`index.html`** when the path is exactly **`tutorial`**, reject `..`, only regular files. (2) Paths **`tutorials`** or **`tutorials/…`** are served from **`<repo>/tutorials/`** when that directory exists with **`index.html`**, else **`<repo>/lenses/tutorials/`**, else **`<repo>/website/tutorials/`** (e.g. forgesdlc). If still not found, the same path is tried under **`<hosting.public>`** when **`firebase.json`** exists. Same **`..`** rules. (3) All other paths are served from **`<workspace>/<repo>/<hosting.public>/`** only when **`firebase.json`** exists (default **`index.html`** when the path is empty, reject `..`). Same origin as the dashboard so pages can be shown in an iframe under the lenses chrome (`/websites/browse?site=<repo>`). |
 
 ### HTML responses (`*.html` / `*.htm`)
 
@@ -54,7 +54,7 @@ Non-HTML files (CSS, JS, fonts, images, etc.) are returned **unchanged**. **`Con
 |------|---------|
 | `/` | Overview: workspace root, child directories, quick stats. |
 | `/projects` | Portal: card grid with README previews, git badges, links to each project dashboard. |
-| `/tutorials` | Index of every detected forge-autodoc handbook per workspace child (**`tutorial/index.html`**, **`tutorials/index.html`**, or **`lenses/tutorials/index.html`** via **`list_child_handbooks`**), with **Open tutorial** / **Open engineer handbook** links under **`/local-site/<name>/…`** and **Project dashboard**. |
+| `/tutorials` | Index of every detected forge-autodoc handbook per workspace child (**`tutorial/index.html`**, **`tutorials/index.html`**, **`lenses/tutorials/index.html`**, or **`website/tutorials/index.html`** via **`list_child_handbooks`**), with **Open tutorial** / **Open engineer handbook** links under **`/local-site/<name>/…`** and **Project dashboard**. |
 | `/projects/<name>` | Per-project dashboard: revision links, 90-day commit chart, contributors, file-type bars, optional git actions, JSON stats link. |
 | `/toolset` | Card grid of workspace-root **`*.sh`** scripts (blurbs from comments) and `.cursor` presence. |
 | `/toolset/<name>` | Per-script run screen: confirm, then **`POST /api/toolset/run`** for console output. |

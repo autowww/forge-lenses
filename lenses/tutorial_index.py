@@ -3,6 +3,7 @@
 - ``tutorial/index.html`` — optional sync target after ``build-fa-tutorials.sh`` (e.g. forge-lenses).
 - ``tutorials/index.html`` — typical ``output_dir`` at repo root (e.g. aw3).
 - ``lenses/tutorials/index.html`` — forge-lenses build output when not rsynced to ``tutorial/``.
+- ``website/tutorials/index.html`` — product sites (e.g. forgesdlc) where fa output lives under ``website/``.
 
 The dashboard route ``/tutorials`` (global index) is separate from the local-site prefix
 ``/local-site/<repo>/tutorials/…`` (plural), which serves forge-autodoc HTML output.
@@ -54,7 +55,8 @@ def resolve_child_tutorial_index_file(child: Path) -> Path | None:
 def resolve_repo_tutorials_root(child: Path) -> Path | None:
     """
     Directory that backs URL prefix ``tutorials/``: prefer ``child/tutorials``,
-    else ``child/lenses/tutorials`` when it contains ``index.html``.
+    then ``child/lenses/tutorials``, then ``child/website/tutorials`` when
+    ``index.html`` exists (for static-site generators that emit under ``website/``).
     """
     try:
         child = child.resolve()
@@ -62,7 +64,11 @@ def resolve_repo_tutorials_root(child: Path) -> Path | None:
         return None
     if not child.is_dir():
         return None
-    for rel in ("tutorials", Path("lenses") / "tutorials"):
+    for rel in (
+        "tutorials",
+        Path("lenses") / "tutorials",
+        Path("website") / "tutorials",
+    ):
         base = (child / rel).resolve()
         try:
             base.relative_to(child)

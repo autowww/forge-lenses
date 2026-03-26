@@ -236,7 +236,10 @@ def _safe_local_site_file(
     if tutorial_url_tail_matches(rel):
         return resolve_tutorial_site_file(child, rel)
     if repo_tutorials_url_tail_matches(rel):
-        return resolve_repo_tutorials_site_file(child, rel)
+        hit = resolve_repo_tutorials_site_file(child, rel)
+        if hit is not None:
+            return hit
+        # e.g. tutorials/ only under hosting.public with a nonstandard layout
     base = _firebase_public_dir(workspace_root, registry, site_name)
     if base is None:
         return None

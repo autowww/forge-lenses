@@ -12,7 +12,7 @@ The UI is server-generated HTML from `lenses/render.py`. When the **kitchensink*
 
 - **Badges** — clean/dirty, branch, Firebase, published site (**Web**), and **Submodules: N** when a **`.gitmodules`** file exists at the repo root (section count only).
 - **Facts line** — For git repos: **HEAD** short hash (linked when `origin` parses to a known host), **Updated** (relative time from **`commit_unix` / `commit_date`**), one-line **Latest** subject, **commits (7d)** (sum of **`commits_by_day_dict`**), **+additions / −deletions (7d)** from **`git_numstat_since`**, and **~LoC** (**`approx_tracked_lines`**).
-- **Quick links** — **Project** (`/projects/<name>`), **Live** when **`project_urls`** lists a URL, **Preview** (`/local-site/<name>/…`) when that folder is a detected Firebase site, and **one link per detected handbook** (new tab) when the child has **`tutorial/index.html`**, **`tutorials/index.html`**, or **`lenses/tutorials/index.html`** (`list_child_handbooks` in `tutorial_index.py`).
+- **Quick links** — **Project** (`/projects/<name>`), **Live** when **`project_urls`** lists a URL, **Preview** (`/local-site/<name>/…`) when that folder is a detected Firebase site, and **one link per detected handbook** (new tab) when the child has **`tutorial/index.html`**, **`tutorials/index.html`**, **`lenses/tutorials/index.html`**, or **`website/tutorials/index.html`** (`list_child_handbooks` in `tutorial_index.py`).
 - **File mix** — Top **five** extensions from **`file_extension_counts`** for that repo (percent of that repo’s tracked files, with full counts in the pill **`title`**).
 - **Description** — Registry **`project_summaries`** override the README source when set. Long text (**> ~400 characters**, **> 4** non-empty lines, or ASCII-tree markers such as **`├──` / `└──`**) shows a short **lede** plus a **`<details>`** block (“Full description” or “Architecture & full notes”) so large blurbs stay collapsible without JavaScript. Shorter text stays a single paragraph (truncated to ~720 characters when below the threshold).
 
@@ -36,7 +36,7 @@ The UI is server-generated HTML from `lenses/render.py`. When the **kitchensink*
 
 Git work on Overview uses parallel subprocess calls per repo; very large workspaces may take a few seconds on first load.
 
-**Forge-autodoc handbooks** — Per workspace child, **`list_child_handbooks`** detects **`<repo>/tutorial/index.html`** (optional rsync target after **`build-fa-tutorials.sh`**), **`<repo>/tutorials/index.html`** (typical **`output_dir`** e.g. aw3), and **`<repo>/lenses/tutorials/index.html`** (forge-lenses build without rsync). If both root **`tutorials/`** and **`lenses/tutorials/`** exist, the URL prefix **`tutorials/`** maps to the root directory first. Served as **`/local-site/<name>/tutorial/…`** and **`/local-site/<name>/tutorials/…`** (not part of **`/websites`** indexing). For Firebase sites, page titles from the scan may override default labels (**Tutorial** / **Engineer handbook**). The nav **Tutorials** item opens **`/tutorials`**, which lists **each** handbook (a repo can appear more than once if it has both **`tutorial/`** and **`tutorials/`**).
+**Forge-autodoc handbooks** — Per workspace child, **`list_child_handbooks`** detects **`<repo>/tutorial/index.html`** (optional rsync target after **`build-fa-tutorials.sh`**), **`<repo>/tutorials/index.html`** (typical **`output_dir`** e.g. aw3), **`<repo>/lenses/tutorials/index.html`** (forge-lenses build without rsync), and **`<repo>/website/tutorials/index.html`** (e.g. forgesdlc **`build-site.py`**). If multiple **`tutorials/`** trees exist, the URL prefix **`tutorials/`** maps to the first match: root, then **`lenses/tutorials/`**, then **`website/tutorials/`**. Served as **`/local-site/<name>/tutorial/…`** and **`/local-site/<name>/tutorials/…`** (not part of **`/websites`** indexing). For Firebase sites, page titles from the scan may override default labels (**Tutorial** / **Engineer handbook**). The nav **Tutorials** item opens **`/tutorials`**, which lists **each** handbook (a repo can appear more than once if it has both **`tutorial/`** and **`tutorials/`**).
 
 ## Navigation (sidebar and compact top bar)
 
@@ -44,7 +44,7 @@ Workspace band: **Overview**, **Projects**, **Tutorials**, **Toolset**, **Websit
 
 ## Tutorials (`/tutorials`)
 
-Lists **each** handbook found under top-level workspace children (**`tutorial/`**, **`tutorials/`**, or **`lenses/tutorials/`**), with **Open tutorial** or **Open engineer handbook** and **Project dashboard** links. Empty state lists the path patterns and points to **Lenses docs**.
+Lists **each** handbook found under top-level workspace children (**`tutorial/`**, **`tutorials/`**, **`lenses/tutorials/`**, or **`website/tutorials/`**), with **Open tutorial** or **Open engineer handbook** and **Project dashboard** links. Empty state lists the path patterns and points to **Lenses docs**.
 
 ## Projects (`/projects`)
 

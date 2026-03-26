@@ -18,7 +18,7 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 | `lenses/registry.py` | Loads `workspace-registry.json` from the **forge-lenses** repo root and merges with defaults. |
 | `lenses/tutorial_index.py` | **`list_child_handbooks`**, **`tutorial/`** and **`tutorials/`** URL resolution for **`/local-site/<repo>/…`**. |
 | `lenses/website/*.md` | Source for **reference** handbook pages (this section); consumed by `generator/build-lenses-docs.py` with `docs/index.md` as the `/docs/` hub. |
-| `lenses/fa-tutorial-md/*.md` | Source for **tutorial** handbook pages; built by **forge-autodoc** (`./build-fa-tutorials.sh`) into **`lenses/tutorials/`**, optionally synced to repo-root **`tutorial/`**. **`tutorial_index.py`** also discovers **`tutorials/`** and **`lenses/tutorials/`** so **`/tutorials`** (global index) and **`/local-site/<repo>/tutorials/…`** work without rsync. |
+| `lenses/fa-tutorial-md/*.md` | Source for **tutorial** handbook pages; built by **forge-autodoc** (`./build-fa-tutorials.sh`) into **`lenses/tutorials/`**, optionally synced to repo-root **`tutorial/`**. **`tutorial_index.py`** also discovers **`tutorials/`**, **`lenses/tutorials/`**, and **`website/tutorials/`** (e.g. forgesdlc) so **`/tutorials`** (global index) and **`/local-site/<repo>/tutorials/…`** work without rsync. |
 
 ## Data flow
 
