@@ -260,21 +260,22 @@ _LOC_BINARY_SUFFIXES = frozenset(
 )
 
 
-def approx_tracked_lines(repo: Path) -> int | None:
-    """Count newlines in git-tracked files under *repo* (approximate LoC).
-
-    Skips large files, common binary extensions, and blobs with NUL in the first 8KiB.
-    Stops after a wall-clock budget, byte budget, or file count cap.
-    """
+def git_tracked_paths(repo: Path) -> list[str] | None:
+    """Return decoded paths from `git ls-files`, or None if not a git repo / git failed."""
     top = repo.resolve()
     if not (top / ".git").exists():
         return None
-    code, raw, _ = _run_git_bytes(top, "ls-files", "-z", timeout=60.0)
+    code, raw, _ = _run_git_bytes(top, "ls-files", "-z", timeout=120.0)
     if code != 0:
         return None
-    names = [x.decode("utf-8", errors="replace") for x in raw.split(b"\0") if x]
+    return [x.decode("utf-8", errors="replace") for x in raw.split(b"\0") if x]
+
+
+def approx_tracked_lines_from_paths(top: Path, names: list[str]) -> int:
+    """Count newlines from a precomputed tracked path list (single ls-files pass)."""
     if not names:
         return 0
+    top = top.resolve()
     deadline = time.monotonic() + _LOC_WALL_SECONDS
     total_lines = 0
     bytes_read = 0
@@ -317,11 +318,22 @@ def approx_tracked_lines(repo: Path) -> int | None:
     return total_lines
 
 
-def file_extension_counts(cwd: Path, limit: int = 20) -> tuple[list[tuple[str, int]], int]:
-    code, raw, _ = _run_git_bytes(cwd, "ls-files", "-z", timeout=120.0)
-    if code != 0:
-        return [], 0
-    names = [x.decode("utf-8", errors="replace") for x in raw.split(b"\0") if x]
+def approx_tracked_lines(repo: Path) -> int | None:
+    """Count newlines in git-tracked files under *repo* (approximate LoC).
+
+    Skips large files, common binary extensions, and blobs with NUL in the first 8KiB.
+    Stops after a wall-clock budget, byte budget, or file count cap.
+    """
+    top = repo.resolve()
+    names = git_tracked_paths(top)
+    if names is None:
+        return None
+    return approx_tracked_lines_from_paths(top, names)
+
+
+def file_extension_counts_from_names(
+    names: list[str], limit: int = 20
+) -> tuple[list[tuple[str, int]], int]:
     ext_counts: Counter[str] = Counter()
     for name in names:
         part = Path(name)
@@ -329,6 +341,54 @@ def file_extension_counts(cwd: Path, limit: int = 20) -> tuple[list[tuple[str, i
         ext_counts[suf] += 1
     items = sorted(ext_counts.items(), key=lambda x: (-x[1], x[0]))
     return items[:limit], len(names)
+
+
+def file_extension_counts(cwd: Path, limit: int = 20) -> tuple[list[tuple[str, int]], int]:
+    names = git_tracked_paths(cwd.resolve())
+    if names is None:
+        return [], 0
+    return file_extension_counts_from_names(names, limit)
+
+
+def overview_repo_row_metrics(
+    c: dict[str, Any],
+    *,
+    ext_limit: int = 120,
+) -> tuple[
+    str,
+    Path,
+    dict[str, Any],
+    list[dict[str, str]],
+    tuple[int, int] | None,
+    int | None,
+    dict[str, int],
+    tuple[list[tuple[str, int]], int],
+]:
+    """One `git ls-files` for LoC + extension counts when possible; same git logs as before."""
+    name = str(c.get("name", ""))
+    path = Path(str(c.get("path", "")))
+    if not c.get("is_git"):
+        return (name, path, c, [], None, None, {}, ([], 0))
+    commits = git_recent_commits(path, 5)
+    add_d = git_numstat_since(path, 7)
+    day_dict = commits_by_day_dict(path, 7)
+    tracked = git_tracked_paths(path)
+    if tracked is None:
+        loc = approx_tracked_lines(path)
+        ext_rows, ext_total = file_extension_counts(path, limit=ext_limit)
+    else:
+        loc = approx_tracked_lines_from_paths(path, tracked)
+        ext_rows, ext_total = file_extension_counts_from_names(tracked, limit=ext_limit)
+    return (
+        name,
+        path,
+        c,
+        commits,
+        add_d,
+        loc,
+        day_dict,
+        (ext_rows, ext_total),
+    )
 
 
 def svg_commit_bar_chart(
@@ -344,39 +404,77 @@ def svg_commit_bar_chart(
     values = [w[1] for w in weekly]
     vmax = max(values) if values else 1
     n = len(values)
-    margin_l, margin_r, margin_t, margin_b = 36, 12, 12, 28
+    margin_l, margin_r, margin_t, margin_b = 44, 12, 26, 28
     inner_w = width - margin_l - margin_r
     inner_h = height - margin_t - margin_b
     bw = max(2.0, (inner_w / n) * 0.72)
     gap = max(0.5, (inner_w / n) * 0.28)
-    bars = []
+    muted = "var(--forge-muted,#94a3b8)"
+    grid = "rgba(148,163,184,0.22)"
+    y_base = margin_t + inner_h
+
+    def _y_for_count(c: int) -> float:
+        if vmax <= 0:
+            return y_base
+        return margin_t + inner_h - (c / vmax) * inner_h
+
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'role="img" aria-label="Commits by week" style="width:100%;max-width:{width}px;height:auto">',
+        '<rect width="100%" height="100%" fill="transparent"/>',
+    ]
+    half = vmax // 2 if vmax > 1 else 0
+    tick_specs: list[tuple[int, float]] = [
+        (vmax, _y_for_count(vmax)),
+        (half, _y_for_count(half)),
+        (0, y_base),
+    ]
+    drawn_y: set[float] = set()
+    for tval, yp in tick_specs:
+        key = round(yp, 1)
+        if key in drawn_y:
+            continue
+        drawn_y.add(key)
+        parts.append(
+            f'<line x1="{margin_l:.1f}" y1="{yp:.1f}" x2="{width - margin_r:.1f}" y2="{yp:.1f}" '
+            f'stroke="{grid}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<line x1="{margin_l - 4:.1f}" y1="{yp:.1f}" x2="{margin_l:.1f}" y2="{yp:.1f}" '
+            f'stroke="{muted}" stroke-width="1"/>'
+        )
+        ty = min(yp + 3.5, y_base + 2.0)
+        parts.append(
+            f'<text x="{margin_l - 6:.1f}" y="{ty:.1f}" text-anchor="end" fill="{muted}" '
+            f'font-size="9">{tval}</text>'
+        )
+
     for i, v in enumerate(values):
         x = margin_l + i * (bw + gap) + gap * 0.25
         h = (v / vmax) * inner_h if vmax else 0
         y = margin_t + inner_h - h
-        bars.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{max(h, 1):.1f}" '
+        bh = max(h, 1.0)
+        parts.append(
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{bh:.1f}" '
             f'fill="{bar_color}" rx="2"><title>{labels[i]}: {v} commits</title></rect>'
         )
-    # x-axis tick: show first, middle, last week labels
+        cx = x + bw / 2
+        vy = y - 3.0 if y > margin_t + 10 else margin_t + 10
+        parts.append(
+            f'<text x="{cx:.1f}" y="{vy:.1f}" text-anchor="middle" fill="{muted}" '
+            f'font-size="9">{v}</text>'
+        )
     tick_idx = [0, n // 2, n - 1] if n > 2 else list(range(n))
-    ticks = []
     for idx in tick_idx:
         if idx < 0 or idx >= n:
             continue
         x = margin_l + idx * (bw + gap) + gap * 0.25 + bw / 2
-        ticks.append(
+        parts.append(
             f'<text x="{x:.1f}" y="{height - 6}" text-anchor="middle" '
-            f'fill="var(--forge-muted,#94a3b8)" font-size="10">{labels[idx]}</text>'
+            f'fill="{muted}" font-size="10">{labels[idx]}</text>'
         )
-    return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
-        f'role="img" aria-label="Commits by week" style="width:100%;max-width:{width}px;height:auto">'
-        f'<rect width="100%" height="100%" fill="transparent"/>'
-        + "".join(bars)
-        + "".join(ticks)
-        + "</svg>"
-    )
+    parts.append("</svg>")
+    return "\n".join(parts)
 
 
 def svg_loc_added_horizontal_bars(
@@ -485,11 +583,12 @@ def svg_commit_daily_bar_chart(
     values = [int(d[1]) for d in daily]
     vmax = max(values) if values else 1
     n = len(values)
-    margin_l, margin_r, margin_t, margin_b = 40, 12, 12, 36
+    margin_l, margin_r, margin_t, margin_b = 40, 12, 26, 36
     inner_w = width - margin_l - margin_r
     inner_h = height - margin_t - margin_b
     bw = max(8.0, (inner_w / n) * 0.65)
     gap = max(2.0, (inner_w / n) * 0.35)
+    muted = "var(--forge-muted,#94a3b8)"
     parts: list[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'role="img" aria-label="Commits by day" style="width:100%;max-width:{width}px;height:auto">',
@@ -499,14 +598,21 @@ def svg_commit_daily_bar_chart(
         x = margin_l + i * (bw + gap) + gap * 0.2
         h = (v / vmax) * inner_h if vmax else 0
         y = margin_t + inner_h - h
+        bh = max(h, 1.0)
         short_lbl = labels[i][5:] if len(labels[i]) >= 10 else labels[i]
         parts.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{max(h, 1):.1f}" '
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{bh:.1f}" '
             f'fill="{bar_color}" rx="2"><title>{labels[i]}: {v} commits</title></rect>'
         )
+        cx = x + bw / 2
+        vy = y - 3.0 if y > margin_t + 10 else margin_t + 10
         parts.append(
-            f'<text x="{x + bw / 2:.1f}" y="{height - 8}" text-anchor="middle" '
-            f'fill="var(--forge-muted,#94a3b8)" font-size="9">{html.escape(short_lbl, quote=True)}</text>'
+            f'<text x="{cx:.1f}" y="{vy:.1f}" text-anchor="middle" fill="{muted}" '
+            f'font-size="9">{v}</text>'
+        )
+        parts.append(
+            f'<text x="{cx:.1f}" y="{height - 8}" text-anchor="middle" '
+            f'fill="{muted}" font-size="9">{html.escape(short_lbl, quote=True)}</text>'
         )
     parts.append("</svg>")
     return "\n".join(parts)

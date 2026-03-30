@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import ipaddress
 import json
 import mimetypes
+import os
 import sys
+import threading
+import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -47,6 +51,7 @@ from lenses.render import (
     page_project_repo_strategy,
     page_projects,
     page_roadmap_preview_document,
+    page_roadmap_timeline_document,
     page_roadmaps,
     roadmap_summary_fragment,
     page_sticker_board_editor,
@@ -80,6 +85,32 @@ from lenses.toolset_actions import run_toolset_script
 
 LENSES_REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = LENSES_REPO_ROOT / "lenses-docs"
+
+_DEFAULT_SCAN_CACHE_SEC = 3.0
+_scan_cache_lock = threading.Lock()
+# Key: git_extended only (workspace is fixed per process). Value: (state dict, monotonic time).
+_scan_cache_store: dict[tuple[bool], tuple[dict, float]] = {}
+
+
+def _scan_cache_ttl_sec() -> float | None:
+    """TTL for workspace scan cache; None disables caching. Env LENSES_SCAN_CACHE_SEC: 0=off, empty=default."""
+    raw = os.environ.get("LENSES_SCAN_CACHE_SEC", "").strip()
+    if raw == "":
+        return _DEFAULT_SCAN_CACHE_SEC
+    try:
+        v = float(raw)
+    except ValueError:
+        return _DEFAULT_SCAN_CACHE_SEC
+    if v <= 0:
+        return None
+    return v
+
+
+def _refresh_query_truthy(qs: dict[str, list[str]]) -> bool:
+    vals = qs.get("refresh", [])
+    if not vals:
+        return False
+    return str(vals[0]).strip().lower() in ("1", "true", "yes")
 
 
 def _board_preview_base_url(handler: BaseHTTPRequestHandler) -> str:
@@ -355,7 +386,21 @@ class LensesHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(raw)
 
-    def _scan(self, *, git_extended: bool = False) -> dict:
+    def _scan(
+        self, *, git_extended: bool = False, force_refresh: bool = False
+    ) -> dict:
+        """Full workspace scan + standards enrichment. Cached briefly (see LENSES_SCAN_CACHE_SEC)."""
+        ttl = _scan_cache_ttl_sec()
+        key = (git_extended,)
+        if ttl is not None and not force_refresh:
+            now = time.monotonic()
+            with _scan_cache_lock:
+                hit = _scan_cache_store.get(key)
+                if hit is not None:
+                    state_cached, t0 = hit
+                    if now - t0 < ttl:
+                        return copy.deepcopy(state_cached)
+
         state = scan_workspace(
             self.workspace_root,
             LENSES_REPO_ROOT,
@@ -363,10 +408,15 @@ class LensesHandler(BaseHTTPRequestHandler):
             git_extended=git_extended,
         )
         enrich_workspace_with_standards(state, self.registry)
-        return state
+        if ttl is not None:
+            with _scan_cache_lock:
+                _scan_cache_store[key] = (state, time.monotonic())
+        return copy.deepcopy(state)
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urllib.parse.urlparse(self.path)
+        qs = urllib.parse.parse_qs(parsed.query or "")
+        force_refresh = _refresh_query_truthy(qs)
         path = parsed.path.rstrip("/") or "/"
         if path != "/" and parsed.path.endswith("/") and not parsed.path.startswith("/docs"):
             path = parsed.path.rstrip("/") or "/"
@@ -420,7 +470,7 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/sticker-board-registry":
-            state = self._scan()
+            state = self._scan(force_refresh=force_refresh)
             slugs = _child_slugs_from_scan(state)
             snap = registry_snapshot(
                 self.workspace_root, self.expected_github_login, slugs
@@ -451,10 +501,11 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/workspace-state":
-            qs = urllib.parse.parse_qs(parsed.query or "")
             ext = qs.get("git_extended", [])
             git_extended = bool(ext) and str(ext[0]).lower() in ("1", "true", "yes")
-            state = self._scan(git_extended=git_extended)
+            state = self._scan(
+                git_extended=git_extended, force_refresh=force_refresh
+            )
             raw = workspace_state_json(state).encode("utf-8")
             self._send(200, raw, "application/json; charset=utf-8")
             return
@@ -564,7 +615,7 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, data, ctype)
             return
 
-        state = self._scan(git_extended=True)
+        state = self._scan(git_extended=True, force_refresh=force_refresh)
 
         if path == "/":
             html = page_overview(
@@ -716,6 +767,21 @@ class LensesHandler(BaseHTTPRequestHandler):
             text = sp.read_text(encoding="utf-8", errors="replace")
             frag = roadmap_summary_fragment(text)
             self._send(200, frag.encode("utf-8"), "text/html; charset=utf-8")
+            return
+        if path == "/roadmaps/timeline":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            rels = qs.get("p", [])
+            if not rels:
+                self._send(400, b"Missing p=", "text/plain; charset=utf-8")
+                return
+            rel = rels[0]
+            sp = _safe_roadmap_file(self.workspace_root, rel)
+            if sp is None:
+                self._send(404, b"Not found or not allowed", "text/plain; charset=utf-8")
+                return
+            text = sp.read_text(encoding="utf-8", errors="replace")
+            doc = page_roadmap_timeline_document(text, rel)
+            self._send(200, doc.encode("utf-8"), "text/html; charset=utf-8")
             return
         if path == "/roadmaps/preview":
             qs = urllib.parse.parse_qs(parsed.query or "")
@@ -1115,7 +1181,7 @@ class LensesHandler(BaseHTTPRequestHandler):
         payload = body.get("payload")
         if not isinstance(payload, dict):
             payload = {k: v for k, v in body.items() if k != "action"}
-        state = self._scan()
+        state = self._scan(force_refresh=True)
         slugs = _child_slugs_from_scan(state)
         ok, err, extra = registry_apply(
             self.workspace_root,

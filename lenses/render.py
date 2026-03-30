@@ -48,9 +48,9 @@ from lenses.project_stats import (
     collect_project_stats,
     commits_by_day_dict,
     extension_heatmap_html,
-    file_extension_counts,
     git_numstat_since,
     git_recent_commits,
+    overview_repo_row_metrics,
     svg_commit_bar_chart,
     svg_commit_daily_bar_chart,
     svg_loc_added_horizontal_bars,
@@ -594,16 +594,7 @@ def _gather_overview_repo_row(
     dict[str, int],
     tuple[list[tuple[str, int]], int],
 ]:
-    name = str(c.get("name", ""))
-    path = Path(str(c.get("path", "")))
-    if not c.get("is_git"):
-        return (name, path, c, [], None, None, {}, ([], 0))
-    commits = git_recent_commits(path, 5)
-    add_d = git_numstat_since(path, 7)
-    loc = approx_tracked_lines(path)
-    day_dict = commits_by_day_dict(path, 7)
-    ext_rows, ext_total = file_extension_counts(path, limit=120)
-    return (name, path, c, commits, add_d, loc, day_dict, (ext_rows, ext_total))
+    return overview_repo_row_metrics(c, ext_limit=120)
 
 
 def _gitmodules_submodule_count(repo_path: Path) -> int:

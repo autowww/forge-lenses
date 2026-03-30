@@ -1,4 +1,4 @@
-"""Scan workspace root: git children, toolset, firebase sites, WBS files."""
+"""Scan workspace root: git children, toolset, firebase sites, WBS, roadmaps."""
 
 from __future__ import annotations
 
@@ -39,6 +39,89 @@ class WbsEntry:
     repo_hint: str
     rel_path: str
     kind: str
+
+
+@dataclass
+class RoadmapEntry:
+    repo_hint: str
+    rel_path: str
+    kind: str
+
+
+# Skip when walking a repo for ROADMAP.md (avoids node_modules / build trees).
+_RGLOB_SKIP_DIR_NAMES = frozenset(
+    {
+        "node_modules",
+        ".git",
+        "dist",
+        "build",
+        "target",
+        ".venv",
+        "venv",
+        "__pycache__",
+        "website",
+        ".gradle",
+        ".idea",
+    }
+)
+
+
+def _walk_roadmap_files(base: Path) -> list[Path]:
+    """Find ROADMAP.md under *base* without descending into heavy directories."""
+    out: list[Path] = []
+    stack = [base]
+    while stack:
+        d = stack.pop()
+        try:
+            for ch in sorted(d.iterdir(), key=lambda x: x.name.lower()):
+                if ch.is_dir():
+                    if ch.name in _RGLOB_SKIP_DIR_NAMES or ch.name.startswith("."):
+                        continue
+                    stack.append(ch)
+                elif ch.is_file() and ch.name == "ROADMAP.md":
+                    out.append(ch)
+        except OSError:
+            continue
+    return out
+
+
+def _append_wbs_from_base(
+    base: Path,
+    workspace_root: Path,
+    wbs_list: list[WbsEntry],
+) -> None:
+    req = base / "docs" / "requirements"
+    for fname, kind in (("WBS.md", "md"), ("WBS.csv", "csv")):
+        p = req / fname
+        if not p.is_file():
+            continue
+        try:
+            rel = p.relative_to(workspace_root)
+        except ValueError:
+            continue
+        hint = rel.parts[0] if rel.parts else ""
+        wbs_list.append(
+            WbsEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind=kind)
+        )
+
+
+def _append_roadmaps_from_base(
+    base: Path,
+    workspace_root: Path,
+    roadmap_list: list[RoadmapEntry],
+) -> None:
+    for rm in _walk_roadmap_files(base):
+        try:
+            rm.relative_to(workspace_root)
+        except ValueError:
+            continue
+        if "docs" not in rm.parts:
+            continue
+        rel = rm.relative_to(workspace_root)
+        hint = rel.parts[0] if rel.parts else ""
+        roadmap_list.append(
+            RoadmapEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind="md")
+        )
 
 
 def _run_git(cwd: Path, *args: str) -> str | None:
@@ -257,29 +340,22 @@ def scan_workspace(
                 }
             )
 
+    # WBS / roadmaps: search each top-level child and optional workspace docs/ only
+    # (avoid workspace-wide rglob into node_modules and other huge trees).
     wbs_list: list[WbsEntry] = []
-    for md in root.rglob("docs/requirements/WBS.md"):
-        try:
-            md.relative_to(root)
-        except ValueError:
+    roadmap_list: list[RoadmapEntry] = []
+    if (root / "docs").is_dir():
+        _append_wbs_from_base(root, root, wbs_list)
+        _append_roadmaps_from_base(root / "docs", root, roadmap_list)
+    for c in children:
+        cp = root / c.name
+        if not cp.is_dir():
             continue
-        if not md.is_file():
-            continue
-        rel = md.relative_to(root)
-        hint = rel.parts[0] if rel.parts else ""
-        wbs_list.append(WbsEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind="md"))
-    for csv in root.rglob("docs/requirements/WBS.csv"):
-        try:
-            csv.relative_to(root)
-        except ValueError:
-            continue
-        if not csv.is_file():
-            continue
-        rel = csv.relative_to(root)
-        hint = rel.parts[0] if rel.parts else ""
-        wbs_list.append(WbsEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind="csv"))
+        _append_wbs_from_base(cp, root, wbs_list)
+        _append_roadmaps_from_base(cp, root, roadmap_list)
 
     wbs_list.sort(key=lambda w: w.rel_path)
+    roadmap_list.sort(key=lambda r: r.rel_path)
 
     return {
         "workspace_root": str(root),
@@ -293,6 +369,7 @@ def scan_workspace(
         },
         "websites": websites,
         "wbs": [asdict(w) for w in wbs_list],
+        "roadmaps": [asdict(r) for r in roadmap_list],
     }
 
 
