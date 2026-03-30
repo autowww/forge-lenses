@@ -26,7 +26,7 @@ Use **`type(scope): imperative summary`**. Common **scopes**:
 | `server` | Server / CLI entry (if split from package) |
 | `docs` | In-repo documentation |
 | `blueprints` | Submodule pointer only (edit **autowww/blueprints** upstream) |
-| `kitchensink` | Submodule pointer only (edit **autowww/forgesdlc-kitchensink** upstream) |
+| `kitchensink` | Submodule pointer only (edit **autowww/forgesdlc-kitchensink** upstream; includes **forge-autodoc** at `kitchensink/forge-autodoc/`) |
 
 This repo may embed **nested submodules** (`blueprints/`, `kitchensink/`). **Do not** use this repo to replace upstream edits—commit in the **standalone** repository, then bump the submodule pointer here in a **separate** commit.
 

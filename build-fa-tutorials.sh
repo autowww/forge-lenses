@@ -7,10 +7,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
-FA="$ROOT/forge-autodoc"
+FA="$ROOT/kitchensink/forge-autodoc"
 if [[ ! -f "$FA/forge_autodoc/__init__.py" ]]; then
-  echo "[build-fa-tutorials] Missing forge-autodoc. Run:" >&2
-  echo "  git submodule update --init --recursive forge-autodoc" >&2
+  echo "[build-fa-tutorials] Missing kitchensink/forge-autodoc. Run:" >&2
+  echo "  git submodule update --init --recursive kitchensink" >&2
   exit 1
 fi
 

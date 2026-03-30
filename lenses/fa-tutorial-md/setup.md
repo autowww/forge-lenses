@@ -8,7 +8,7 @@ cd forge-lenses
 ./scripts/setup.sh
 ```
 
-`setup.sh` initializes nested submodules **kitchensink**, **blueprints**, and **forge-autodoc** and runs **`lenses-startup.sh`**. On a standalone clone that affects **this** repo; when **forge-lenses** is a submodule, startup **elevates** to the superproject and creates `.lenses-*` on the **host** repo root (same as running `./forge-lenses/scripts/lenses-startup.sh` from the host).
+`setup.sh` initializes nested submodules **kitchensink** (which includes **forge-autodoc** at `kitchensink/forge-autodoc/`) and **blueprints**, and runs **`lenses-startup.sh`**. On a standalone clone that affects **this** repo; when **forge-lenses** is a submodule, startup **elevates** to the superproject and creates `.lenses-*` on the **host** repo root (same as running `./forge-lenses/scripts/lenses-startup.sh` from the host).
 
 ## As a submodule (`forge-lenses/`)
 

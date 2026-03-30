@@ -15,8 +15,7 @@ The Python package inside this repo is still named **`lenses`** (`python3 -m len
 
 | Path | Purpose |
 |------|---------|
-| `kitchensink/` | Submodule (Forge design system) — docs + tutorial builds |
-| `forge-autodoc/` | Submodule (**fa**) — `python3 -m forge_autodoc` for tutorials |
+| `kitchensink/` | Submodule (Forge design system + **forge-autodoc** at `kitchensink/forge-autodoc`) — docs + tutorial builds |
 | `blueprints/` | Submodule (framework source) |
 | `lenses/` | Python package (`serve`, `scan`, …) |
 | `lenses/website/` | Markdown source for **reference** handbook pages (merged with `docs/` in `build-lenses-docs.py`) |

@@ -39,6 +39,6 @@ if [[ -x "$ROOT/scripts/lenses-startup.sh" ]]; then
   REPO_ROOT="$ROOT" "$ROOT/scripts/lenses-startup.sh" || true
 fi
 echo "  Build /docs/:  python3 generator/build-lenses-docs.py"
-echo "  Build tutorials:  ./build-fa-tutorials.sh  (needs forge-autodoc submodule + PyYAML)"
+echo "  Build tutorials:  ./build-fa-tutorials.sh  (needs kitchensink submodule with forge-autodoc + PyYAML)"
 echo "  Run server:  ./scripts/run-lenses.sh"
 echo "  Workspace:   export LENSES_WORKSPACE_ROOT=/path/to/parent   (optional; server scan + lenses-startup.sh data dirs)"
