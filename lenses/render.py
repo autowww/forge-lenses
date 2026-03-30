@@ -1675,8 +1675,10 @@ def page_overview(
     metrics_strip = _overview_metrics_strip_html(metrics)
 
     foot = (
-        '<p class="forge-support mb-0 mt-4">Reload any page to refresh discovery '
-        "(no server-side cache).</p>"
+        '<p class="forge-support mb-0 mt-4">Workspace discovery is cached briefly on the server '
+        "(default ~20s, <code>LENSES_SCAN_CACHE_SEC</code>). "
+        "Add <code>?refresh=1</code> to any URL to force a fresh scan. "
+        '<a href="/overview/charts-api">API-driven charts</a> (same metrics as below).</p>'
     )
 
     body_inner = (
@@ -2231,9 +2233,12 @@ def page_project_detail(
     )
 
     strategy_href = f"/projects/{urllib.parse.quote(project_name, safe='')}/strategy"
+    charts_api_href = f"/projects/{urllib.parse.quote(project_name, safe='')}/charts-api"
     grp_nav = [
         f'<a class="btn btn-sm btn-outline-secondary" href="{esc(strategy_href)}">'
         f"Repo &amp; strategy</a>",
+        f'<a class="btn btn-sm btn-outline-secondary" href="{esc(charts_api_href)}">'
+        f"Charts (API)</a>",
         '<a class="btn btn-sm btn-link px-0" href="/projects">← All projects</a>',
     ]
 

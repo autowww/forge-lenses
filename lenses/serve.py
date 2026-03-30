@@ -24,6 +24,7 @@ from lenses.local_site_html import (
 )
 from lenses.expected_github import resolve_expected_github_login
 from lenses.board_preview import schedule_board_preview_capture
+from lenses.chart_pages import page_overview_charts_api, page_project_charts_api
 from lenses.git_actions import (
     client_may_run_git_actions,
     client_may_write_sticker_board,
@@ -86,7 +87,8 @@ from lenses.toolset_actions import run_toolset_script
 LENSES_REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = LENSES_REPO_ROOT / "lenses-docs"
 
-_DEFAULT_SCAN_CACHE_SEC = 3.0
+# Default short TTL so repeated navigations reuse scan+standards work; override with LENSES_SCAN_CACHE_SEC.
+_DEFAULT_SCAN_CACHE_SEC = 20.0
 _scan_cache_lock = threading.Lock()
 # Key: git_extended only (workspace is fixed per process). Value: (state dict, monotonic time).
 _scan_cache_store: dict[tuple[bool], tuple[dict, float]] = {}
@@ -407,7 +409,9 @@ class LensesHandler(BaseHTTPRequestHandler):
             self.registry,
             git_extended=git_extended,
         )
-        enrich_workspace_with_standards(state, self.registry)
+        enrich_on = os.environ.get("LENSES_STANDARDS_ENRICH", "1").strip().lower()
+        if enrich_on not in ("0", "false", "no", "off"):
+            enrich_workspace_with_standards(state, self.registry)
         if ttl is not None:
             with _scan_cache_lock:
                 _scan_cache_store[key] = (state, time.monotonic())
@@ -510,6 +514,13 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, raw, "application/json; charset=utf-8")
             return
 
+        if path == "/api/chart-data/overview":
+            from lenses.chart_payloads import build_overview_chart_payload
+
+            state = self._scan(git_extended=True, force_refresh=force_refresh)
+            self._send_json(200, build_overview_chart_payload(state))
+            return
+
         if path == "/api/auth/status":
             sm = self.session_manager
             exp = self.expected_github_login
@@ -594,6 +605,18 @@ class LensesHandler(BaseHTTPRequestHandler):
                 raw = json.dumps(stats, indent=2, sort_keys=True).encode("utf-8")
                 self._send(200, raw, "application/json; charset=utf-8")
                 return
+            if tail == "chart-data":
+                from lenses.chart_payloads import build_project_chart_payload
+
+                if not (child_path / ".git").exists():
+                    self._send_json(404, {"error": "not_found"})
+                    return
+                state = self._scan(
+                    git_extended=True, force_refresh=force_refresh
+                )
+                payload = build_project_chart_payload(child_path, state, name)
+                self._send_json(200, payload)
+                return
             err = json.dumps({"error": "not_found"}).encode("utf-8")
             self._send(404, err, "application/json; charset=utf-8")
             return
@@ -616,6 +639,19 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         state = self._scan(git_extended=True, force_refresh=force_refresh)
+
+        if path == "/overview/charts-api":
+            html = page_overview_charts_api(
+                state,
+                self.registry,
+                handbook_url,
+                forge_url,
+                LENSES_REPO_ROOT,
+            )
+            if html is None:
+                html = "<!DOCTYPE html><html><body><p>Kitchensink not available</p></body></html>"
+            self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
+            return
 
         if path == "/":
             html = page_overview(
@@ -655,11 +691,6 @@ class LensesHandler(BaseHTTPRequestHandler):
                 self._send(404, b"Unknown project", "text/plain; charset=utf-8")
                 return
             project_name = segments[0]
-            if len(segments) >= 2:
-                sub = segments[1].strip().lower()
-                if sub != "strategy":
-                    self._send(404, b"Not found", "text/plain; charset=utf-8")
-                    return
             child_path = resolve_workspace_child_dir(
                 self.workspace_root, project_name, self.registry
             )
@@ -667,6 +698,24 @@ class LensesHandler(BaseHTTPRequestHandler):
                 self._send(404, b"Unknown project", "text/plain; charset=utf-8")
                 return
             if len(segments) >= 2:
+                sub = segments[1].strip().lower()
+                if sub == "charts-api":
+                    html = page_project_charts_api(
+                        state,
+                        self.registry,
+                        project_name,
+                        child_path,
+                        handbook_url,
+                        forge_url,
+                        LENSES_REPO_ROOT,
+                    )
+                    if html is None:
+                        html = "<!DOCTYPE html><html><body><p>Kitchensink not available</p></body></html>"
+                    self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
+                    return
+                if sub != "strategy":
+                    self._send(404, b"Not found", "text/plain; charset=utf-8")
+                    return
                 html = page_project_repo_strategy(
                     state,
                     self.registry,
