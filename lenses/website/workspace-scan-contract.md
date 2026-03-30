@@ -87,6 +87,17 @@ Recursive search under `workspace_root` for:
 
 Each entry: `repo_hint` (first path segment under workspace), `rel_path` (posix relative path from workspace root), `kind` (always `md`). Sorted by `rel_path`.
 
+## `forge_hints[]` entries
+
+For the workspace root and each top-level child directory, when **any** of the following exist, an entry is added:
+
+- `forge/charge.md`
+- `ember-logs/` (directory)
+- `forge-logs/versona/` (directory)
+- `forge/journal/` (directory)
+
+Each entry: `repo_hint` (first path segment, or empty string when the match is at workspace root), `has_charge`, `has_ember_logs`, `has_versona`, `has_journal` (booleans).
+
 ## Workspace root resolution
 
 Implemented in `resolve_workspace_root` (`lenses/scan.py`):

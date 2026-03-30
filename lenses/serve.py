@@ -46,14 +46,16 @@ from lenses.sticker_board import (
 )
 from lenses.project_stats import collect_project_stats
 from lenses.registry import load_registry
+from lenses.forge_spine import build_plan_spine_payload, build_story_hub_payload
+from lenses.forge_work_model import build_forge_work_model, work_model_selectors_payload
 from lenses.render import (
     page_overview,
+    page_plan,
     page_project_detail,
     page_project_repo_strategy,
     page_projects,
     page_roadmap_preview_document,
     page_roadmap_timeline_document,
-    page_roadmaps,
     roadmap_summary_fragment,
     page_sticker_board_editor,
     page_sticker_board_hub,
@@ -62,10 +64,12 @@ from lenses.render import (
     page_tutorials,
     page_wbs,
     page_wbs_view,
+    page_workspace_md_view,
     page_websites,
     page_websites_browse,
 )
 from lenses.roadmap_outline import outline_json, parse_roadmap_markdown
+from lenses.safe_forge_paths import safe_forge_workspace_file
 from lenses.scan import (
     parse_firebase_hosting,
     resolve_workspace_child_dir,
@@ -504,6 +508,98 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, raw, "application/json; charset=utf-8")
             return
 
+        if path == "/api/plan-spine":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            wbs_list = qs.get("wbs_p", [])
+            if not wbs_list or not str(wbs_list[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_wbs_p"})
+                return
+            wbs_rel = str(wbs_list[0]).strip()
+            if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+                self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+                return
+            roadmap_list = qs.get("roadmap_p", [])
+            roadmap_rel = str(roadmap_list[0]).strip() if roadmap_list else ""
+            if roadmap_rel and _safe_roadmap_file(self.workspace_root, roadmap_rel) is None:
+                self._send_json(404, {"ok": False, "error": "roadmap_not_allowed"})
+                return
+            repo_list = qs.get("repo", [])
+            repo_hint = str(repo_list[0]).strip() if repo_list else ""
+            payload = build_plan_spine_payload(
+                self.workspace_root,
+                repo_hint=repo_hint,
+                wbs_rel=wbs_rel,
+                roadmap_rel=roadmap_rel or None,
+            )
+            self._send_json(200 if payload.get("ok") else 404, payload)
+            return
+
+
+        if path == "/api/forge-work-model":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            wbs_list = qs.get("wbs_p", [])
+            if not wbs_list or not str(wbs_list[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_wbs_p"})
+                return
+            wbs_rel = str(wbs_list[0]).strip()
+            if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+                self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+                return
+            roadmap_list = qs.get("roadmap_p", [])
+            roadmap_rel = str(roadmap_list[0]).strip() if roadmap_list else ""
+            if roadmap_rel and _safe_roadmap_file(self.workspace_root, roadmap_rel) is None:
+                self._send_json(404, {"ok": False, "error": "roadmap_not_allowed"})
+                return
+            repo_list = qs.get("repo", [])
+            repo_hint = str(repo_list[0]).strip() if repo_list else ""
+            model = build_forge_work_model(
+                self.workspace_root,
+                repo_hint=repo_hint,
+                wbs_rel=wbs_rel,
+                roadmap_rel=roadmap_rel or None,
+            )
+            node_ids = qs.get("node_id", [])
+            node_id = str(node_ids[0]).strip() if node_ids else ""
+            if node_id:
+                payload = work_model_selectors_payload(model, node_id)
+                self._send_json(200 if payload.get("ok") else 404, payload)
+            else:
+                blob = model.to_json_blob()
+                self._send_json(200, {"ok": True, **blob})
+            return
+
+        if path == "/api/story-hub":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            ids = qs.get("id", [])
+            if not ids or not str(ids[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_id"})
+                return
+            wid = str(ids[0]).strip()
+            wbs_list = qs.get("wbs_p", [])
+            if not wbs_list or not str(wbs_list[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_wbs_p"})
+                return
+            wbs_rel = str(wbs_list[0]).strip()
+            if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+                self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+                return
+            roadmap_list = qs.get("roadmap_p", [])
+            roadmap_rel = str(roadmap_list[0]).strip() if roadmap_list else ""
+            if roadmap_rel and _safe_roadmap_file(self.workspace_root, roadmap_rel) is None:
+                self._send_json(404, {"ok": False, "error": "roadmap_not_allowed"})
+                return
+            repo_list = qs.get("repo", [])
+            repo_hint = str(repo_list[0]).strip() if repo_list else ""
+            payload = build_story_hub_payload(
+                self.workspace_root,
+                repo_hint=repo_hint,
+                wbs_rel=wbs_rel,
+                work_item_id=wid,
+                roadmap_rel=roadmap_rel or None,
+            )
+            self._send_json(200 if payload.get("ok") else 404, payload)
+            return
+
         if path == "/api/workspace-state":
             ext = qs.get("git_extended", [])
             git_extended = bool(ext) and str(ext[0]).lower() in ("1", "true", "yes")
@@ -797,7 +893,17 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, html, "text/html; charset=utf-8")
             return
         if path == "/roadmaps":
-            html = page_roadmaps(
+            loc = "/plan"
+            q = parsed.query
+            if q:
+                loc = f"{loc}?{q}"
+            self.send_response(302)
+            self.send_header("Location", loc)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if path == "/plan":
+            html = page_plan(
                 state, handbook_url, forge_url, LENSES_REPO_ROOT
             ).encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
@@ -866,6 +972,27 @@ class LensesHandler(BaseHTTPRequestHandler):
                 rel,
                 text,
                 kind,
+                handbook_url,
+                forge_url,
+                LENSES_REPO_ROOT,
+            ).encode("utf-8")
+            self._send(200, html, "text/html; charset=utf-8")
+            return
+        if path == "/workspace-md/view":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            rels = qs.get("p", [])
+            if not rels:
+                self._send(400, b"Missing p=", "text/plain; charset=utf-8")
+                return
+            rel = rels[0]
+            sp = safe_forge_workspace_file(self.workspace_root, rel)
+            if sp is None:
+                self._send(404, b"Not found or not allowed", "text/plain; charset=utf-8")
+                return
+            text = sp.read_text(encoding="utf-8", errors="replace")
+            html = page_workspace_md_view(
+                rel,
+                text,
                 handbook_url,
                 forge_url,
                 LENSES_REPO_ROOT,

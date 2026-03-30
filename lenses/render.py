@@ -999,7 +999,7 @@ def lenses_sidebar_html(nav_active: str, handbook_url: str, forge_url: str) -> s
         ("websites", "/websites", "Websites"),
         ("board", "/board", "Sticker board"),
         ("wbs", "/wbs", "WBS"),
-        ("roadmaps", "/roadmaps", "Roadmaps"),
+        ("plan", "/plan", "Forge plan"),
     ]
     lines = [
         '<p class="nav-section-label">Workspace</p>',
@@ -1062,7 +1062,7 @@ def nav_bar(
         ("websites", "/websites", "Websites"),
         ("board", "/board", "Sticker board"),
         ("wbs", "/wbs", "WBS"),
-        ("roadmaps", "/roadmaps", "Roadmaps"),
+        ("plan", "/plan", "Forge plan"),
     ]
     links = []
     for key, href, label in items:
@@ -1543,7 +1543,7 @@ def page_overview(
         + kpi_tile("/projects", "Top-level folders", esc(str(n_children)), "Open Projects →")
         + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Websites →")
         + kpi_tile("/wbs", "WBS files", esc(str(n_wbs)), "WBS →")
-        + kpi_tile("/roadmaps", "Roadmaps", esc(str(n_roadmaps)), "Roadmaps →")
+        + kpi_tile("/plan", "Forge plan", esc(str(n_roadmaps)), "Forge plan →")
         + kpi_tile("/toolset", "Root scripts", esc(str(n_scripts)), "Toolset →")
         + kpi_tile(
             "/projects",
@@ -3425,6 +3425,36 @@ def page_wbs_view(
     )
 
 
+def page_workspace_md_view(
+    rel_path: str,
+    content: str,
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+) -> str:
+    body_inner = f'<pre class="small" style="overflow:auto;white-space:pre-wrap">{esc(content)}</pre>'
+    body_inner = (
+        f'<p class="forge-support"><code>{esc(rel_path)}</code></p>'
+        f'<p><a href="/plan">← Back to Forge plan</a></p>'
+        + body_inner
+    )
+    bc = lenses_breadcrumb_html(
+        ("/", "Overview"),
+        ("/plan", "Forge plan"),
+        ("", "Source file"),
+    )
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title="Source file — lenses",
+        nav_active="plan",
+        page_title="Source file",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+    )
+
+
 def roadmap_summary_fragment(md_text: str) -> str:
     metrics = extract_chart_metrics(md_text)
     gantt = extract_gantt_model(md_text)
@@ -3499,60 +3529,82 @@ def page_roadmap_preview_document(
     )
 
 
-def page_roadmaps(
+def page_plan(
     state: dict[str, Any],
     handbook_url: str,
     forge_url: str,
     lenses_repo_root: Path,
 ) -> str:
+    wbs_rows = [w for w in (state.get("wbs") or []) if isinstance(w, dict)]
     rms = [r for r in (state.get("roadmaps") or []) if isinstance(r, dict)]
-    opts: list[str] = [
-        '<option value="">— Select roadmap —</option>',
+    repo_opts: list[str] = ['<option value="">— Repository —</option>']
+    repos_seen: set[str] = set()
+    for w in wbs_rows:
+        h = str(w.get("repo_hint", "")).strip()
+        if h and h not in repos_seen:
+            repos_seen.add(h)
+            repo_opts.append(f'<option value="{esc(h)}">{esc(h)}</option>')
+    wbs_opts: list[str] = ['<option value="" data-repo="">— WBS file —</option>']
+    for w in wbs_rows:
+        rp = str(w.get("rel_path", ""))
+        if not rp:
+            continue
+        h = str(w.get("repo_hint", "")).strip()
+        wbs_opts.append(
+            f'<option value="{esc(rp)}" data-repo="{esc(h)}">{esc(rp)}</option>'
+        )
+    rm_opts: list[str] = [
+        '<option value="" data-repo="">— Roadmap (optional) —</option>'
     ]
     for r in rms:
         rp = str(r.get("rel_path", ""))
         if not rp:
             continue
-        opts.append(f'<option value="{esc(rp)}">{esc(rp)}</option>')
-    select_html = (
-        '<label for="lenses-roadmap-file" class="form-label small text-muted mb-1">'
-        "Roadmap file</label>"
-        '<select id="lenses-roadmap-file" class="form-select form-select-sm lenses-roadmap-file-select">'
-        f'{"".join(opts)}</select>'
-    )
-    if not rms:
-        select_html = (
-            '<p class="forge-support">No <code>ROADMAP.md</code> files found under <code>docs/</code>.</p>'
+        h = str(r.get("repo_hint", "")).strip()
+        rm_opts.append(
+            f'<option value="{esc(rp)}" data-repo="{esc(h)}">{esc(rp)}</option>'
         )
 
-    script = """
+    script = r"""
 <script>
 (function () {
-  var fileSel = document.getElementById("lenses-roadmap-file");
-  var outlineEl = document.getElementById("lenses-roadmap-outline");
-  var summaryEl = document.getElementById("lenses-roadmap-summary");
-  var frame = document.getElementById("lenses-roadmap-frame");
-  if (!outlineEl || !summaryEl || !frame) return;
+  var repoSel = document.getElementById("lenses-plan-repo");
+  var wbsSel = document.getElementById("lenses-plan-wbs");
+  var rmSel = document.getElementById("lenses-plan-roadmap");
+  var planTreeEl = document.getElementById("lenses-plan-tree");
+  var summaryEl = document.getElementById("lenses-plan-summary");
+  var hubEl = document.getElementById("lenses-plan-hub");
+  var srcFrame = document.getElementById("lenses-plan-source-frame");
+  var tabPlan = document.getElementById("lenses-plan-tab-plan");
+  var tabSrc = document.getElementById("lenses-plan-tab-source");
+  var panelPlan = document.getElementById("lenses-plan-panel-plan");
+  var panelSrc = document.getElementById("lenses-plan-panel-source");
+  if (!wbsSel || !planTreeEl || !hubEl) return;
 
   function qs() {
     var o = {};
-    var s = window.location.search.replace(/^\\?/, "");
+    var s = window.location.search.replace(/^\?/, "");
     if (!s) return o;
     s.split("&").forEach(function (pair) {
       var i = pair.indexOf("=");
       if (i < 0) return;
-      var k = decodeURIComponent(pair.slice(0, i).replace(/\\+/g, " "));
-      var v = decodeURIComponent(pair.slice(i + 1).replace(/\\+/g, " "));
+      var k = decodeURIComponent(pair.slice(0, i).replace(/\+/g, " "));
+      var v = decodeURIComponent(pair.slice(i + 1).replace(/\+/g, " "));
       o[k] = v;
     });
     return o;
   }
 
-  function setUrl(p, section, view) {
+  function setUrl() {
     var q = new URLSearchParams();
-    if (p) q.set("p", p);
-    if (section) q.set("section", section);
-    if (view === "timeline") q.set("view", "timeline");
+    var repo = repoSel ? repoSel.value : "";
+    var wbs = wbsSel ? wbsSel.value : "";
+    var rm = rmSel ? rmSel.value : "";
+    var id = hubEl.dataset.storyId || "";
+    if (repo) q.set("repo", repo);
+    if (wbs) q.set("wbs_p", wbs);
+    if (rm) q.set("roadmap_p", rm);
+    if (id) q.set("id", id);
     var tail = q.toString();
     var path = window.location.pathname + (tail ? "?" + tail : "");
     if (window.history && window.history.replaceState) {
@@ -3560,164 +3612,280 @@ def page_roadmaps(
     }
   }
 
-  function loadSummary(p) {
-    summaryEl.innerHTML = '<p class="forge-support small mb-0">Loading summary…</p>';
-    fetch("/roadmaps/summary?p=" + encodeURIComponent(p))
-      .then(function (r) { return r.text(); })
-      .then(function (html) { summaryEl.innerHTML = html; })
-      .catch(function () {
-        summaryEl.innerHTML = '<p class="forge-support text-warning">Summary failed to load.</p>';
-      });
-  }
-
-  function setFrame(p, section) {
-    frame.src = "/roadmaps/preview?p=" + encodeURIComponent(p) +
-      "&section=" + encodeURIComponent(section);
-  }
-
-  function setTimelineFrame(p) {
-    frame.src = "/roadmaps/timeline?p=" + encodeURIComponent(p);
-  }
-
-  function renderOutline(data, p, preferredSection, preferredView) {
-    outlineEl.innerHTML = "";
-    var sections = data.sections || [];
-    var firstId = sections.length ? sections[0].id : "";
-    sections.forEach(function (s) {
-      var li = document.createElement("button");
-      li.type = "button";
-      li.className = "list-group-item list-group-item-action lenses-roadmap-outline-item text-start";
-      li.dataset.sectionId = s.id;
-      var pad = (s.level > 2 ? (s.level - 2) * 0.65 : 0);
-      li.style.paddingLeft = (0.85 + pad) + "rem";
-      li.textContent = s.title;
-      li.addEventListener("click", function () {
-        outlineEl.querySelectorAll(".active").forEach(function (x) { x.classList.remove("active"); });
-        li.classList.add("active");
-        setFrame(p, s.id);
-        setUrl(p, s.id, "");
-      });
-      outlineEl.appendChild(li);
-    });
-    var pick = preferredSection;
-    if (pick && !sections.some(function (x) { return x.id === pick; })) pick = "";
-    var use = pick || firstId;
-    if (use) {
-      outlineEl.querySelectorAll(".lenses-roadmap-outline-item").forEach(function (el) {
-        if (el.dataset.sectionId === use) el.classList.add("active");
-      });
-      if (preferredView === "timeline") {
-        setTimelineFrame(p);
-        setUrl(p, use, "timeline");
-      } else {
-        setFrame(p, use);
-        setUrl(p, use, "");
+  function filterSelect(sel, repo) {
+    if (!sel) return;
+    var i, opt;
+    for (i = 0; i < sel.options.length; i++) {
+      opt = sel.options[i];
+      var dr = opt.getAttribute("data-repo") || "";
+      if (!opt.value || !repo) {
+        opt.hidden = false;
+        continue;
       }
-    } else {
-      frame.src = "about:blank";
+      opt.hidden = dr !== repo;
     }
   }
 
-  function loadRoadmap(p, preferredSection, preferredView) {
-    if (!p) {
-      summaryEl.innerHTML = "";
-      outlineEl.innerHTML = '<div class="list-group-item text-muted">Select a roadmap file.</div>';
-      frame.src = "about:blank";
-      setUrl("", "", "");
+  function renderHub(data) {
+    hubEl.dataset.storyId = data.work_item_id || "";
+    if (!data.definition) {
+      hubEl.innerHTML = '<p class="forge-support text-warning mb-0">No matching story or task row for this ID in the selected WBS.</p>';
       return;
     }
-    loadSummary(p);
-    fetch("/api/roadmap-outline?p=" + encodeURIComponent(p))
-      .then(function (r) {
-        if (!r.ok) throw new Error("bad");
-        return r.json();
-      })
-      .then(function (data) {
-        renderOutline(data, p, preferredSection || "", preferredView || "");
-      })
-      .catch(function () {
-        outlineEl.innerHTML = '<div class="list-group-item text-danger">Failed to load outline.</div>';
+    var def = data.definition;
+    var html = [];
+    html.push('<h3 class="h6 text-cyan">' + (def.id || "") + " · " + (def.title || "") + "</h3>");
+    if (def.kind === "story") {
+      html.push('<p class="small mb-2">' + (def.acceptance_summary || "").replace(/</g, "&lt;") + "</p>");
+      if (def.product_paths && def.product_paths.length) {
+        html.push('<p class="small mb-1"><strong>Product context</strong></p><ul class="small">');
+        def.product_paths.forEach(function (p) {
+          html.push("<li><code>" + p.replace(/</g, "&lt;") + "</code></li>");
+        });
+        html.push("</ul>");
+      }
+    }
+    if (def.kind === "task") {
+      html.push('<p class="small mb-2">Task (Spark) · parent story <code>' + (def.story_id || "").replace(/</g, "&lt;") + "</code></p>");
+    }
+    html.push('<p class="small mb-1"><strong>Today (Charge)</strong></p>');
+    if (data.today_charge && data.today_charge.length) {
+      html.push('<ul class="small">');
+      data.today_charge.forEach(function (c) {
+        html.push("<li><code>" + c.spark_id + "</code> — " + (c.status || "") + "</li>");
       });
+      html.push("</ul>");
+    } else {
+      html.push('<p class="forge-support small">No matching rows in Charge.</p>');
+    }
+    html.push('<p class="small mb-1"><strong>Decision log (Ember)</strong></p>');
+    if (data.decision_log_ember && data.decision_log_ember.length) {
+      data.decision_log_ember.forEach(function (e) {
+        html.push('<p class="small border-start border-secondary ps-2"><a href="' + e.view_href + '">' + (e.file_rel || "") + "</a></p>");
+        html.push('<pre class="small text-muted" style="max-height:8rem;overflow:auto">' + (e.snippet || "").replace(/</g, "&lt;") + "</pre>");
+      });
+    } else {
+      html.push('<p class="forge-support small">No Ember hits for this ID.</p>');
+    }
+    html.push('<p class="small mb-1"><strong>Discipline sessions (Versona)</strong></p>');
+    if (data.discipline_sessions_versona && data.discipline_sessions_versona.length) {
+      html.push('<ul class="small">');
+      data.discipline_sessions_versona.forEach(function (s) {
+        html.push('<li><a href="' + s.view_href + '">' + (s.session_id || "") + "</a></li>");
+      });
+      html.push("</ul>");
+    } else {
+      html.push('<p class="forge-support small">No sessions with this work item ref.</p>');
+    }
+    if (data.provenance && data.provenance.wbs_view) {
+      html.push('<p class="small mt-2 mb-0"><a href="' + data.provenance.wbs_view + '">WBS source</a>'
+        + (data.provenance.charge ? ' · <a href="' + data.provenance.charge + '">Charge</a>' : "") + "</p>");
+    }
+    hubEl.innerHTML = html.join("");
   }
 
-  if (fileSel) {
-    fileSel.addEventListener("change", function () {
-      loadRoadmap(fileSel.value, "", "");
+  function loadHub(id) {
+    if (!id || !wbsSel.value) return;
+    hubEl.innerHTML = '<p class="forge-support">Loading…</p>';
+    var repo = repoSel ? repoSel.value : "";
+    var rp = rmSel && rmSel.value ? rmSel.value : "";
+    var u = "/api/story-hub?id=" + encodeURIComponent(id) + "&wbs_p=" + encodeURIComponent(wbsSel.value) + "&repo=" + encodeURIComponent(repo);
+    if (rp) u += "&roadmap_p=" + encodeURIComponent(rp);
+    fetch(u).then(function (r) { return r.json(); }).then(function (data) {
+      if (!data.ok) {
+        hubEl.innerHTML = '<p class="text-warning small">Story hub could not be loaded.</p>';
+        return;
+      }
+      renderHub(data);
+      setUrl();
+    }).catch(function () {
+      hubEl.innerHTML = '<p class="text-warning small">Failed to load story hub.</p>';
     });
   }
 
-  var btnTimeline = document.getElementById("lenses-roadmap-open-timeline");
-  if (btnTimeline && fileSel && frame) {
-    btnTimeline.addEventListener("click", function () {
-      var p = fileSel.value;
-      if (!p) return;
-      var active = outlineEl.querySelector(".lenses-roadmap-outline-item.active");
-      var sec = active && active.dataset ? active.dataset.sectionId : "";
-      setTimelineFrame(p);
-      setUrl(p, sec, "timeline");
+  function renderPlanTree(payload) {
+    planTreeEl.innerHTML = "";
+    var plan = payload.plan || {};
+    var ms = plan.milestones || [];
+    ms.forEach(function (m) {
+      var h = document.createElement("div");
+      h.className = "mb-2";
+      var epicTit = (m.epic_key || "") + " — " + (m.title || "");
+      h.innerHTML = '<div class="small text-cyan fw-semibold">' + epicTit.replace(/</g, "&lt;") + "</div>";
+      var ul = document.createElement("div");
+      ul.className = "list-group list-group-sm lenses-plan-story-list";
+      (m.stories || []).forEach(function (s) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "list-group-item list-group-item-action py-1 lenses-plan-story-btn";
+        b.textContent = (s.id || "") + " — " + (s.title || "");
+        b.addEventListener("click", function () {
+          planTreeEl.querySelectorAll(".active").forEach(function (x) { x.classList.remove("active"); });
+          b.classList.add("active");
+          loadHub(s.id);
+        });
+        ul.appendChild(b);
+      });
+      h.appendChild(ul);
+      planTreeEl.appendChild(h);
     });
   }
+
+  function loadSpine() {
+    var repo = repoSel ? repoSel.value : "";
+    var wbs = wbsSel ? wbsSel.value : "";
+    if (!wbs) {
+      planTreeEl.innerHTML = '<p class="text-muted small">Select a WBS file.</p>';
+      summaryEl.innerHTML = "";
+      hubEl.innerHTML = "";
+      return;
+    }
+    summaryEl.innerHTML = '<p class="forge-support small mb-0">Loading plan…</p>';
+    var rp = rmSel && rmSel.value ? rmSel.value : "";
+    var u = "/api/plan-spine?wbs_p=" + encodeURIComponent(wbs) + "&repo=" + encodeURIComponent(repo);
+    if (rp) u += "&roadmap_p=" + encodeURIComponent(rp);
+    fetch(u).then(function (r) { return r.json(); }).then(function (data) {
+      if (!data.ok) {
+        planTreeEl.innerHTML = '<p class="text-warning small">Could not load plan.</p>';
+        return;
+      }
+      if (rp) {
+        fetch("/roadmaps/summary?p=" + encodeURIComponent(rp)).then(function (x) { return x.text(); }).then(function (html) {
+          summaryEl.innerHTML = html;
+        }).catch(function () { summaryEl.innerHTML = ""; });
+      } else {
+        summaryEl.innerHTML = '<p class="forge-support small mb-0">No roadmap selected — milestones come from WBS only.</p>';
+      }
+      renderPlanTree(data);
+      hubEl.innerHTML = '<p class="forge-support text-muted mb-0">Click a story to see definition, Charge, Ember, and Versona.</p>';
+      var q0 = qs();
+      if (q0.id) loadHub(q0.id);
+      setUrl();
+    }).catch(function () {
+      summaryEl.innerHTML = '<p class="text-warning small">Plan spine request failed.</p>';
+    });
+  }
+
+  function syncSourceFrame() {
+    if (!srcFrame || !rmSel || !rmSel.value) {
+      if (srcFrame) srcFrame.src = "about:blank";
+      return;
+    }
+    fetch("/api/roadmap-outline?p=" + encodeURIComponent(rmSel.value)).then(function (r) { return r.json(); }).then(function (data) {
+      var sec = (data.sections && data.sections[0]) ? data.sections[0].id : "";
+      if (sec) {
+        srcFrame.src = "/roadmaps/preview?p=" + encodeURIComponent(rmSel.value) + "&section=" + encodeURIComponent(sec);
+      }
+    }).catch(function () { srcFrame.src = "about:blank"; });
+  }
+
+  function showTab(which) {
+    if (which === "source") {
+      if (panelPlan) panelPlan.classList.add("d-none");
+      if (panelSrc) panelSrc.classList.remove("d-none");
+      if (tabPlan) tabPlan.classList.remove("active");
+      if (tabSrc) tabSrc.classList.add("active");
+      syncSourceFrame();
+    } else {
+      if (panelPlan) panelPlan.classList.remove("d-none");
+      if (panelSrc) panelSrc.classList.add("d-none");
+      if (tabPlan) tabPlan.classList.add("active");
+      if (tabSrc) tabSrc.classList.remove("active");
+    }
+  }
+
+  if (repoSel) {
+    repoSel.addEventListener("change", function () {
+      filterSelect(wbsSel, repoSel.value);
+      filterSelect(rmSel, repoSel.value);
+    });
+  }
+  if (wbsSel) wbsSel.addEventListener("change", loadSpine);
+  if (rmSel) rmSel.addEventListener("change", loadSpine);
+  if (tabPlan) tabPlan.addEventListener("click", function () { showTab("plan"); });
+  if (tabSrc) tabSrc.addEventListener("click", function () { showTab("source"); });
 
   var q0 = qs();
-  var initialP = q0.p || "";
-  var initialSec = q0.section || "";
-  var initialView = q0.view || "";
-  if (fileSel && initialP) {
-    fileSel.value = initialP;
-    loadRoadmap(initialP, initialSec, initialView);
-  } else if (fileSel && fileSel.value) {
-    loadRoadmap(fileSel.value, "", "");
-  } else {
-    outlineEl.innerHTML = '<div class="list-group-item text-muted">Select a roadmap file.</div>';
-    summaryEl.innerHTML = "";
-    frame.src = "about:blank";
-  }
+  if (repoSel && q0.repo) repoSel.value = q0.repo;
+  if (repoSel) filterSelect(wbsSel, repoSel.value);
+  if (repoSel) filterSelect(rmSel, repoSel.value);
+  if (wbsSel && q0.wbs_p) wbsSel.value = q0.wbs_p;
+  if (rmSel && q0.roadmap_p) rmSel.value = q0.roadmap_p;
+  showTab("plan");
+  if (wbsSel && wbsSel.value) loadSpine();
 })();
 </script>
 """
 
-    body_inner = (
-        '<div class="lenses-roadmap-shell lenses-dash">'
-        '<p class="forge-support">Browse <code>ROADMAP.md</code> files by section. '
-        "Summary charts update when you change the file; the preview window updates per section.</p>"
-        f'<div class="mb-3">{select_html}</div>'
-        '<div id="lenses-roadmap-summary" class="card mb-3 p-3 lenses-roadmap-summary-card"></div>'
-        '<div class="row g-3">'
+    controls = (
+        '<div class="row g-2 mb-3 align-items-end">'
+        '<div class="col-md-3">'
+        '<label for="lenses-plan-repo" class="form-label small text-muted mb-1">Repository</label>'
+        f'<select id="lenses-plan-repo" class="form-select form-select-sm">{"".join(repo_opts)}</select>'
+        "</div>"
+        '<div class="col-md-5">'
+        '<label for="lenses-plan-wbs" class="form-label small text-muted mb-1">Requirements / WBS</label>'
+        f'<select id="lenses-plan-wbs" class="form-select form-select-sm">{"".join(wbs_opts)}</select>'
+        "</div>"
         '<div class="col-md-4">'
-        '<h3 class="h6 text-cyan mb-2">Outline</h3>'
-        '<div id="lenses-roadmap-outline" class="list-group lenses-roadmap-outline"></div>'
+        '<label for="lenses-plan-roadmap" class="form-label small text-muted mb-1">Roadmap (optional)</label>'
+        f'<select id="lenses-plan-roadmap" class="form-select form-select-sm">{"".join(rm_opts)}</select>'
         "</div>"
-        '<div class="col-md-8">'
-        '<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">'
-        '<h3 class="h6 text-cyan mb-0">Preview</h3>'
-        '<button type="button" class="btn btn-sm btn-outline-info" id="lenses-roadmap-open-timeline">'
-        "Open full timeline</button></div>"
+        "</div>"
+    )
+
+    body_inner = (
+        '<div class="lenses-plan-shell lenses-dash">'
+        '<p class="forge-support">Planning and execution lens: <strong>Plan</strong> is the default. '
+        "Requirements live in <code>docs/requirements/WBS.md</code>; roadmap is optional context. "
+        "Familiar labels: Today (Charge), Task (Spark), Decision log (Ember), Discipline session (Versona).</p>"
+        f"{controls}"
+        '<ul class="nav nav-tabs mb-3">'
+        '<li class="nav-item"><button type="button" class="nav-link active" id="lenses-plan-tab-plan">Plan</button></li>'
+        '<li class="nav-item"><button type="button" class="nav-link" id="lenses-plan-tab-source">Source</button></li>'
+        "</ul>"
+        '<div id="lenses-plan-panel-plan">'
+        '<div id="lenses-plan-summary" class="card mb-3 p-3 lenses-roadmap-summary-card"></div>'
+        '<div class="row g-3">'
+        '<div class="col-lg-5">'
+        '<h3 class="h6 text-cyan mb-2">Milestones / epics / stories</h3>'
+        '<div id="lenses-plan-tree" class="lenses-plan-tree border border-secondary rounded p-2"></div>'
+        "</div>"
+        '<div class="col-lg-7">'
+        '<h3 class="h6 text-cyan mb-2">Story hub</h3>'
+        '<div id="lenses-plan-hub" class="card p-3 border border-secondary"></div>'
+        "</div>"
+        "</div>"
+        "</div>"
+        '<div id="lenses-plan-panel-source" class="d-none">'
+        '<p class="forge-support small">Raw <code>ROADMAP.md</code> preview (section from outline).</p>'
         '<div class="card lenses-roadmap-preview-window p-0 border border-secondary">'
-        '<iframe id="lenses-roadmap-frame" class="w-100 lenses-roadmap-preview-frame" '
-        'title="Roadmap section preview" style="min-height:28rem;border:0"></iframe>'
-        "</div>"
-        "</div>"
+        '<iframe id="lenses-plan-source-frame" class="w-100 lenses-roadmap-preview-frame" '
+        'title="Roadmap source" style="min-height:min(70vh,36rem);border:0"></iframe>'
         "</div>"
         "</div>"
         f"{script}"
+        "</div>"
     )
 
     extra_css = """
-.lenses-roadmap-outline { max-height: min(70vh, 36rem); overflow-y: auto; }
-.lenses-roadmap-outline-item { cursor: pointer; font-size: 0.9rem; }
-.lenses-roadmap-outline-item.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.35); }
-.lenses-roadmap-preview-window { background: var(--bs-body-bg, #0f172a); }
+<style>
+.lenses-plan-tree { max-height: min(70vh, 36rem); overflow-y: auto; }
+.lenses-plan-story-btn { cursor: pointer; font-size: 0.88rem; }
+.lenses-plan-story-btn.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.35); }
 .lenses-roadmap-summary-card { min-height: 3rem; }
-.lenses-roadmap-file-select { max-width: 42rem; }
-.lenses-roadmap-gantt-svg { overflow-x: auto; }
+.lenses-roadmap-preview-window { background: var(--bs-body-bg, #0f172a); }
+.nav-tabs .nav-link { cursor: pointer; background: transparent; border: none; }
+.nav-tabs .nav-link.active { color: var(--bs-cyan, #06b6d4); border-bottom: 2px solid rgba(6,182,212,0.6); }
+</style>
 """
 
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Roadmaps"))
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Forge plan"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="Roadmaps — lenses",
-        nav_active="roadmaps",
-        page_title="Roadmaps",
+        browser_title="Forge plan — lenses",
+        nav_active="plan",
+        page_title="Forge plan",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,

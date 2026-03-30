@@ -149,9 +149,10 @@ def horizon_badges_html(horizon_counts: dict[str, int]) -> str:
 def ks_diagram_img(rel_under_ks: str, *, alt: str, max_width_px: int = 220) -> str:
     src = "/__ks/" + rel_under_ks.lstrip("/")
     return (
-        f'<div class="lenses-roadmap-ks-diagram text-center mb-2">'
+        f'<div class="lenses-roadmap-ks-diagram text-center mb-2 w-100">'
         f'<img src="{_esc(src)}" alt="{_esc(alt)}" '
-        f'style="max-width:min(100%,{max_width_px}px);height:auto;opacity:0.9" loading="lazy" />'
+        f'style="width:100%;max-width:min(100%,{max_width_px}px);height:auto;opacity:0.9" '
+        f'loading="lazy" />'
         f"</div>"
     )
 
@@ -310,24 +311,31 @@ def roadmap_summary_html(
     metrics_inner: list[str] = ['<div class="row g-3">']
 
     diagram_bits = ""
+    # Native KS templates are 680px wide; avoid squeezing into a narrow column.
+    _diagram_max = 680
     if not gantt_html:
         if horizon_counts:
             diagram_bits += ks_diagram_img(
-                KS_TIMELINE_TEMPLATE, alt="Timeline diagram template", max_width_px=520
+                KS_TIMELINE_TEMPLATE,
+                alt="Timeline diagram template",
+                max_width_px=_diagram_max,
             )
         elif epic_pairs or status_counts:
             diagram_bits += ks_diagram_img(
-                KS_ROADMAP_TEMPLATE, alt="Roadmap diagram template", max_width_px=520
+                KS_ROADMAP_TEMPLATE,
+                alt="Roadmap diagram template",
+                max_width_px=_diagram_max,
             )
 
     if diagram_bits:
         metrics_inner.append(
-            f'<div class="col-md-3 col-lg-2 d-flex align-items-start justify-content-center">'
-            f"{diagram_bits}</div>"
+            '<div class="col-12">'
+            '<div class="d-flex justify-content-center lenses-roadmap-ks-diagram-outer">'
+            f"{diagram_bits}"
+            "</div></div>"
         )
-        metrics_inner.append('<div class="col-md-9 col-lg-10"><div class="row g-3">')
-    else:
-        metrics_inner.append('<div class="col-12"><div class="row g-3">')
+
+    metrics_inner.append('<div class="col-12"><div class="row g-3">')
 
     hz = horizon_badges_html(horizon_counts if isinstance(horizon_counts, dict) else {})
     if hz:
@@ -351,11 +359,7 @@ def roadmap_summary_html(
             "</div>"
         )
 
-    metrics_inner.append("</div>")
-    if diagram_bits:
-        metrics_inner.append("</div>")
-    else:
-        metrics_inner.append("</div>")
+    metrics_inner.append("</div></div>")
     metrics_inner.append("</div>")
 
     metrics_block = "\n".join(metrics_inner)

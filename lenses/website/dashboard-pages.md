@@ -108,9 +108,14 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 - **`/wbs`** — Table (or list) of all `docs/requirements/WBS.md` and `WBS.csv` files found under the workspace.  
 - **`/wbs/view?p=…`** — Read-only preview of a single file; path validated so only workspace-local requirement trees are accessible.
 
-## Roadmaps (`/roadmaps`)
+## Forge plan (`/plan`)
 
-- **`/roadmaps`** — Single shell page: dropdown of discovered **`ROADMAP.md`** files, a **summary** card (server-rendered SVG bars / donut / horizon badges plus optional kitchensink **SVG template** thumbnails from **`/__ks/assets/svg/`**), a **list-group** outline (section titles), and an **iframe** whose `src` is **`/roadmaps/preview?p=…&section=…`**. Client script loads **`/api/roadmap-outline`** and **`/roadmaps/summary`** via `fetch` when the file changes; section clicks swap the iframe only. URL query **`?p=`** / **`?section=`** is updated with **`history.replaceState`** for refresh/bookmarking.
+- **`/plan`** — **Forge planning and execution lens** (replaces the old roadmap-only browser as the primary entry): select **repository**, **`docs/requirements/WBS.md`** (authoritative story/task IDs), and an optional **`ROADMAP.md`**. The default **Plan** tab shows milestones/epics/stories from the WBS and a **story hub** (definition, **Today / Charge**, **Decision log / Ember**, **Discipline sessions / Versona**) via **`/api/plan-spine`** and **`/api/story-hub`**. The **Source** tab loads **`/roadmaps/preview`** for raw roadmap section HTML. Roadmap **summary** charts still use **`/roadmaps/summary`** when a roadmap is selected.
+- **`/roadmaps`** — Redirects to **`/plan`** (legacy bookmarks).
+
+## Roadmap fragments (iframes / charts)
+
+- **`/roadmaps/summary`**, **`/roadmaps/preview`**, **`/roadmaps/timeline`** — Unchanged; used by the Forge plan **Source** tab and summary strip.
 
 ## Lenses docs link
 

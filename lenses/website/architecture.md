@@ -6,7 +6,7 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 
 | Path | Role |
 |------|------|
-| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**, **`/roadmaps`**, **`/roadmaps/preview`**, **`/roadmaps/summary`**, **`GET /api/roadmap-outline`**, **`/projects/<name>/charts-api`**. |
+| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**, **`/plan`** (Forge plan lens), **`/roadmaps` → `/plan`**, roadmap preview/summary routes, **`GET /api/plan-spine`**, **`GET /api/story-hub`**, **`GET /api/roadmap-outline`**, **`/workspace-md/view`**, **`/projects/<name>/charts-api`**. |
 | `lenses/scan.py` | `resolve_workspace_root`, `resolve_workspace_child_dir`, `scan_workspace`, `workspace_state_json`; subprocess calls to `git`; toolset **`script_cards`** / comment blurbs for root **`*.sh`**; indexes **`roadmaps`** (`**/docs/**/ROADMAP.md`) alongside WBS. |
 | `lenses/toolset_actions.py` | Allowlisted workspace-root shell script execution for **`POST /api/toolset/run`** (bash, fixed path, no user shell). |
 | `lenses/render.py` | HTML for dashboard pages; **`showcase_page`** shell when kitchensink is present, else fallback layout. Roadmaps UI: **`page_roadmaps`**, preview document builder, summary fragment. |

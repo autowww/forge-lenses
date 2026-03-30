@@ -48,6 +48,15 @@ class RoadmapEntry:
     kind: str
 
 
+@dataclass
+class ForgeHint:
+    repo_hint: str
+    has_charge: bool
+    has_ember_logs: bool
+    has_versona: bool
+    has_journal: bool
+
+
 # Skip when walking a repo for ROADMAP.md (avoids node_modules / build trees).
 _RGLOB_SKIP_DIR_NAMES = frozenset(
     {
@@ -103,6 +112,29 @@ def _append_wbs_from_base(
         wbs_list.append(
             WbsEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind=kind)
         )
+
+
+def _forge_hint_for_base(base: Path, workspace_root: Path) -> ForgeHint | None:
+    if not base.is_dir():
+        return None
+    try:
+        rel = base.resolve().relative_to(workspace_root.resolve())
+    except ValueError:
+        return None
+    hint = rel.parts[0] if rel.parts else ""
+    charge = (base / "forge" / "charge.md").is_file()
+    ember = (base / "ember-logs").is_dir()
+    ver = (base / "forge-logs" / "versona").is_dir()
+    journal = (base / "forge" / "journal").is_dir()
+    if not any((charge, ember, ver, journal)):
+        return None
+    return ForgeHint(
+        repo_hint=hint,
+        has_charge=charge,
+        has_ember_logs=ember,
+        has_versona=ver,
+        has_journal=journal,
+    )
 
 
 def _append_roadmaps_from_base(
@@ -357,6 +389,16 @@ def scan_workspace(
     wbs_list.sort(key=lambda w: w.rel_path)
     roadmap_list.sort(key=lambda r: r.rel_path)
 
+    forge_hints: list[ForgeHint] = []
+    fh_root = _forge_hint_for_base(root, root)
+    if fh_root is not None:
+        forge_hints.append(fh_root)
+    for c in children:
+        cp = root / c.name
+        fh = _forge_hint_for_base(cp, root)
+        if fh is not None:
+            forge_hints.append(fh)
+
     return {
         "workspace_root": str(root),
         "lenses_repo_root": str(lenses_repo_root.resolve()),
@@ -370,6 +412,7 @@ def scan_workspace(
         "websites": websites,
         "wbs": [asdict(w) for w in wbs_list],
         "roadmaps": [asdict(r) for r in roadmap_list],
+        "forge_hints": [asdict(f) for f in forge_hints],
     }
 
 
