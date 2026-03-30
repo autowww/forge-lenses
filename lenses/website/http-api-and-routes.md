@@ -56,12 +56,16 @@ Non-HTML files (CSS, JS, fonts, images, etc.) are returned **unchanged**. **`Con
 | `/projects` | Portal: card grid with README previews, git badges, links to each project dashboard. |
 | `/tutorials` | Index of every detected forge-autodoc handbook per workspace child (**`tutorial/index.html`**, **`tutorials/index.html`**, **`lenses/tutorials/index.html`**, or **`website/tutorials/index.html`** via **`list_child_handbooks`**), with **Open tutorial** / **Open engineer handbook** links under **`/local-site/<name>/…`** and **Project dashboard**. |
 | `/projects/<name>` | Per-project dashboard: revision links, 90-day commit chart, contributors, file-type bars, optional git actions, JSON stats link. |
+| `/projects/<name>/strategy` | Repo layout and branching: **`.gitmodules`** table, **`git submodule status`** (bounded), optional inline SVG + kitchensink template thumbnail, current branch / remote default, registry **`project_strategy`** text, optional **`LENSES-REPO-STRATEGY.md`**. Unknown second path segments under **`/projects/…`** return **404**. |
 | `/toolset` | Card grid of workspace-root **`*.sh`** scripts (blurbs from comments) and `.cursor` presence. |
 | `/toolset/<name>` | Per-script run screen: confirm, then **`POST /api/toolset/run`** for console output. |
 | `/websites` | Firebase site repos: hero cards, stats, search, local preview links, copyable build/deploy commands, GitHub PAT sign-in for allowlisted actions. |
 | `/websites/browse?site=<name>` | Sticky dashboard chrome + sidebar page index + **iframe** preview (`/local-site/<name>/…`). |
 | `/wbs` | Index of `docs/requirements/WBS.md` and `WBS.csv` files. |
 | `/wbs/view` | Query `?p=<relative-path>` — read-only viewer for one WBS file (path must stay under workspace and include `requirements` segment; file name must be `WBS.md` or `WBS.csv`). |
+| `/roadmaps` | Roadmap browser: pick a `ROADMAP.md`, outline by section, **iframe** preview per section, summary strip with server-generated charts. Optional query `?p=<rel>&section=<id>` hydrates selection. |
+| `/roadmaps/summary` | Query `?p=<relative-path>` — HTML fragment only: charts + KS diagram thumbnails derived from tables in that roadmap (status, % complete, horizon). |
+| `/roadmaps/preview` | Query `?p=<relative-path>&section=<id>` — full minimal HTML document for one section (for iframe `src`; links `/__ks/css/` for theming). |
 | `/board` | **Sticker board** hub: flat list of boards with project filter, thumbnails, create / rename / delete / move between projects. Optional **`?project=<child-name>`** pre-selects the filter (same as the link from a project dashboard). |
 | `/board/<board_id>` | **Sticker board editor** for one board: Kanban / freeform stickers; hover **edit** / **delete** on cards. **`?thumb=1`** — minimal chrome for PNG capture. **Local** board file: **`<workspace>/.lenses-local/sticker-boards/<board_id>.json`**. **Shared** board: **`<workspace>/.lenses-repo/<login>/sticker-boards/<board_id>.json`** + **`<workspace>/.lenses-local/sticker-boards/<board_id>-shared-local.json`** + marker **`<board_id>.marker.json`**. Registry: **`<workspace>/.lenses-local/sticker-board-registry.json`**. Legacy single-file **`sticker-board.json`** is migrated automatically on first access. |
 | `/board-preview/<board_id>.png` | **PNG** thumbnail if present under **`.lenses-local/sticker-board-previews/`** and **`board_id`** is in the registry; **404** otherwise. **`Cache-Control: private, max-age=60`**. |
@@ -78,8 +82,9 @@ Top navigation and sidebar: workspace pages (including **Tutorials** → **`/tut
 
 | Method | Path | Response |
 |--------|------|----------|
-| `GET` | `/api/workspace-state` | `application/json` — same object as produced by `scan_workspace` (see [Workspace scan contract](workspace-scan-contract.html)). |
-| `GET` | `/api/workspace-state?git_extended=1` | Same shape, with `git` objects including `head_short`, `head_full`, `commit_subject`, `commit_date` for each git child. |
+| `GET` | `/api/roadmap-outline?p=<relative-path>` | `application/json` — `{ "doc_title", "sections": [ { "id", "level", "title" } ] }` for one `ROADMAP.md`. **400** if `p` missing; **404** if path not allowed or missing. |
+| `GET` | `/api/workspace-state` | `application/json` — scan object from `scan_workspace` plus **`standards_compliance_note`** and per-child **`standards_compliance`** (heuristic agentic/standards score) after server enrichment (see [Workspace scan contract](workspace-scan-contract.html)). |
+| `GET` | `/api/workspace-state?git_extended=1` | Same shape, with `git` objects including `head_short`, `head_full`, `commit_subject`, `commit_date` for each git child. **`standards_compliance`** is included whenever the scan runs. |
 | `GET` | `/api/project/<name>/stats` | Repo statistics: commits by week (90 days), contributors, extension counts, `tracked_files`, `commits_total`, and when available **`tracked_lines_approx`** (approximate newline count in tracked text files, capped — same heuristic as the Projects portal). **404** if the child is missing or not a git repo. |
 | `POST` | `/api/project/<name>/git` | Body: JSON `{"action":"fetch"\|"pull"\|"status"}`. Runs `git` in the resolved project directory with a fixed allowlist. Response JSON: `ok`, `stdout`, `stderr`, `exit_code`, optional `error`. |
 | `POST` | `/api/toolset/run` | Body: JSON `{"script":"<basename>.sh"}`. Runs **`/bin/bash <workspace_root>/<script>`** with cwd set to **`workspace_root`** when the file exists and the basename is allowlisted. **400** if the name is invalid or missing. Response JSON: `ok`, `stdout`, `stderr`, `exit_code`, optional `error`. **403** from non-loopback unless **`LENSES_ALLOW_GIT_ACTIONS=1`** (same policy as project git actions). **Not** GitHub-session gated (unlike **`/api/actions/run`**). |
@@ -111,7 +116,7 @@ The process uses **no shell** for git: arguments are fixed lists (`git -C <repo>
 
 ## Security notes
 
-- Paths are constrained: WBS viewer rejects `..` and paths outside `workspace_root`.
+- Paths are constrained: WBS viewer rejects `..` and paths outside `workspace_root`. Roadmap routes reject `..`, require a `docs` segment in the resolved path, and allow only files named **`ROADMAP.md`**.
 - `/local-site/` only serves under each Firebase repo’s configured **`hosting.public`** directory.
 - `/projects/<name>` and project APIs resolve **only** immediate child directory names allowed by `scan_workspace` (respecting `ignore_paths`).
 - Without `LENSES_ALLOW_GIT_ACTIONS`, the server only **reads** the filesystem on GET (except auth/actions POST and **session file** writes for sign-in as above). **Sticker board POST** and **sticker-board-registry POST** also require loopback or `LENSES_ALLOW_GIT_ACTIONS=1` and may write **`.lenses-local/`** and, in shared mode, **`.lenses-repo/<login>/`** (last-write-wins; no locking in v1).
