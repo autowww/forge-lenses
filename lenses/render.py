@@ -23,6 +23,26 @@ from lenses.tutorial_index import (
 )
 from lenses.toolset_actions import resolve_toolset_script
 from lenses.ks_layout import board_thumb_capture_extra_css, lenses_showcase_page
+from lenses.repo_strategy import (
+    DEFAULT_MAINTENANCE_BULLETS,
+    git_submodule_status_text,
+    load_optional_strategy_markdown,
+    markdown_to_html_fragment,
+    parse_gitmodules,
+    remote_default_branch,
+    sibling_workspace_hint,
+    strategy_registry_entry,
+    svg_submodule_layout_svg,
+    workspace_child_names,
+)
+from lenses.roadmap_charts import KS_ROADMAP_TEMPLATE, ks_diagram_img, roadmap_summary_html
+from lenses.roadmap_outline import (
+    extract_chart_metrics,
+    find_section,
+    parse_roadmap_markdown,
+    section_to_html,
+)
+from lenses.standards_compliance import svg_compliance_score_bars
 from lenses.project_stats import (
     approx_tracked_lines,
     collect_project_stats,
@@ -42,6 +62,73 @@ from lenses.project_stats import (
 
 def esc(s: str) -> str:
     return html.escape(s, quote=True)
+
+
+def _project_standards_compliance_html(
+    sid: str,
+    sc_data: dict[str, Any],
+    handbook_url: str,
+) -> str:
+    """Single project dashboard section for heuristic agentic / standards compliance."""
+    score = int(sc_data.get("score") or 0)
+    tier = str(sc_data.get("tier") or "minimal")
+    summary = str(sc_data.get("summary") or "")
+    checks = sc_data.get("checks") or []
+    if not isinstance(checks, list):
+        checks = []
+    tier_badge = (
+        "text-bg-success"
+        if tier == "good"
+        else ("text-bg-warning" if tier == "partial" else "text-bg-secondary")
+    )
+    hb = handbook_url.rstrip("/")
+    bp_link = f'{hb}/sdlc--methodologies-agentic-coding-standards.html'
+    rows: list[str] = []
+    for c in checks:
+        if not isinstance(c, dict):
+            continue
+        st = str(c.get("status", ""))
+        icon = "✓" if st == "pass" else ("◌" if st in ("na", "skipped") else "!")
+        row_cls = ""
+        if st == "warn":
+            row_cls = " class=\"table-warning\""
+        elif st in ("na", "skipped"):
+            row_cls = " class=\"table-secondary\""
+        rows.append(
+            f"<tr{row_cls}>"
+            f"<td>{esc(icon)}</td>"
+            f"<td>{esc(str(c.get('label', '')))}</td>"
+            f"<td class=\"small\">{esc(str(c.get('detail', '')))}</td>"
+            f"</tr>"
+        )
+    tbl = (
+        '<table class="table table-sm table-bordered mb-2">'
+        '<thead><tr><th scope="col"></th><th scope="col">Check</th><th scope="col">Detail</th></tr></thead>'
+        f"<tbody>{''.join(rows)}</tbody></table>"
+        if rows
+        else '<p class="forge-support small mb-2">No checks available.</p>'
+    )
+    sugg = sc_data.get("suggestions") or []
+    sugg_html = ""
+    if isinstance(sugg, list) and sugg:
+        items = "".join(f"<li>{esc(str(x))}</li>" for x in sugg if str(x).strip())
+        sugg_html = (
+            f'<p class="small fw-semibold mb-1">Suggestions</p><ul class="small mb-0">{items}</ul>'
+        )
+    return (
+        f'<section class="lenses-site-hero-section forge-card" '
+        f'aria-labelledby="lenses-proj-std-{esc(sid)}">'
+        f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-std-{esc(sid)}">'
+        f"Standards and agentic hygiene</h3>"
+        f'<p class="forge-support small mb-2">'
+        f'<span class="badge rounded-pill {tier_badge} me-2">{esc(tier)} · {score}/100</span>'
+        f"{esc(summary)} "
+        f'<a href="{esc(bp_link)}" target="_blank" rel="noopener">Blueprint: agentic coding standards</a>.'
+        f"</p>"
+        f"{tbl}"
+        f"{sugg_html}"
+        f"</section>"
+    )
 
 
 # Same path as kitchensink ``LANDING_FORGE_SPECTRAL_SVG`` — static sites resolve it
@@ -428,9 +515,12 @@ def _project_portal_panel_html(
         except ImportError:
             preview_block = ""
 
+    strategy_href = f"/projects/{urllib.parse.quote(name, safe='')}/strategy"
     actions = (
         f'<div class="d-flex flex-wrap gap-2 align-items-start mt-3">'
         f'<a class="btn btn-sm btn-forge" href="{esc(card_href)}">Open dashboard</a>'
+        f'<a class="btn btn-sm btn-outline-secondary" href="{esc(strategy_href)}">'
+        f"Repo &amp; strategy</a>"
         f"{preview_block}"
         f"</div>"
     )
@@ -821,6 +911,7 @@ def lenses_sidebar_html(nav_active: str, handbook_url: str, forge_url: str) -> s
         ("websites", "/websites", "Websites"),
         ("board", "/board", "Sticker board"),
         ("wbs", "/wbs", "WBS"),
+        ("roadmaps", "/roadmaps", "Roadmaps"),
     ]
     lines = [
         '<p class="nav-section-label">Workspace</p>',
@@ -883,6 +974,7 @@ def nav_bar(
         ("websites", "/websites", "Websites"),
         ("board", "/board", "Sticker board"),
         ("wbs", "/wbs", "WBS"),
+        ("roadmaps", "/roadmaps", "Roadmaps"),
     ]
     links = []
     for key, href, label in items:
@@ -1099,6 +1191,7 @@ def page_overview(
     n_git = sum(1 for c in children if c.get("is_git"))
     n_non_git = n_children - n_git
     n_wbs = len(state.get("wbs") or [])
+    n_roadmaps = len(state.get("roadmaps") or [])
     websites = state.get("websites") or []
     n_sites = len(websites)
     scripts = state.get("toolset") or {}
@@ -1170,6 +1263,10 @@ def page_overview(
     if n_wbs:
         support_points.append(
             f"{n_wbs} WBS file{'s' if n_wbs != 1 else ''} under docs/requirements/"
+        )
+    if n_roadmaps:
+        support_points.append(
+            f"{n_roadmaps} roadmap file{'s' if n_roadmaps != 1 else ''} under docs/"
         )
     if n_scripts:
         support_points.append(
@@ -1348,10 +1445,11 @@ def page_overview(
     ext_heat_html = extension_heatmap_html(ext_top, ext_denom)
 
     kpi_row = (
-        '<div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4 lenses-overview-kpi-row">'
+        '<div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-3 mb-4 lenses-overview-kpi-row">'
         + kpi_tile("/projects", "Top-level folders", esc(str(n_children)), "Open Projects →")
         + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Websites →")
         + kpi_tile("/wbs", "WBS files", esc(str(n_wbs)), "WBS →")
+        + kpi_tile("/roadmaps", "Roadmaps", esc(str(n_roadmaps)), "Roadmaps →")
         + kpi_tile("/toolset", "Root scripts", esc(str(n_scripts)), "Toolset →")
         + kpi_tile(
             "/projects",
@@ -1400,11 +1498,34 @@ def page_overview(
         "</div></section>"
     )
 
+    score_rows: list[tuple[str, int]] = []
+    for c in sorted_children:
+        sc = c.get("standards_compliance")
+        if isinstance(sc, dict) and "score" in sc:
+            score_rows.append((str(c.get("name", "")), int(sc.get("score") or 0)))
+    score_rows.sort(key=lambda x: -x[1])
+    standards_svg = svg_compliance_score_bars(score_rows)
+    std_note = str(state.get("standards_compliance_note") or "").strip()
+    hb_base = handbook_url.rstrip("/")
+    bp_std = f"{hb_base}/sdlc--methodologies-agentic-coding-standards.html"
+    standards_block = (
+        '<section class="lenses-overview-standards mt-2 mb-4">'
+        '<h2 class="h5 text-cyan mb-2">Standards and agentic hygiene</h2>'
+        f'<p class="forge-support small mb-2">{esc(std_note)} '
+        f'<a href="{esc(bp_std)}" target="_blank" rel="noopener">Agentic coding standards</a> (handbook).</p>'
+        '<h3 class="h6 text-cyan mb-2">Compliance score by repository</h3>'
+        '<p class="forge-support small mb-2">Heuristic 0–100 from filesystem signals (CI, docs, '
+        "sdlc/blueprints, .cursor, Forge paths, locks, Firebase). Not an audit.</p>"
+        f"{standards_svg}"
+        "</section>"
+    )
+
     main_col = (
         '<div class="col-lg-7 mb-4 mb-lg-0">'
         '<h2 class="h5 text-cyan mb-3">Repositories</h2>'
         + ("".join(repo_blocks) if repo_blocks else '<p class="forge-support">No folders found.</p>')
         + analytics_block
+        + standards_block
         + "</div>"
     )
 
@@ -2015,7 +2136,12 @@ def page_project_detail(
         f'<a class="btn btn-sm btn-outline-secondary" href="{esc(sticker_hub)}">Sticker board</a>'
     )
 
-    grp_nav = ['<a class="btn btn-sm btn-link px-0" href="/projects">← All projects</a>']
+    strategy_href = f"/projects/{urllib.parse.quote(project_name, safe='')}/strategy"
+    grp_nav = [
+        f'<a class="btn btn-sm btn-outline-secondary" href="{esc(strategy_href)}">'
+        f"Repo &amp; strategy</a>",
+        '<a class="btn btn-sm btn-link px-0" href="/projects">← All projects</a>',
+    ]
 
     cta_row = (
         '<div class="lenses-project-cta-groups mt-3">'
@@ -2071,6 +2197,12 @@ def page_project_detail(
     )
     panels.append(hero_section)
     panels.append(readme_panel)
+
+    sc_data = (child or {}).get("standards_compliance")
+    if isinstance(sc_data, dict) and sc_data.get("checks"):
+        panels.append(
+            _project_standards_compliance_html(sid, sc_data, handbook_url)
+        )
 
     if is_git:
         weekly = [(x["week"], x["count"]) for x in stats.get("commits_by_week") or []]
@@ -2185,6 +2317,212 @@ def page_project_detail(
         browser_title=f"{project_name} — lenses",
         nav_active="projects",
         page_title=project_name,
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+    )
+
+
+def page_project_repo_strategy(
+    state: dict[str, Any],
+    registry: dict[str, Any],
+    project_name: str,
+    repo_path: Path,
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+) -> str:
+    child = next(
+        (x for x in (state.get("children") or []) if str(x.get("name")) == project_name),
+        None,
+    )
+    gi = (child or {}).get("git") or {}
+    is_git = bool((child or {}).get("is_git"))
+    sid = re.sub(r"[^a-z0-9_-]+", "-", project_name.lower()).strip("-") or "project"
+    ws_names = workspace_child_names(state)
+    strat = strategy_registry_entry(registry, project_name)
+
+    back_href = f"/projects/{urllib.parse.quote(project_name, safe='')}"
+    lead = (
+        f'<p class="forge-support mb-3">'
+        f'<a class="btn btn-sm btn-link px-0" href="{esc(back_href)}">← Project dashboard</a>'
+        f' · <a class="btn btn-sm btn-link px-0" href="/projects">All projects</a></p>'
+    )
+
+    panels: list[str] = []
+
+    if not is_git:
+        panels.append(
+            f'<section class="lenses-site-hero-section forge-card" '
+            f'aria-labelledby="lenses-strat-ng-{esc(sid)}">'
+            f'<h2 class="h5 text-cyan" id="lenses-strat-ng-{esc(sid)}">Not a git repository</h2>'
+            f'<p class="forge-support small mb-0">Path: <code>{esc(str(repo_path.resolve()))}</code>. '
+            f"Submodule layout and remote-branch hints apply to git checkouts only.</p></section>"
+        )
+    else:
+        modules = parse_gitmodules(repo_path)
+        status_txt, st_trunc, st_err = git_submodule_status_text(repo_path)
+        default_br = remote_default_branch(repo_path)
+
+        rows_html: list[str] = []
+        for m in modules:
+            pth = str(m.get("path", "") or "")
+            url = str(m.get("url", "") or "")
+            br = str(m.get("branch", "") or "")
+            hint = sibling_workspace_hint(pth, ws_names, project_name)
+            hint_cell = hint if hint else "—"
+            rows_html.append(
+                "<tr>"
+                f'<td><code>{esc(pth)}</code></td>'
+                f'<td class="small">{esc(url)}</td>'
+                f"<td>{esc(br) if br else '—'}</td>"
+                f'<td class="small">{hint_cell}</td>'
+                "</tr>"
+            )
+        if rows_html:
+            table = (
+                '<table class="table table-sm table-bordered mb-0">'
+                "<thead><tr>"
+                "<th>Path</th><th>URL</th><th>.gitmodules branch</th>"
+                "<th>Workspace</th>"
+                "</tr></thead>"
+                f'<tbody>{"".join(rows_html)}</tbody></table>'
+            )
+        else:
+            table = (
+                '<p class="forge-support small mb-0">No <code>.gitmodules</code> at this repo root.</p>'
+            )
+
+        if st_err:
+            status_block = f'<p class="text-warning small mb-2">{esc(st_err)}</p>'
+        elif status_txt:
+            note = " (output truncated)" if st_trunc else ""
+            status_block = (
+                f'<p class="forge-support small mb-2"><code>git submodule status</code>{note}</p>'
+                f'<pre class="lenses-git-out mb-0">{esc(status_txt)}</pre>'
+            )
+        else:
+            status_block = (
+                '<p class="forge-support small mb-0">No submodule status output.</p>'
+            )
+
+        svg = svg_submodule_layout_svg(
+            project_name, [str(m.get("path") or "") for m in modules if m.get("path")]
+        )
+
+        asset = str(strat.get("ks_diagram_asset") or "").strip()
+        ks_extra = ""
+        if asset:
+            ks_rel = asset.lstrip("/").replace("\\", "/")
+            ksp = repo_path / "kitchensink" / ks_rel
+            if ksp.is_file():
+                ks_extra = ks_diagram_img(ks_rel, alt="Repository illustration")
+        if not ks_extra and modules:
+            ks_extra = ks_diagram_img(KS_ROADMAP_TEMPLATE, alt="Repository structure")
+
+        viz_block = ""
+        if svg:
+            viz_block += f'<div class="mb-3">{svg}</div>'
+        if ks_extra:
+            viz_block += ks_extra
+
+        branching_bits: list[str] = []
+        br_cur = str(gi.get("branch", "") or "").strip()
+        if br_cur:
+            branching_bits.append(f"<li>Current branch: <code>{esc(br_cur)}</code></li>")
+        dirty = gi.get("dirty")
+        branching_bits.append(
+            "<li>Working tree: "
+            + (
+                "<strong>dirty</strong> (uncommitted changes)"
+                if dirty
+                else "<strong>clean</strong>"
+            )
+            + "</li>"
+        )
+        if default_br:
+            branching_bits.append(
+                f"<li>Remote default (<code>origin/HEAD</code>): <code>{esc(default_br)}</code></li>"
+            )
+        else:
+            branching_bits.append(
+                "<li>Remote default branch not resolved "
+                "(try <code>git fetch</code> so <code>origin/HEAD</code> exists).</li>"
+            )
+        br_note = str(strat.get("branching") or strat.get("branching_notes") or "").strip()
+        if br_note:
+            branching_bits.append(f"<li>{esc(br_note)}</li>")
+
+        storage_section = (
+            f'<section class="lenses-site-hero-section forge-card" '
+            f'aria-labelledby="lenses-strat-store-{esc(sid)}">'
+            f'<h2 class="h5 text-cyan mb-3" id="lenses-strat-store-{esc(sid)}">'
+            f"How code is stored</h2>"
+            f"{table}"
+            f'<div class="mt-3">{status_block}</div>'
+            f"{viz_block}"
+            f"</section>"
+        )
+        branching_section = (
+            f'<section class="lenses-site-hero-section forge-card mt-3" '
+            f'aria-labelledby="lenses-strat-br-{esc(sid)}">'
+            f'<h2 class="h5 text-cyan mb-2" id="lenses-strat-br-{esc(sid)}">Branching</h2>'
+            f'<ul class="forge-support small mb-0">{"".join(branching_bits)}</ul>'
+            f"</section>"
+        )
+        panels.extend([storage_section, branching_section])
+
+    maint_raw = strat.get("maintenance")
+    if isinstance(maint_raw, list) and maint_raw:
+        bullets = [str(x).strip() for x in maint_raw if str(x).strip()]
+    else:
+        bullets = []
+    if not bullets:
+        bullets = list(DEFAULT_MAINTENANCE_BULLETS)
+    maint_html = "".join(f"<li>{esc(b)}</li>" for b in bullets)
+    mn = str(strat.get("maintenance_notes") or "").strip()
+    notes_html = f'<p class="forge-support small mt-2 mb-0">{esc(mn)}</p>' if mn else ""
+
+    md_raw = load_optional_strategy_markdown(repo_path) if repo_path.is_dir() else None
+    file_html = ""
+    if md_raw:
+        file_html = (
+            '<div class="lenses-repo-strategy-md forge-support small mt-3">'
+            f"{markdown_to_html_fragment(md_raw)}</div>"
+        )
+
+    maint_section = (
+        f'<section class="lenses-site-hero-section forge-card mt-3" '
+        f'aria-labelledby="lenses-strat-maint-{esc(sid)}">'
+        f'<h2 class="h5 text-cyan mb-2" id="lenses-strat-maint-{esc(sid)}">'
+        f"Maintenance rules</h2>"
+        f"<ul class=\"mb-0\">{maint_html}</ul>"
+        f"{notes_html}"
+        f'<p class="forge-support small mt-2 mb-0">Optional: add '
+        f"<code>LENSES-REPO-STRATEGY.md</code> at this repo root for team-specific notes.</p>"
+        f"{file_html}"
+        f"</section>"
+    )
+    panels.append(maint_section)
+
+    body_inner = (
+        f"{_lenses_vertical_hero_styles()}\n{lead}\n"
+        '<div class="lenses-sites-stack lenses-project-stack">'
+        + "".join(panels)
+        + "</div>"
+    )
+    bc = lenses_breadcrumb_html(
+        ("/", "Overview"),
+        ("/projects", "Projects"),
+        (f"/projects/{urllib.parse.quote(project_name, safe='')}", project_name),
+        ("", "Repo & strategy"),
+    )
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title=f"{project_name} — repo strategy — lenses",
+        nav_active="projects",
+        page_title=f"{project_name}: repo & strategy",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
@@ -2985,4 +3323,247 @@ def page_wbs_view(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+    )
+
+
+def roadmap_summary_fragment(md_text: str) -> str:
+    metrics = extract_chart_metrics(md_text)
+    return roadmap_summary_html(metrics)
+
+
+def _roadmap_preview_head_inner() -> str:
+    return (
+        '<link rel="stylesheet" href="/__ks/css/forge-theme.css" />\n'
+        '<link rel="stylesheet" href="/__ks/css/forgesdlc-theme.css" />\n'
+        "<style>\n"
+        "body.lenses-roadmap-preview-doc { margin:0; padding:1rem 1.1rem; "
+        "background: var(--bs-body-bg, #0f172a); color: var(--bs-body-color, #e2e8f0); }\n"
+        ".lenses-roadmap-table-wrap { margin-bottom: 1rem; }\n"
+        "</style>\n"
+    )
+
+
+def page_roadmap_preview_document(
+    rel_path: str,
+    section_id: str,
+    md_text: str,
+) -> str:
+    parsed = parse_roadmap_markdown(md_text)
+    sec = find_section(parsed, section_id)
+    if sec is None:
+        inner = '<p class="forge-support">Section not found.</p>'
+    else:
+        inner = section_to_html(sec)
+    title_src = parsed.doc_title or rel_path
+    title = esc(title_src)
+    head = _roadmap_preview_head_inner()
+    return (
+        "<!DOCTYPE html>\n"
+        '<html lang="en">\n<head>\n'
+        '<meta charset="utf-8"/>\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1"/>\n'
+        f"<title>{title}</title>\n"
+        f"{head}"
+        "</head>\n"
+        '<body class="lenses-roadmap-preview-doc">\n'
+        f"{inner}\n"
+        "</body>\n</html>\n"
+    )
+
+
+def page_roadmaps(
+    state: dict[str, Any],
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+) -> str:
+    rms = [r for r in (state.get("roadmaps") or []) if isinstance(r, dict)]
+    opts: list[str] = [
+        '<option value="">— Select roadmap —</option>',
+    ]
+    for r in rms:
+        rp = str(r.get("rel_path", ""))
+        if not rp:
+            continue
+        opts.append(f'<option value="{esc(rp)}">{esc(rp)}</option>')
+    select_html = (
+        '<label for="lenses-roadmap-file" class="form-label small text-muted mb-1">'
+        "Roadmap file</label>"
+        '<select id="lenses-roadmap-file" class="form-select form-select-sm lenses-roadmap-file-select">'
+        f'{"".join(opts)}</select>'
+    )
+    if not rms:
+        select_html = (
+            '<p class="forge-support">No <code>ROADMAP.md</code> files found under <code>docs/</code>.</p>'
+        )
+
+    script = """
+<script>
+(function () {
+  var fileSel = document.getElementById("lenses-roadmap-file");
+  var outlineEl = document.getElementById("lenses-roadmap-outline");
+  var summaryEl = document.getElementById("lenses-roadmap-summary");
+  var frame = document.getElementById("lenses-roadmap-frame");
+  if (!outlineEl || !summaryEl || !frame) return;
+
+  function qs() {
+    var o = {};
+    var s = window.location.search.replace(/^\\?/, "");
+    if (!s) return o;
+    s.split("&").forEach(function (pair) {
+      var i = pair.indexOf("=");
+      if (i < 0) return;
+      var k = decodeURIComponent(pair.slice(0, i).replace(/\\+/g, " "));
+      var v = decodeURIComponent(pair.slice(i + 1).replace(/\\+/g, " "));
+      o[k] = v;
+    });
+    return o;
+  }
+
+  function setUrl(p, section) {
+    var q = new URLSearchParams();
+    if (p) q.set("p", p);
+    if (section) q.set("section", section);
+    var tail = q.toString();
+    var path = window.location.pathname + (tail ? "?" + tail : "");
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, "", path);
+    }
+  }
+
+  function loadSummary(p) {
+    summaryEl.innerHTML = '<p class="forge-support small mb-0">Loading summary…</p>';
+    fetch("/roadmaps/summary?p=" + encodeURIComponent(p))
+      .then(function (r) { return r.text(); })
+      .then(function (html) { summaryEl.innerHTML = html; })
+      .catch(function () {
+        summaryEl.innerHTML = '<p class="forge-support text-warning">Summary failed to load.</p>';
+      });
+  }
+
+  function setFrame(p, section) {
+    frame.src = "/roadmaps/preview?p=" + encodeURIComponent(p) +
+      "&section=" + encodeURIComponent(section);
+  }
+
+  function renderOutline(data, p, preferredSection) {
+    outlineEl.innerHTML = "";
+    var sections = data.sections || [];
+    var firstId = sections.length ? sections[0].id : "";
+    sections.forEach(function (s) {
+      var li = document.createElement("button");
+      li.type = "button";
+      li.className = "list-group-item list-group-item-action lenses-roadmap-outline-item text-start";
+      li.dataset.sectionId = s.id;
+      var pad = (s.level > 2 ? (s.level - 2) * 0.65 : 0);
+      li.style.paddingLeft = (0.85 + pad) + "rem";
+      li.textContent = s.title;
+      li.addEventListener("click", function () {
+        outlineEl.querySelectorAll(".active").forEach(function (x) { x.classList.remove("active"); });
+        li.classList.add("active");
+        setFrame(p, s.id);
+        setUrl(p, s.id);
+      });
+      outlineEl.appendChild(li);
+    });
+    var pick = preferredSection;
+    if (pick && !sections.some(function (x) { return x.id === pick; })) pick = "";
+    var use = pick || firstId;
+    if (use) {
+      setFrame(p, use);
+      setUrl(p, use);
+      outlineEl.querySelectorAll(".lenses-roadmap-outline-item").forEach(function (el) {
+        if (el.dataset.sectionId === use) el.classList.add("active");
+      });
+    } else {
+      frame.src = "about:blank";
+    }
+  }
+
+  function loadRoadmap(p, preferredSection) {
+    if (!p) {
+      summaryEl.innerHTML = "";
+      outlineEl.innerHTML = '<div class="list-group-item text-muted">Select a roadmap file.</div>';
+      frame.src = "about:blank";
+      setUrl("", "");
+      return;
+    }
+    loadSummary(p);
+    fetch("/api/roadmap-outline?p=" + encodeURIComponent(p))
+      .then(function (r) {
+        if (!r.ok) throw new Error("bad");
+        return r.json();
+      })
+      .then(function (data) { renderOutline(data, p, preferredSection || ""); })
+      .catch(function () {
+        outlineEl.innerHTML = '<div class="list-group-item text-danger">Failed to load outline.</div>';
+      });
+  }
+
+  if (fileSel) {
+    fileSel.addEventListener("change", function () {
+      loadRoadmap(fileSel.value, "");
+    });
+  }
+
+  var q0 = qs();
+  var initialP = q0.p || "";
+  var initialSec = q0.section || "";
+  if (fileSel && initialP) {
+    fileSel.value = initialP;
+    loadRoadmap(initialP, initialSec);
+  } else if (fileSel && fileSel.value) {
+    loadRoadmap(fileSel.value, "");
+  } else {
+    outlineEl.innerHTML = '<div class="list-group-item text-muted">Select a roadmap file.</div>';
+    summaryEl.innerHTML = "";
+    frame.src = "about:blank";
+  }
+})();
+</script>
+"""
+
+    body_inner = (
+        '<div class="lenses-roadmap-shell lenses-dash">'
+        '<p class="forge-support">Browse <code>ROADMAP.md</code> files by section. '
+        "Summary charts update when you change the file; the preview window updates per section.</p>"
+        f'<div class="mb-3">{select_html}</div>'
+        '<div id="lenses-roadmap-summary" class="card mb-3 p-3 lenses-roadmap-summary-card"></div>'
+        '<div class="row g-3">'
+        '<div class="col-md-4">'
+        '<h3 class="h6 text-cyan mb-2">Outline</h3>'
+        '<div id="lenses-roadmap-outline" class="list-group lenses-roadmap-outline"></div>'
+        "</div>"
+        '<div class="col-md-8">'
+        '<h3 class="h6 text-cyan mb-2">Preview</h3>'
+        '<div class="card lenses-roadmap-preview-window p-0 border border-secondary">'
+        '<iframe id="lenses-roadmap-frame" class="w-100 lenses-roadmap-preview-frame" '
+        'title="Roadmap section preview" style="min-height:28rem;border:0"></iframe>'
+        "</div>"
+        "</div>"
+        "</div>"
+        "</div>"
+        f"{script}"
+    )
+
+    extra_css = """
+.lenses-roadmap-outline { max-height: min(70vh, 36rem); overflow-y: auto; }
+.lenses-roadmap-outline-item { cursor: pointer; font-size: 0.9rem; }
+.lenses-roadmap-outline-item.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.35); }
+.lenses-roadmap-preview-window { background: var(--bs-body-bg, #0f172a); }
+.lenses-roadmap-summary-card { min-height: 3rem; }
+.lenses-roadmap-file-select { max-width: 42rem; }
+"""
+
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Roadmaps"))
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title="Roadmaps — lenses",
+        nav_active="roadmaps",
+        page_title="Roadmaps",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+        dashboard_extra_css=extra_css,
     )

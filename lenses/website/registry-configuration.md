@@ -18,6 +18,7 @@ If the file is missing or invalid JSON, defaults apply:
   "website_labels": {},
   "project_urls": {},
   "project_summaries": {},
+  "project_strategy": {},
   "overview_metrics_manual": {}
 }
 ```
@@ -31,7 +32,10 @@ If the file is missing or invalid JSON, defaults apply:
 | `website_labels` | object | Map child directory name → short label string for the `/websites` page. |
 | `project_urls` | object | Map child directory name → **https** URL for a public site or landing page. Shown on the **Projects** portal and the project dashboard as **Project site**. |
 | `project_summaries` | object | Map child directory name → plain-text **long blurb** for the **Overview** repository cards. Overrides the README-derived excerpt when set for that name. |
+| `project_strategy` | object | Per **workspace child name** → optional fields for **`/projects/<name>/strategy`**: **`branching`** or **`branching_notes`** (string), **`maintenance`** (array of strings), **`maintenance_notes`** (string), **`ks_diagram_asset`** (string path under **`kitchensink/`** for an optional static SVG served via `/__ks/…`, when that file exists). Shallow-merged per project when both forge-lenses and workspace registries define entries. |
 | `overview_metrics_manual` | object | Optional **Overview** “time comparison” numbers (not measured by lenses). Suggested keys: **`human_hours_week`**, **`estimated_hours_without_genai`** (or alias **`hours_without_genai`**), **`estimated_hours_genai_potential`** (or **`hours_genai_potential`**), **`methodology_note`** (string). Merged into **`lenses-docs/overview-metrics.json`** when **`collect-lenses-overview-data.py`** runs. |
+| `standards_compliance_ignore_checks` | array of strings | Optional list of **check ids** to skip in the heuristic **Standards and agentic hygiene** score (e.g. `forge_artifacts` when not using Forge). See **`lenses/standards_compliance.py`** (`CHECK_DEFS`). |
+| `standards_compliance_overrides` | object | Map **child directory name** → `{ "ignore_checks": ["…"] }` — per-repo extra ignores (merged with global **`standards_compliance_ignore_checks`**). |
 | `github_login` | string | Expected GitHub username for **POST `/api/auth/github`** and **POST `/api/actions/run`**. If empty, the server also tries **one** subdirectory name under **`<workspace>/.lenses-repo/`** or `gh api user` from the workspace. |
 | `actions` | object | Allowlisted subprocess actions: map **site directory name** → map **action key** → `{ "argv": ["cmd", "…"], "cwd_relative": "child_dir" }`. **`cwd_relative`** must stay under the workspace root. No shell is used; **`argv`** is passed directly to `subprocess`. |
 

@@ -44,7 +44,11 @@ from lenses.registry import load_registry
 from lenses.render import (
     page_overview,
     page_project_detail,
+    page_project_repo_strategy,
     page_projects,
+    page_roadmap_preview_document,
+    page_roadmaps,
+    roadmap_summary_fragment,
     page_sticker_board_editor,
     page_sticker_board_hub,
     page_toolset,
@@ -55,6 +59,7 @@ from lenses.render import (
     page_websites,
     page_websites_browse,
 )
+from lenses.roadmap_outline import outline_json, parse_roadmap_markdown
 from lenses.scan import (
     parse_firebase_hosting,
     resolve_workspace_child_dir,
@@ -62,6 +67,7 @@ from lenses.scan import (
     scan_workspace,
     workspace_state_json,
 )
+from lenses.standards_compliance import enrich_workspace_with_standards
 from lenses.tutorial_index import (
     repo_tutorials_url_tail_matches,
     resolve_repo_tutorials_site_file,
@@ -95,6 +101,26 @@ def _safe_wbs_file(workspace_root: Path, rel: str) -> Path | None:
     if "requirements" not in parts:
         return None
     if candidate.name not in ("WBS.md", "WBS.csv"):
+        return None
+    if not candidate.is_file():
+        return None
+    return candidate
+
+
+def _safe_roadmap_file(workspace_root: Path, rel: str) -> Path | None:
+    if not rel or ".." in rel.split("/") or rel.startswith(("/", "\\")):
+        return None
+    rel_norm = rel.replace("\\", "/").strip("/")
+    candidate = (workspace_root / rel_norm).resolve()
+    wr = workspace_root.resolve()
+    try:
+        candidate.relative_to(wr)
+    except ValueError:
+        return None
+    parts = candidate.parts
+    if "docs" not in parts:
+        return None
+    if candidate.name != "ROADMAP.md":
         return None
     if not candidate.is_file():
         return None
@@ -330,12 +356,14 @@ class LensesHandler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def _scan(self, *, git_extended: bool = False) -> dict:
-        return scan_workspace(
+        state = scan_workspace(
             self.workspace_root,
             LENSES_REPO_ROOT,
             self.registry,
             git_extended=git_extended,
         )
+        enrich_workspace_with_standards(state, self.registry)
+        return state
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urllib.parse.urlparse(self.path)
@@ -402,6 +430,23 @@ class LensesHandler(BaseHTTPRequestHandler):
                 p for p in slugs if p != UNASSIGNED_PROJECT_KEY
             )
             raw = json.dumps(snap, indent=2, sort_keys=True).encode("utf-8")
+            self._send(200, raw, "application/json; charset=utf-8")
+            return
+
+        if path == "/api/roadmap-outline":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            rels = qs.get("p", [])
+            if not rels:
+                self._send(400, b"Missing p=", "text/plain; charset=utf-8")
+                return
+            rel = rels[0]
+            sp = _safe_roadmap_file(self.workspace_root, rel)
+            if sp is None:
+                self._send(404, b"Not found or not allowed", "text/plain; charset=utf-8")
+                return
+            text = sp.read_text(encoding="utf-8", errors="replace")
+            parsed = parse_roadmap_markdown(text)
+            raw = outline_json(parsed).encode("utf-8")
             self._send(200, raw, "application/json; charset=utf-8")
             return
 
@@ -553,23 +598,43 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path.startswith("/projects/"):
-            seg = parsed.path[len("/projects/") :].split("/", 1)[0]
-            project_name = urllib.parse.unquote(seg) if seg else ""
+            rest = parsed.path[len("/projects/") :].strip("/")
+            segments = [urllib.parse.unquote(s) for s in rest.split("/") if s]
+            if not segments:
+                self._send(404, b"Unknown project", "text/plain; charset=utf-8")
+                return
+            project_name = segments[0]
+            if len(segments) >= 2:
+                sub = segments[1].strip().lower()
+                if sub != "strategy":
+                    self._send(404, b"Not found", "text/plain; charset=utf-8")
+                    return
             child_path = resolve_workspace_child_dir(
                 self.workspace_root, project_name, self.registry
             )
             if child_path is None:
                 self._send(404, b"Unknown project", "text/plain; charset=utf-8")
                 return
-            html = page_project_detail(
-                state,
-                self.registry,
-                project_name,
-                child_path,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-            ).encode("utf-8")
+            if len(segments) >= 2:
+                html = page_project_repo_strategy(
+                    state,
+                    self.registry,
+                    project_name,
+                    child_path,
+                    handbook_url,
+                    forge_url,
+                    LENSES_REPO_ROOT,
+                ).encode("utf-8")
+            else:
+                html = page_project_detail(
+                    state,
+                    self.registry,
+                    project_name,
+                    child_path,
+                    handbook_url,
+                    forge_url,
+                    LENSES_REPO_ROOT,
+                ).encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
             return
 
@@ -630,6 +695,44 @@ class LensesHandler(BaseHTTPRequestHandler):
                 state, handbook_url, forge_url, LENSES_REPO_ROOT
             ).encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
+            return
+        if path == "/roadmaps":
+            html = page_roadmaps(
+                state, handbook_url, forge_url, LENSES_REPO_ROOT
+            ).encode("utf-8")
+            self._send(200, html, "text/html; charset=utf-8")
+            return
+        if path == "/roadmaps/summary":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            rels = qs.get("p", [])
+            if not rels:
+                self._send(400, b"Missing p=", "text/plain; charset=utf-8")
+                return
+            rel = rels[0]
+            sp = _safe_roadmap_file(self.workspace_root, rel)
+            if sp is None:
+                self._send(404, b"Not found or not allowed", "text/plain; charset=utf-8")
+                return
+            text = sp.read_text(encoding="utf-8", errors="replace")
+            frag = roadmap_summary_fragment(text)
+            self._send(200, frag.encode("utf-8"), "text/html; charset=utf-8")
+            return
+        if path == "/roadmaps/preview":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            rels = qs.get("p", [])
+            secs = qs.get("section", [])
+            if not rels or not secs:
+                self._send(400, b"Missing p= or section=", "text/plain; charset=utf-8")
+                return
+            rel = rels[0]
+            section_id = secs[0]
+            sp = _safe_roadmap_file(self.workspace_root, rel)
+            if sp is None:
+                self._send(404, b"Not found or not allowed", "text/plain; charset=utf-8")
+                return
+            text = sp.read_text(encoding="utf-8", errors="replace")
+            doc = page_roadmap_preview_document(rel, section_id, text)
+            self._send(200, doc.encode("utf-8"), "text/html; charset=utf-8")
             return
         if path == "/wbs/view":
             qs = urllib.parse.parse_qs(parsed.query or "")

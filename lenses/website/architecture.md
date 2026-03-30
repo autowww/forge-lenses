@@ -6,13 +6,16 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 
 | Path | Role |
 |------|------|
-| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**. |
-| `lenses/scan.py` | `resolve_workspace_root`, `resolve_workspace_child_dir`, `scan_workspace`, `workspace_state_json`; subprocess calls to `git`; toolset **`script_cards`** / comment blurbs for root **`*.sh`**. |
+| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**, **`/roadmaps`**, **`/roadmaps/preview`**, **`/roadmaps/summary`**, **`GET /api/roadmap-outline`**. |
+| `lenses/scan.py` | `resolve_workspace_root`, `resolve_workspace_child_dir`, `scan_workspace`, `workspace_state_json`; subprocess calls to `git`; toolset **`script_cards`** / comment blurbs for root **`*.sh`**; indexes **`roadmaps`** (`**/docs/**/ROADMAP.md`) alongside WBS. |
 | `lenses/toolset_actions.py` | Allowlisted workspace-root shell script execution for **`POST /api/toolset/run`** (bash, fixed path, no user shell). |
-| `lenses/render.py` | HTML for dashboard pages; **`showcase_page`** shell when kitchensink is present, else fallback layout. |
+| `lenses/render.py` | HTML for dashboard pages; **`showcase_page`** shell when kitchensink is present, else fallback layout. Roadmaps UI: **`page_roadmaps`**, preview document builder, summary fragment. |
+| `lenses/roadmap_outline.py` | Parse `ROADMAP.md` into sections, GFM tables → HTML, **`extract_chart_metrics`** for summaries. |
+| `lenses/roadmap_charts.py` | Inline SVG bars / status donut / horizon badges; optional KS **`/__ks/assets/svg/`** template thumbnails. |
 | `lenses/ks_layout.py` | Kitchensink path checks and `lenses_showcase_page` wrapper. |
 | `lenses/git_urls.py` | Map `origin` to HTTPS repo / commit URLs (GitHub, GitLab-style hosts). |
 | `lenses/project_stats.py` | Git log / `ls-files` aggregations and SVG chart helpers for project dashboards. |
+| `lenses/standards_compliance.py` | Heuristic **agentic / coding-standards compliance** per repo (filesystem + optional git message sample); **`enrich_workspace_with_standards`** mutates scan state; SVG score bars for Overview. |
 | `lenses/git_actions.py` | Allowlisted `git` subprocess actions for the POST API; shared loopback policy helper for sticker board writes. |
 | `lenses/sticker_board.py` | Load/save/validate sticker boards: **local** file under **`.lenses-local/`**; **shared** split across **`.lenses-repo/<login>/`** and a local overlay + marker. |
 | `lenses/registry.py` | Loads `workspace-registry.json` from the **forge-lenses** repo root and merges with defaults. |
@@ -23,8 +26,8 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 ## Data flow
 
 1. **Startup** — Resolve `workspace_root` (CLI, `LENSES_WORKSPACE_ROOT`, or heuristic). Load registry from **forge-lenses** checkout.
-2. **Each GET** (except static `/docs`, `/__ks/…`, and project stats JSON) — Run `scan_workspace(..., git_extended=True)` for HTML so project cards include revision hints; the workspace JSON API uses `git_extended` only when `?git_extended=1` is passed.
-3. **JSON API** — `GET /api/workspace-state` returns the scan dict; `GET /api/project/<name>/stats` returns repo statistics; `POST /api/project/<name>/git` runs allowlisted git commands (loopback-gated by default); `POST /api/toolset/run` runs an allowlisted workspace-root **`*.sh`** (same loopback gate as git by default); `GET`/`POST /api/sticker-board?board_id=…` reads/writes one board (local or shared split under **`sticker-boards/<id>.*`**); `GET`/`POST /api/sticker-board-registry` lists and mutates the board registry (POST loopback-gated like git by default).
+2. **Each GET** (except static `/docs`, `/__ks/…`, and project stats JSON) — Run `scan_workspace` then **`enrich_workspace_with_standards`** so each child includes **`standards_compliance`** (score, tier, checks, suggestions). HTML uses `git_extended=True`; **`GET /api/workspace-state`** uses `git_extended` only when `?git_extended=1` is passed (compliance is always attached when the scan runs).
+3. **JSON API** — `GET /api/workspace-state` returns the scan dict; `GET /api/roadmap-outline?p=…` returns section metadata for one roadmap file; `GET /api/project/<name>/stats` returns repo statistics; `POST /api/project/<name>/git` runs allowlisted git commands (loopback-gated by default); `POST /api/toolset/run` runs an allowlisted workspace-root **`*.sh`** (same loopback gate as git by default); `GET`/`POST /api/sticker-board?board_id=…` reads/writes one board (local or shared split under **`sticker-boards/<id>.*`**); `GET`/`POST /api/sticker-board-registry` lists and mutates the board registry (POST loopback-gated like git by default).
 
 There is no server-side cache in v1: reloading a page re-runs the scan.
 

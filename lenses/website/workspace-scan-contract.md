@@ -9,10 +9,12 @@
 | `workspace_root` | string | Absolute path of the directory being scanned (sibling repos live here). |
 | `lenses_repo_root` | string | Absolute path of the **forge-lenses** checkout (for labels and static assets). |
 | `resolved_at` | string | UTC ISO-8601 timestamp when the scan ran. |
+| `standards_compliance_note` | string | Short disclaimer for heuristic **agentic / standards** scoring (not an audit). |
 | `children` | list | One entry per **immediate** subdirectory of `workspace_root` (see below). |
 | `toolset` | object | `root_scripts` (names of `*.sh` in workspace root), `script_cards` (list of `{ name, blurb }` from leading `#` comments), `cursor_dir` (path if `.cursor` exists). |
 | `websites` | list | Firebase hosting candidates (see below). |
 | `wbs` | list | WBS file index (see below). |
+| `roadmaps` | list | `ROADMAP.md` file index under `docs/` (see below). |
 
 ## `toolset` object
 
@@ -25,7 +27,20 @@
 Each child corresponds to a directory **one level** under `workspace_root`:
 
 - Skipped: names starting with `.`, or names listed in `registry["ignore_paths"]`.
-- Fields: `name`, `path`, `is_git`, `git` (empty object if not a git repo).
+- Fields: `name`, `path`, `is_git`, `git` (empty object if not a git repo), **`standards_compliance`** (object — see below).
+
+### `children[].standards_compliance`
+
+Present after server-side enrichment (same shape for HTML and JSON). Heuristic proxy for [agentic coding standards](https://blueprints.forgesdlc.com/sdlc--methodologies-agentic-coding-standards.html) themes — **not** a compliance audit.
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `score` | int | 0–100 weighted score from applicable checks. |
+| `tier` | string | `good` (≥85), `partial` (≥55), or `minimal`. |
+| `summary` | string | One-line human summary. |
+| `is_git` | bool | Whether the path is a git work tree. |
+| `checks` | list | Objects: `id`, `label`, `theme`, `weight`, `status` (`pass` / `warn` / `na` / `skipped`), `detail`, `suggestion` (often empty). |
+| `suggestions` | list of strings | Action hints from checks in **warn** state. |
 
 When `is_git` is true, `git` includes at least: `top_level`, `branch`, `dirty`, `origin_url` (from `git_info` in `lenses/scan.py`).
 
@@ -63,6 +78,14 @@ Recursive search under `workspace_root` for:
 - `**/docs/requirements/WBS.csv`
 
 Each entry: `repo_hint` (first path segment under workspace), `rel_path` (posix relative path from workspace root), `kind` (`md` or `csv`). Sorted by `rel_path`.
+
+## `roadmaps[]` entries
+
+Recursive search under `workspace_root` for:
+
+- `**/ROADMAP.md` where every matching path includes a `docs` path segment (e.g. `forgesdlc/docs/product/ROADMAP.md`, `blueprints/docs/ROADMAP.md`).
+
+Each entry: `repo_hint` (first path segment under workspace), `rel_path` (posix relative path from workspace root), `kind` (always `md`). Sorted by `rel_path`.
 
 ## Workspace root resolution
 

@@ -15,6 +15,17 @@
   "project_summaries": {
     "forgesdlc": "Forge SDLC product site generator and knowledge base."
   },
+  "project_strategy": {
+    "forgesdlc": {
+      "branching": "Work on feature branches; merge to default via PR when ready.",
+      "maintenance": [
+        "Change shared UI in forgesdlc-kitchensink first, then bump kitchensink here.",
+        "Use workspace sync scripts to propagate KS and rebuild consumer sites."
+      ]
+    }
+  },
+  "standards_compliance_ignore_checks": [],
+  "standards_compliance_overrides": {},
   "overview_metrics_manual": {
     "human_hours_week": 24,
     "estimated_hours_without_genai": 40,
