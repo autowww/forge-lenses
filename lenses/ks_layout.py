@@ -119,8 +119,19 @@ def ks_theme_links() -> str:
         "color: var(--bs-secondary-color, #94a3b8); }\n"
         "  .lenses-sticker-hub-badge-shared { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; "
         "color: var(--bs-info, #06b6d4); }\n"
-        "  .lenses-overview-lede { font-size: 1.08rem; line-height: 1.6; max-width: 52rem; }\n"
-        "  .lenses-overview-kpi { min-height: 100%; transition: border-color 0.15s ease; }\n"
+        "  .lenses-overview-lede { font-size: 1.08rem; line-height: 1.6; }\n"
+        "  .lenses-overview-kpi-grid {\n"
+        "    display: grid;\n"
+        "    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));\n"
+        "    gap: 0.75rem;\n"
+        "  }\n"
+        "  .lenses-dash a.lenses-overview-kpi {\n"
+        "    display: flex; flex-direction: column; flex: 1 1 auto; width: 100%; min-width: 0;\n"
+        "    box-sizing: border-box; transition: border-color 0.15s ease;\n"
+        "  }\n"
+        "  .lenses-overview-kpi p { overflow-wrap: break-word; word-wrap: break-word; }\n"
+        "  .lenses-overview-kpi .h3 { word-break: break-word; line-height: 1.2; }\n"
+        "  .lenses-overview-kpi .small:last-child { margin-top: auto; }\n"
         "  .lenses-overview-kpi:hover { border-color: rgba(6,182,212,0.45) !important; }\n"
         "  .lenses-overview-article { border-left: 3px solid var(--bs-info, #06b6d4); "
         "background: rgba(15,23,42,0.35); border-radius: 0 8px 8px 0; padding: 0.75rem 1rem !important; "
@@ -216,4 +227,5 @@ def lenses_showcase_page(
         has_mermaid=False,
         has_ks_diagram=False,
         body_extra_class=body_extra_class,
+        content_max_width=None,
     )

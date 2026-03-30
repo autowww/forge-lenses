@@ -39,7 +39,7 @@ Present after server-side enrichment (same shape for HTML and JSON). Heuristic p
 | `tier` | string | `good` (≥85), `partial` (≥55), or `minimal`. |
 | `summary` | string | One-line human summary. |
 | `is_git` | bool | Whether the path is a git work tree. |
-| `checks` | list | Objects: `id`, `label`, `theme`, `weight`, `status` (`pass` / `warn` / `na` / `skipped`), `detail`, `suggestion` (often empty). |
+| `checks` | list | Objects: `id`, `label`, `theme`, `weight`, `status` (`pass` / `warn` / `na` / `skipped`), `detail`, `suggestion` (often empty), **`rationale`** (why the signal matters for agentic SDLC), **`cursor_fix_prompt`** (curated copy-paste prompt for Cursor; may be empty when not applicable). |
 | `suggestions` | list of strings | Action hints from checks in **warn** state. |
 
 When `is_git` is true, `git` includes at least: `top_level`, `branch`, `dirty`, `origin_url` (from `git_info` in `lenses/scan.py`).

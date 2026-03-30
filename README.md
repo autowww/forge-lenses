@@ -9,6 +9,8 @@ Public repo: **`autowww/forge-lenses`** on GitHub — local workspace visualizat
 
 The Python package inside this repo is still named **`lenses`** (`python3 -m lenses`).
 
+**Git / branching (Forge Team tier):** [`docs/GIT-WORKFLOW.md`](docs/GIT-WORKFLOW.md).
+
 ## Repository layout
 
 | Path | Purpose |

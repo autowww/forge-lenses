@@ -35,9 +35,10 @@ from lenses.repo_strategy import (
     svg_submodule_layout_svg,
     workspace_child_names,
 )
-from lenses.roadmap_charts import KS_ROADMAP_TEMPLATE, ks_diagram_img, roadmap_summary_html
+from lenses.roadmap_charts import KS_ROADMAP_TEMPLATE, ks_diagram_img, roadmap_gantt_html, roadmap_summary_html
 from lenses.roadmap_outline import (
     extract_chart_metrics,
+    extract_gantt_model,
     find_section,
     parse_roadmap_markdown,
     section_to_html,
@@ -84,26 +85,73 @@ def _project_standards_compliance_html(
     hb = handbook_url.rstrip("/")
     bp_link = f'{hb}/sdlc--methodologies-agentic-coding-standards.html'
     rows: list[str] = []
+    modals: list[str] = []
     for c in checks:
         if not isinstance(c, dict):
             continue
+        cid = str(c.get("id", "")).strip() or "check"
+        lbl = str(c.get("label", ""))
         st = str(c.get("status", ""))
         icon = "✓" if st == "pass" else ("◌" if st in ("na", "skipped") else "!")
         row_cls = ""
         if st == "warn":
-            row_cls = " class=\"table-warning\""
+            row_cls = ' class="table-warning"'
         elif st in ("na", "skipped"):
-            row_cls = " class=\"table-secondary\""
+            row_cls = ' class="table-secondary"'
+        modal_id = f"lenses-std-modal-{sid}-{cid}"
+        modal_title_id = f"lenses-std-modal-title-{sid}-{cid}"
+        pre_id = f"lenses-std-pre-{sid}-{cid}"
+        rationale = str(c.get("rationale", "") or "")
+        fix_prompt = str(c.get("cursor_fix_prompt", "") or "")
+        detail = str(c.get("detail", "") or "")
+        st_badge = (
+            "text-bg-success"
+            if st == "pass"
+            else ("text-bg-secondary" if st in ("na", "skipped") else "text-bg-warning")
+        )
+        prompt_block = (
+            f'<pre class="lenses-std-guidance-pre mb-2" id="{esc(pre_id)}"><code>{esc(fix_prompt)}</code></pre>'
+            f'<button type="button" class="btn btn-sm btn-outline-secondary lenses-std-copy-btn" '
+            f'data-lenses-copy="#{pre_id}">Copy prompt</button>'
+            if fix_prompt.strip()
+            else '<p class="small text-secondary mb-0">No copy-paste prompt for this status — use the scan detail and blueprint link above.</p>'
+        )
+        modals.append(
+            f'<div class="modal fade" id="{esc(modal_id)}" tabindex="-1" '
+            f'aria-labelledby="{esc(modal_title_id)}" aria-hidden="true">'
+            '<div class="modal-dialog modal-lg modal-dialog-scrollable">'
+            '<div class="modal-content" style="background:var(--forge-bg,#0f172a);color:var(--bs-body-color,#e2e8f0);border-color:var(--forge-border,#1e293b)">'
+            '<div class="modal-header border-secondary">'
+            f'<h5 class="modal-title" id="{esc(modal_title_id)}">'
+            f"{esc(lbl)} "
+            f'<span class="badge {st_badge}">{esc(st)}</span></h5>'
+            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" '
+            'aria-label="Close"></button>'
+            "</div>"
+            '<div class="modal-body">'
+            f'<p class="small text-secondary mb-2"><strong>Scan</strong>: {esc(detail)}</p>'
+            f'<p class="small mb-3">{esc(rationale)}</p>'
+            '<h6 class="h6 text-cyan mb-2">Try in Cursor</h6>'
+            f"{prompt_block}"
+            "</div></div></div></div>"
+        )
         rows.append(
             f"<tr{row_cls}>"
             f"<td>{esc(icon)}</td>"
-            f"<td>{esc(str(c.get('label', '')))}</td>"
-            f"<td class=\"small\">{esc(str(c.get('detail', '')))}</td>"
+            f"<td>{esc(lbl)}</td>"
+            f'<td class="small">{esc(detail)}</td>'
+            f'<td class="text-nowrap">'
+            f'<button type="button" class="btn btn-sm btn-outline-info" '
+            f'data-bs-toggle="modal" data-bs-target="#{esc(modal_id)}" '
+            f'aria-label="Why this check matters and Cursor prompt for {esc(lbl)}">'
+            "Why &amp; fix</button>"
+            f"</td>"
             f"</tr>"
         )
     tbl = (
         '<table class="table table-sm table-bordered mb-2">'
-        '<thead><tr><th scope="col"></th><th scope="col">Check</th><th scope="col">Detail</th></tr></thead>'
+        '<thead><tr><th scope="col"></th><th scope="col">Check</th><th scope="col">Detail</th>'
+        '<th scope="col">Guide</th></tr></thead>'
         f"<tbody>{''.join(rows)}</tbody></table>"
         if rows
         else '<p class="forge-support small mb-2">No checks available.</p>'
@@ -115,9 +163,56 @@ def _project_standards_compliance_html(
         sugg_html = (
             f'<p class="small fw-semibold mb-1">Suggestions</p><ul class="small mb-0">{items}</ul>'
         )
+    copy_script = f"""<script>
+(function() {{
+  var root = document.getElementById('lenses-proj-std-wrap-{esc(sid)}');
+  if (!root) return;
+  root.querySelectorAll('.lenses-std-copy-btn').forEach(function(btn) {{
+    btn.addEventListener('click', function() {{
+      var sel = btn.getAttribute('data-lenses-copy');
+      var el = sel ? document.querySelector(sel) : null;
+      var text = el ? (el.textContent || '') : '';
+      function done() {{
+        var t = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(function() {{ btn.textContent = t; }}, 1600);
+      }}
+      if (navigator.clipboard && navigator.clipboard.writeText) {{
+        navigator.clipboard.writeText(text).then(done).catch(function() {{
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          try {{ document.execCommand('copy'); }} catch (e) {{}}
+          document.body.removeChild(ta);
+          done();
+        }});
+      }} else {{
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try {{ document.execCommand('copy'); }} catch (e) {{}}
+        document.body.removeChild(ta);
+        done();
+      }}
+    }});
+  }});
+}})();
+</script>"""
+    std_style = (
+        "<style>"
+        ".lenses-std-guidance-pre { max-height: 14rem; overflow: auto; font-size: 0.8rem; "
+        "white-space: pre-wrap; word-break: break-word; "
+        "background: var(--bs-body-bg, #0f172a); border: 1px solid var(--forge-border, #1e293b); "
+        "border-radius: 6px; padding: 0.75rem; }"
+        "</style>"
+    )
     return (
         f'<section class="lenses-site-hero-section forge-card" '
+        f'id="lenses-proj-std-wrap-{esc(sid)}" '
         f'aria-labelledby="lenses-proj-std-{esc(sid)}">'
+        f"{std_style}"
         f'<h3 class="h6 text-cyan mb-2" id="lenses-proj-std-{esc(sid)}">'
         f"Standards and agentic hygiene</h3>"
         f'<p class="forge-support small mb-2">'
@@ -126,6 +221,8 @@ def _project_standards_compliance_html(
         f'<a href="{esc(bp_link)}" target="_blank" rel="noopener">Blueprint: agentic coding standards</a>.'
         f"</p>"
         f"{tbl}"
+        f"{''.join(modals)}"
+        f"{copy_script}"
         f"{sugg_html}"
         f"</section>"
     )
@@ -1051,9 +1148,9 @@ def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge
     .lenses-nav-docs {{ color: #f59e0b; }}
     .lenses-nav-external {{ opacity: 0.9; }}
     main {{
-      max-width: 56rem;
-      margin: 0 auto;
-      padding: 1.5rem 1.25rem 3rem;
+      width: 100%;
+      margin: 0;
+      padding: 1.5rem clamp(1rem, 4vw, 2.75rem) 3rem;
     }}
     h1 {{ font-size: 1.5rem; margin-top: 0; }}
     h2 {{ font-size: 1.1rem; margin-top: 1.75rem; color: var(--accent); }}
@@ -1066,16 +1163,23 @@ def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge
     .pill.dirty {{ background: #422006; color: #fdba74; }}
     .pill.clean {{ color: #86efac; }}
     .lenses-overview-lede {{ font-size: 1.05rem; line-height: 1.55; }}
-    .lenses-overview-kpi-row {{ display: flex; flex-wrap: wrap; gap: 0.75rem; }}
-    .lenses-overview-kpi-row > div {{ flex: 1 1 10rem; min-width: 9rem; }}
+    .lenses-overview-kpi-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+      gap: 0.75rem;
+    }}
     .lenses-overview-kpi {{
-      display: block; border: 1px solid var(--border); border-radius: 8px;
-      padding: 0.85rem; text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; flex: 1 1 auto; width: 100%; min-width: 0;
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.85rem; text-decoration: none; color: inherit; box-sizing: border-box;
     }}
     .lenses-overview-kpi:hover {{ border-color: var(--accent); }}
+    .lenses-overview-kpi p {{ overflow-wrap: break-word; word-wrap: break-word; }}
+    .lenses-overview-kpi .h3 {{ word-break: break-word; line-height: 1.2; }}
+    .lenses-overview-kpi .small:last-child {{ margin-top: auto; }}
     .lenses-overview-main {{ display: flex; flex-wrap: wrap; gap: 1.5rem; }}
     .lenses-overview-main > div:first-child {{ flex: 2 1 20rem; min-width: 0; }}
-    .lenses-overview-main > div:last-child {{ flex: 1 1 14rem; }}
+    .lenses-overview-main > div:last-child {{ flex: 1 1 14rem; min-width: 0; }}
     .lenses-overview-feed {{ display: flex; flex-direction: column; gap: 1rem; }}
     .lenses-overview-article {{
       border-left: 3px solid var(--accent); padding: 0.65rem 0 0.65rem 1rem;
@@ -1306,12 +1410,11 @@ def page_overview(
 
     def kpi_tile(href: str, label: str, value: str, cta: str) -> str:
         return (
-            f'<div class="col">'
-            f'<a class="forge-card breathe-link d-block h-100 text-decoration-none lenses-overview-kpi" href="{esc(href)}">'
-            f'<p class="forge-support small text-uppercase mb-1">{esc(label)}</p>'
-            f'<p class="h3 mb-2">{value}</p>'
-            f'<p class="small text-cyan mb-0">{esc(cta)}</p>'
-            f"</a></div>"
+            f'<a class="forge-card breathe-link d-flex flex-column h-100 w-100 min-w-0 text-decoration-none lenses-overview-kpi" href="{esc(href)}">'
+            f'<p class="forge-support small text-uppercase mb-1 text-break">{esc(label)}</p>'
+            f'<p class="h3 mb-2 text-break">{value}</p>'
+            f'<p class="small text-cyan mb-0 mt-auto text-break">{esc(cta)}</p>'
+            f"</a>"
         )
 
     sorted_children = sorted(children, key=_overview_child_sort_key)
@@ -1436,7 +1539,7 @@ def page_overview(
     ext_heat_html = extension_heatmap_html(ext_top, ext_denom)
 
     kpi_row = (
-        '<div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-3 mb-4 lenses-overview-kpi-row">'
+        '<div class="lenses-overview-kpi-grid mb-4">'
         + kpi_tile("/projects", "Top-level folders", esc(str(n_children)), "Open Projects →")
         + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Websites →")
         + kpi_tile("/wbs", "WBS files", esc(str(n_wbs)), "WBS →")
@@ -3319,7 +3422,36 @@ def page_wbs_view(
 
 def roadmap_summary_fragment(md_text: str) -> str:
     metrics = extract_chart_metrics(md_text)
-    return roadmap_summary_html(metrics)
+    gantt = extract_gantt_model(md_text)
+    return roadmap_summary_html(metrics, gantt)
+
+
+def page_roadmap_timeline_document(md_text: str, rel_path: str) -> str:
+    """Full-page scrollable Gantt for iframe / direct open."""
+    model = extract_gantt_model(md_text)
+    inner = roadmap_gantt_html(model, heading=True)
+    if not inner:
+        inner = (
+            '<p class="forge-support">No milestone / epic horizon data to draw a timeline. '
+            "Use milestone tables and epics with <code>M1.x</code> in the Horizon column.</p>"
+        )
+    title = esc(rel_path)
+    head = _roadmap_preview_head_inner()
+    return (
+        "<!DOCTYPE html>\n"
+        '<html lang="en">\n<head>\n'
+        '<meta charset="utf-8"/>\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1"/>\n'
+        f"<title>Timeline — {title}</title>\n"
+        f"{head}"
+        "<style>\n"
+        ".lenses-roadmap-timeline-doc .lenses-roadmap-gantt-svg { overflow-x: auto; }\n"
+        "</style>\n"
+        "</head>\n"
+        '<body class="lenses-roadmap-preview-doc lenses-roadmap-timeline-doc">\n'
+        f"{inner}\n"
+        "</body>\n</html>\n"
+    )
 
 
 def _roadmap_preview_head_inner() -> str:
@@ -3411,10 +3543,11 @@ def page_roadmaps(
     return o;
   }
 
-  function setUrl(p, section) {
+  function setUrl(p, section, view) {
     var q = new URLSearchParams();
     if (p) q.set("p", p);
     if (section) q.set("section", section);
+    if (view === "timeline") q.set("view", "timeline");
     var tail = q.toString();
     var path = window.location.pathname + (tail ? "?" + tail : "");
     if (window.history && window.history.replaceState) {
@@ -3437,7 +3570,11 @@ def page_roadmaps(
       "&section=" + encodeURIComponent(section);
   }
 
-  function renderOutline(data, p, preferredSection) {
+  function setTimelineFrame(p) {
+    frame.src = "/roadmaps/timeline?p=" + encodeURIComponent(p);
+  }
+
+  function renderOutline(data, p, preferredSection, preferredView) {
     outlineEl.innerHTML = "";
     var sections = data.sections || [];
     var firstId = sections.length ? sections[0].id : "";
@@ -3453,7 +3590,7 @@ def page_roadmaps(
         outlineEl.querySelectorAll(".active").forEach(function (x) { x.classList.remove("active"); });
         li.classList.add("active");
         setFrame(p, s.id);
-        setUrl(p, s.id);
+        setUrl(p, s.id, "");
       });
       outlineEl.appendChild(li);
     });
@@ -3461,22 +3598,27 @@ def page_roadmaps(
     if (pick && !sections.some(function (x) { return x.id === pick; })) pick = "";
     var use = pick || firstId;
     if (use) {
-      setFrame(p, use);
-      setUrl(p, use);
       outlineEl.querySelectorAll(".lenses-roadmap-outline-item").forEach(function (el) {
         if (el.dataset.sectionId === use) el.classList.add("active");
       });
+      if (preferredView === "timeline") {
+        setTimelineFrame(p);
+        setUrl(p, use, "timeline");
+      } else {
+        setFrame(p, use);
+        setUrl(p, use, "");
+      }
     } else {
       frame.src = "about:blank";
     }
   }
 
-  function loadRoadmap(p, preferredSection) {
+  function loadRoadmap(p, preferredSection, preferredView) {
     if (!p) {
       summaryEl.innerHTML = "";
       outlineEl.innerHTML = '<div class="list-group-item text-muted">Select a roadmap file.</div>';
       frame.src = "about:blank";
-      setUrl("", "");
+      setUrl("", "", "");
       return;
     }
     loadSummary(p);
@@ -3485,7 +3627,9 @@ def page_roadmaps(
         if (!r.ok) throw new Error("bad");
         return r.json();
       })
-      .then(function (data) { renderOutline(data, p, preferredSection || ""); })
+      .then(function (data) {
+        renderOutline(data, p, preferredSection || "", preferredView || "");
+      })
       .catch(function () {
         outlineEl.innerHTML = '<div class="list-group-item text-danger">Failed to load outline.</div>';
       });
@@ -3493,18 +3637,31 @@ def page_roadmaps(
 
   if (fileSel) {
     fileSel.addEventListener("change", function () {
-      loadRoadmap(fileSel.value, "");
+      loadRoadmap(fileSel.value, "", "");
+    });
+  }
+
+  var btnTimeline = document.getElementById("lenses-roadmap-open-timeline");
+  if (btnTimeline && fileSel && frame) {
+    btnTimeline.addEventListener("click", function () {
+      var p = fileSel.value;
+      if (!p) return;
+      var active = outlineEl.querySelector(".lenses-roadmap-outline-item.active");
+      var sec = active && active.dataset ? active.dataset.sectionId : "";
+      setTimelineFrame(p);
+      setUrl(p, sec, "timeline");
     });
   }
 
   var q0 = qs();
   var initialP = q0.p || "";
   var initialSec = q0.section || "";
+  var initialView = q0.view || "";
   if (fileSel && initialP) {
     fileSel.value = initialP;
-    loadRoadmap(initialP, initialSec);
+    loadRoadmap(initialP, initialSec, initialView);
   } else if (fileSel && fileSel.value) {
-    loadRoadmap(fileSel.value, "");
+    loadRoadmap(fileSel.value, "", "");
   } else {
     outlineEl.innerHTML = '<div class="list-group-item text-muted">Select a roadmap file.</div>';
     summaryEl.innerHTML = "";
@@ -3526,7 +3683,10 @@ def page_roadmaps(
         '<div id="lenses-roadmap-outline" class="list-group lenses-roadmap-outline"></div>'
         "</div>"
         '<div class="col-md-8">'
-        '<h3 class="h6 text-cyan mb-2">Preview</h3>'
+        '<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">'
+        '<h3 class="h6 text-cyan mb-0">Preview</h3>'
+        '<button type="button" class="btn btn-sm btn-outline-info" id="lenses-roadmap-open-timeline">'
+        "Open full timeline</button></div>"
         '<div class="card lenses-roadmap-preview-window p-0 border border-secondary">'
         '<iframe id="lenses-roadmap-frame" class="w-100 lenses-roadmap-preview-frame" '
         'title="Roadmap section preview" style="min-height:28rem;border:0"></iframe>'
@@ -3544,6 +3704,7 @@ def page_roadmaps(
 .lenses-roadmap-preview-window { background: var(--bs-body-bg, #0f172a); }
 .lenses-roadmap-summary-card { min-height: 3rem; }
 .lenses-roadmap-file-select { max-width: 42rem; }
+.lenses-roadmap-gantt-svg { overflow-x: auto; }
 """
 
     bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Roadmaps"))

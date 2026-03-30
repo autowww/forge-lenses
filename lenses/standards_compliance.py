@@ -62,6 +62,208 @@ CHECK_DEFS: list[dict[str, Any]] = [
     },
 ]
 
+# Curated rationale and Cursor prompts (static; not a vector RAG). Placeholders: {project_name}, {repo_path}
+CHECK_GUIDANCE: dict[str, dict[str, str]] = {
+    "ci_config": {
+        "rationale": (
+            "Continuous integration catches regressions before merge and gives agents a single "
+            "definition of “green.” Without it, AI-generated changes can drift silently. A workflow "
+            "file also documents how to build and test the project for humans and tools."
+        ),
+        "prompt_warn": (
+            "In the repository at {repo_path} (project name: {project_name}), add a minimal CI "
+            "entrypoint so every push or pull request runs build and tests. Create `.github/workflows/ci.yml` "
+            "(GitHub Actions) that checks out the repo, installs dependencies for this stack (detect from "
+            "manifests: package.json, pyproject.toml, Cargo.toml, go.mod, etc.), and runs the project’s "
+            "standard test or lint command. Use a matrix only if the project genuinely needs multiple "
+            "versions. Keep the workflow minimal and documented with a short comment at the top."
+        ),
+        "prompt_pass": (
+            "CI is present. Review `.github/workflows/` or your GitLab/Jenkins config at {repo_path}: "
+            "ensure the workflow runs on pull_request and push to the default branch, fails on test "
+            "failure, and optionally add a job that runs formatting or typecheck if the stack supports it."
+        ),
+        "prompt_na": "",
+        "prompt_skipped": "",
+    },
+    "contributing_or_docs": {
+        "rationale": (
+            "CONTRIBUTING or a docs entry signals intent: how to run, test, and propose changes. "
+            "That reduces ambiguity for contributors and for agents that need repo-specific conventions."
+        ),
+        "prompt_warn": (
+            "At repository root {repo_path} ({project_name}), add either `CONTRIBUTING.md` or a "
+            "`docs/` folder with `index.md`, `README.md`, or `index.html` describing how to set up "
+            "the dev environment, run tests, open PRs, and any code style or commit conventions. "
+            "Keep it short (one screen) and link to deeper docs if needed."
+        ),
+        "prompt_pass": (
+            "Docs entry exists. Skim CONTRIBUTING or docs/ at {repo_path} and add a short “Agent / "
+            "automation” section if missing: how to run the full test suite and where SDLC or blueprint "
+            "content lives."
+        ),
+        "prompt_na": "",
+        "prompt_skipped": "",
+    },
+    "sdlc_or_blueprints": {
+        "rationale": (
+            "An `sdlc/` or `blueprints/` tree ties the codebase to process and specifications, "
+            "which helps agents align changes with methodology and traceability expectations."
+        ),
+        "prompt_warn": (
+            "Under {repo_path} ({project_name}), add a `sdlc/` and/or `blueprints/` directory (even "
+            "as a git submodule pointer) and a short README explaining how this repo relates to SDLC "
+            "or blueprint content. If the process lives elsewhere, add a `docs/` link file that points "
+            "to the canonical handbook URL."
+        ),
+        "prompt_pass": (
+            "sdlc/ or blueprints/ is present. At {repo_path}, verify README or docs link to the "
+            "active process sources and update submodule pins if this repo embeds blueprints."
+        ),
+        "prompt_na": "",
+        "prompt_skipped": "",
+    },
+    "cursor_agentic": {
+        "rationale": (
+            "`.cursor/rules` and `.cursor/skills` encode team norms for the editor: testing, commits, "
+            "and boundaries for AI-assisted work. They are optional but improve repeatability across machines."
+        ),
+        "prompt_warn": (
+            "At {repo_path} ({project_name}), add `.cursor/rules/` with at least one `.mdc` rule file "
+            "(or `.cursor/skills/` with SKILL.md files) that states: test commands to run before commit, "
+            "one-commit-per-project boundaries if applicable, and links to your agentic coding standards. "
+            "If `.cursor` exists but has no rules/skills, create `rules/workspace.mdc` with those norms."
+        ),
+        "prompt_pass": (
+            "Cursor rules or skills exist. Review `.cursor/rules` and `.cursor/skills` under {repo_path} "
+            "for drift: add a rule referencing your blueprint for agentic coding standards if not already there."
+        ),
+        "prompt_na": "",
+        "prompt_skipped": "",
+    },
+    "forge_artifacts": {
+        "rationale": (
+            "Forge-oriented folders (`forge/`, `forge-logs/`, `ember-logs/`) indicate local workflow "
+            "artifacts and logs. They help correlate agent runs with repository state; skip if you do not use Forge."
+        ),
+        "prompt_warn": (
+            "If this project uses Forge SDLC workflows, under {repo_path} ({project_name}) create the "
+            "expected directories (e.g. `forge/`, `forge-logs/`, or `ember-logs/`) and add a one-line "
+            "`.gitignore` or README note for what belongs there. If you do not use Forge, document that "
+            "in README so this heuristic can be ignored."
+        ),
+        "prompt_pass": (
+            "Forge paths detected. Confirm {repo_path} documents what is written under forge*/ember-logs "
+            "and that large or sensitive log files are gitignored appropriately."
+        ),
+        "prompt_na": "",
+        "prompt_skipped": "",
+    },
+    "dependency_visibility": {
+        "rationale": (
+            "Lockfiles or pinned requirements make installs reproducible for CI and for anyone replaying "
+            "an agent’s environment. Without them, “works on my machine” and supply-chain drift increase."
+        ),
+        "prompt_warn": (
+            "At {repo_path} ({project_name}), add a lockfile appropriate to your manifest: "
+            "`package-lock.json` or `pnpm-lock.yaml` / `yarn.lock` for npm; `Cargo.lock` for Rust; "
+            "`poetry.lock` or `uv.lock` for Python; `go.sum` for Go. Commit it. If you intentionally use "
+            "`requirements.txt` only, ensure it pins versions or use a lock tool."
+        ),
+        "prompt_pass": (
+            "Lockfile or requirements present. Periodically refresh dependencies at {repo_path} and "
+            "ensure CI installs from the lockfile with `npm ci` / `pip install -r` / equivalent."
+        ),
+        "prompt_na": (
+            "No lockfile prompt applies until a root manifest exists (package.json, pyproject.toml, etc.). "
+            "When you add one, add the matching lockfile in the same commit."
+        ),
+        "prompt_skipped": "",
+    },
+    "deploy_surface": {
+        "rationale": (
+            "`firebase.json` (when present) signals a defined deploy surface for static hosting. "
+            "It helps agents and humans know where production output is published."
+        ),
+        "prompt_warn": (
+            "If this repo deploys to Firebase Hosting, add `firebase.json` at {repo_path} ({project_name}) "
+            "with public directory and ignore rules aligned with your build output. If deployment is elsewhere, "
+            "document the deploy command and target in README."
+        ),
+        "prompt_pass": (
+            "firebase.json present. Verify hosting targets and predeploy hooks at {repo_path} match your "
+            "actual build directory."
+        ),
+        "prompt_na": (
+            "This repo does not use Firebase Hosting; no firebase.json is expected. If you adopt Firebase later, "
+            "add firebase.json and document predeploy in README."
+        ),
+        "prompt_skipped": "",
+    },
+    "attribution_sample": {
+        "rationale": (
+            "Commit messages that mention AI assistance or co-authors improve transparency and auditability. "
+            "Heuristic scan of recent messages is optional and off by default."
+        ),
+        "prompt_warn": (
+            "For {repo_path} ({project_name}), adopt a short convention in CONTRIBUTING or PR template: "
+            "when a change is AI-assisted, add a trailer like `Co-authored-by: Name <email>` or a line in "
+            "the PR body. Optionally enable Lenses commit-body scan via environment or registry if you want "
+            "this check to score commits."
+        ),
+        "prompt_pass": (
+            "Recent commits show attribution markers. Keep documenting AI use in PRs at {repo_path}; "
+            "extend patterns if your team uses different wording."
+        ),
+        "prompt_na": (
+            "Commit-body scan is disabled or not applicable (non-git repo). To enable scoring, use a git "
+            "repo and set `LENSES_STANDARDS_SCAN_COMMITS=1` or enable via registry when supported."
+        ),
+        "prompt_skipped": "",
+    },
+}
+
+
+def _enrich_checks_with_guidance(
+    checks: list[dict[str, Any]],
+    *,
+    project_name: str,
+    repo_path: Path,
+) -> None:
+    """Attach ``rationale`` and ``cursor_fix_prompt`` to each check dict in place."""
+    ctx = {"project_name": project_name, "repo_path": str(repo_path.resolve())}
+    for c in checks:
+        cid = c.get("id")
+        if not isinstance(cid, str):
+            continue
+        g = CHECK_GUIDANCE.get(cid, {})
+        rationale_t = g.get(
+            "rationale",
+            "This check reflects a heuristic signal for agentic coding hygiene; see the blueprint for methodology.",
+        )
+        try:
+            c["rationale"] = rationale_t.format(**ctx)
+        except (KeyError, ValueError):
+            c["rationale"] = rationale_t
+
+        st = str(c.get("status", ""))
+        key = "prompt_warn"
+        if st == "pass":
+            key = "prompt_pass"
+        elif st == "na":
+            key = "prompt_na"
+        elif st == "skipped":
+            key = "prompt_skipped"
+        raw_p = g.get(key, "")
+        if not raw_p and st == "skipped":
+            raw_p = "This check was ignored via registry configuration."
+        try:
+            c["cursor_fix_prompt"] = raw_p.format(**ctx) if raw_p else ""
+        except (KeyError, ValueError):
+            c["cursor_fix_prompt"] = raw_p
+
+
+
 
 def _run_git_log_body(cwd: Path, n: int = 24) -> str:
     try:
@@ -312,6 +514,8 @@ def compliance_report(
                 "suggestion": suggestion,
             }
         )
+
+    _enrich_checks_with_guidance(checks_out, project_name=project_name, repo_path=rp)
 
     score = 0
     if weights_den > 0:
