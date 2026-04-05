@@ -38,6 +38,9 @@ KS_ROOT = REPO_ROOT / "kitchensink"
 sys.path.insert(0, str(GEN_ROOT))
 sys.path.insert(0, str(KS_ROOT / "components"))
 sys.path.insert(0, str(KS_ROOT / "generator"))
+sys.path.insert(0, str(KS_ROOT / "forge-autodoc"))
+
+from forge_autodoc.files import slug_from_md_path  # noqa: E402
 
 from components import e  # noqa: E402
 from layouts import showcase_page  # noqa: E402
@@ -49,12 +52,10 @@ from doc_previews import (  # noqa: E402
 )
 
 
-def _slug_from_stem(stem: str) -> str:
-    return stem.lower().replace(" ", "-")
-
-
-def _page_dict_from_md(md: Path) -> dict:
-    slug = "index" if md.stem.lower() in ("index", "readme") else _slug_from_stem(md.stem)
+def _page_dict_from_md(md: Path, root: Path) -> dict:
+    """Slug matches forge-autodoc ``run_simple_build`` (nested paths under ``docs/``)."""
+    slug_html = slug_from_md_path(md, root)
+    slug = Path(slug_html).stem
     text = md.read_text(encoding="utf-8")
     title_match = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else md.stem.replace("-", " ").title()
@@ -67,14 +68,16 @@ def _page_dict_from_md(md: Path) -> dict:
 
 
 def _load_pages() -> list[dict]:
-    """Handbook sources: docs/*.md first, then lenses/website/*.md (package reference)."""
+    """Handbook sources: ``docs/**/*.md`` recursively, then ``lenses/website/*.md`` (same as bpw staging)."""
     pages: list[dict] = []
     if DOCS_SRC.is_dir():
-        for md in sorted(DOCS_SRC.glob("*.md")):
-            pages.append(_page_dict_from_md(md))
+        for md in sorted(DOCS_SRC.rglob("*.md")):
+            if any(x in md.parts for x in (".git", "node_modules")):
+                continue
+            pages.append(_page_dict_from_md(md, DOCS_SRC))
     if WEBSITE_DOCS.is_dir():
         for md in sorted(WEBSITE_DOCS.glob("*.md")):
-            pages.append(_page_dict_from_md(md))
+            pages.append(_page_dict_from_md(md, WEBSITE_DOCS))
     by_slug: dict[str, dict] = {}
     for p in pages:
         by_slug[p["slug"]] = p
@@ -164,8 +167,9 @@ def _render_page(
     doc_wrap = f'<div class="lenses-doc-body">{body_html}</div>{body_suffix}'
     return showcase_page(
         browser_title=f'{page["title"]} — lenses docs',
-        brand_name="lenses",
+        brand_name="Forge Studio",
         brand_subtitle="Documentation",
+        brand_href="/",
         page_title=page["title"],
         breadcrumb_html=_breadcrumb(page),
         sidebar_html=sidebar_html,
