@@ -1,6 +1,6 @@
 # forge-lenses
 
-**forge-lenses** (Python package **lenses**) is a local tool that shows what lives in your development workspace: git repos, orchestration scripts at the workspace root, Firebase-backed site repos, Blueprint-style WBS files under `docs/requirements/`, and optional **Stickerboardefo** ([`/board`](http://127.0.0.1:8080/board)) — multiple Kanban/freeform boards per project, opaque ids on disk — **local-only** or **shared** (under **`.lenses-repo/<login>/sticker-boards/`** plus a local overlay for private stickers on shared boards).
+**forge-lenses** (Python package **lenses**) is a local tool that shows what lives in your development workspace: git repos, orchestration scripts at the workspace root, Firebase-backed site repos, Blueprint-style WBS files under `docs/requirements/`, and optional **Forge Stickerboards** ([`/board`](http://127.0.0.1:8080/board)) — multiple Kanban/freeform boards per project, opaque ids on disk — **local-only** or **shared** (under **`.lenses-repo/<login>/sticker-boards/`** plus a local overlay for private stickers on shared boards).
 
 Public repository: **github.com/autowww/forge-lenses**.
 
@@ -54,9 +54,13 @@ The dashboard links to the published **Handbook** and **Forge** sites in new tab
 
 Built static output for Firebase site repos (typically **`website/`**) is served on the same server under **`/local-site/<repo>/…`** (default host **127.0.0.1**). Use **Websites** → **Preview in lenses** for an iframe shell that keeps the dashboard navigation visible.
 
+## Lenses Studio
+
+- [Reference architecture (Lenses Studio)](reference-architecture-studio.md) — React SPA at **`/studio/`**, shared Python **`/api/...`** with Classic, Electron shell, data-plane summary, and links to ADR and the Studio shell API map.
+
 ## Reference (Python package)
 
-These handbook pages are generated from Markdown under **`lenses/website/`** and served under **`/docs/`** — they describe current v1 behavior:
+Maintainer reference pages are generated from **`lenses/website/`** (and internal **`docs/`**) and served under **`/docs/`**. User-facing pages (interface, dashboard, registry, plan UI map, Wizard guides) live in **`docs/website/`** — see the published handbook at **blueprints.forgesdlc.com/lenses/**.
 
 - [Package architecture](/docs/architecture.html)
 - [HTTP API and routes](/docs/http-api-and-routes.html)

@@ -6,11 +6,11 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 
 | Path | Role |
 |------|------|
-| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**, **`/plan`** (Forge plan lens), **`/roadmaps` → `/plan`**, roadmap preview/summary routes, **`GET /api/plan-spine`**, **`GET /api/story-hub`**, **`GET /api/roadmap-outline`**, **`/workspace-md/view`**, **`/projects/<name>/charts-api`**. |
+| `lenses/serve.py` | CLI entry (`python3 -m lenses`): `ThreadingHTTPServer`, route dispatch, static `/docs`, **`/__ks/`** kitchensink assets, **`/__lenses/js/`** dashboard JS, project APIs, sticker board API, POST git, **`/toolset/…`** and **`POST /api/toolset/run`**, **`/plan`** (Forge plan lens), **`/roadmaps` → `/plan`**, roadmap preview/summary routes, **`GET /api/plan-spine`**, **`GET /api/forge-work-model`**, **`GET /api/story-hub`**, **`GET /api/today-charge`**, **`GET /api/roadmap-outline`**, **`/workspace-md/view`**, **`/projects/<name>/charts-api`**. |
 | `lenses/scan.py` | `resolve_workspace_root`, `resolve_workspace_child_dir`, `scan_workspace`, `workspace_state_json`; subprocess calls to `git`; toolset **`script_cards`** / comment blurbs for root **`*.sh`**; indexes **`roadmaps`** (`**/docs/**/ROADMAP.md`) alongside WBS. |
 | `lenses/toolset_actions.py` | Allowlisted workspace-root shell script execution for **`POST /api/toolset/run`** (bash, fixed path, no user shell). |
 | `lenses/render.py` | HTML for dashboard pages; **`showcase_page`** shell when kitchensink is present, else fallback layout. Roadmaps UI: **`page_roadmaps`**, preview document builder, summary fragment. |
-| `lenses/roadmap_outline.py` | Parse `ROADMAP.md` into sections, GFM tables → HTML, **`extract_chart_metrics`** for summaries. |
+| `lenses/roadmap_outline.py` | Parse `ROADMAP.md` into sections, GFM tables → HTML, **`extract_chart_metrics`**, **`extract_date_shift_model`** (Initial/Target ISO dates), ordinal Gantt from horizons. |
 | `lenses/roadmap_charts.py` | Inline SVG bars / status donut / horizon badges; optional KS **`/__ks/assets/svg/`** template thumbnails. |
 | `lenses/ks_layout.py` | Kitchensink path checks and `lenses_showcase_page` wrapper. |
 | `lenses/git_urls.py` | Map `origin` to HTTPS repo / commit URLs (GitHub, GitLab-style hosts). |
@@ -20,7 +20,7 @@ The **lenses** Python package lives under the **forge-lenses** repository. It is
 | `lenses/sticker_board.py` | Load/save/validate sticker boards: **local** file under **`.lenses-local/`**; **shared** split across **`.lenses-repo/<login>/`** and a local overlay + marker. |
 | `lenses/registry.py` | Loads `workspace-registry.json` from the **forge-lenses** repo root and merges with defaults. |
 | `lenses/tutorial_index.py` | **`list_child_handbooks`**, **`tutorial/`** and **`tutorials/`** URL resolution for **`/local-site/<repo>/…`**. |
-| `lenses/website/*.md` | Source for **reference** handbook pages (this section); consumed by `generator/build-lenses-docs.py` with `docs/index.md` as the `/docs/` hub. |
+| `lenses/website/*.md` | Source for **maintainer** handbook pages (this section); consumed by `generator/build-lenses-docs.py` with `docs/index.md` as the `/docs/` hub. User-facing pages live under **`docs/website/`**. |
 | `lenses/fa-tutorial-md/*.md` | Source for **tutorial** handbook pages; built by **forge-autodoc** (`./build-fa-tutorials.sh`) into **`lenses/tutorials/`**, optionally synced to repo-root **`tutorial/`**. **`tutorial_index.py`** also discovers **`tutorials/`**, **`lenses/tutorials/`**, and **`website/tutorials/`** (e.g. forgesdlc) so **`/tutorials`** (global index) and **`/local-site/<repo>/tutorials/…`** work without rsync. |
 
 ## Data flow
@@ -43,6 +43,7 @@ Edits to `lenses/**/*.py` require **restarting** the `python3 -m lenses` process
 ## Related docs
 
 - [HTTP API and routes](http-api-and-routes.html)
+- [Forge plan UI map (roadmap → evidence)](ui-map-workflow.html)
 - [Workspace scan contract](workspace-scan-contract.html)
 - [Registry configuration](registry-configuration.html)
 - [Dashboard pages](dashboard-pages.html)

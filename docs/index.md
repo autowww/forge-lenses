@@ -1,15 +1,28 @@
-# forge-lenses — reference handbook
+# forge-lenses — reference handbook (internal)
 
-This page is the **`/docs/`** home: **reference** pages for the **lenses** package (kitchensink `showcase_page`), built by `generator/build-lenses-docs.py` into **`lenses-docs/`**.
+**This is the internal maintainer handbook** for the `lenses` package: architecture, APIs, ADRs, wizard internals, and repository workflow. It is built into **`lenses-docs/`** and served at **`/docs/`** when you run Lenses locally.
 
-**Tutorial** (setup, submodules, publishing, extensions roadmap) lives in **`lenses/fa-tutorial-md/`**, built with **forge-autodoc** into **`lenses/tutorials/`** and synced to repo-root **`tutorial/`** for the dashboard **Tutorial** link:
+**User-facing documentation** (how to use Lenses, Forge Studio, and the Blueprints Wizard) is published at **[blueprints.forgesdlc.com/lenses/](https://blueprints.forgesdlc.com/lenses/)** and maintained under **`docs/website/`** in this repository.
+
+## Published user guide (mirror of website content)
+
+These pages are also emitted to the public handbook when `blueprints-website` builds the lenses subtree. Local slugs match the published site:
+
+- [User guide home](home.html) — start here for end-user topics
+- [Interface pages](interface-pages.html) — Classic vs Forge Studio, plan-aware shells
+- [Dashboard pages](dashboard-pages.html) — major screens and routes
+- [Registry configuration](registry-configuration.html) — `workspace-registry.json`, RBAC overview
+- [Forge plan UI map (roadmap → evidence)](ui-map-workflow.html) — `/plan` lens
+- [Blueprints Wizard — guides](wizard-index.html) — progressive wizard help (101 / 201 / 301)
+
+**Tutorial pipeline** (setup, submodules, publishing, extensions, Studio reference architecture) lives in **`lenses/fa-tutorial-md/`**, built with **forge-autodoc** into **`lenses/tutorials/`** and synced to repo-root **`tutorial/`** for the dashboard **Tutorial** link:
 
 ```bash
 pip install markdown PyYAML
 ./build-fa-tutorials.sh
 ```
 
-Open **`/local-site/<repo>/tutorial/index.html`** on the lenses server (same host as the dashboard) after building.
+Open **`/local-site/<repo>/tutorial/index.html`** on the lenses server after building.
 
 ## Forge Studio (Lenses Studio)
 
@@ -24,7 +37,9 @@ React SPA at **`/studio/`** on the local Python server; shares **`/api/…`** wi
 
 ## Blueprints Wizard (experimental)
 
-Guided methodology-aligned flow in **Forge Studio** only (`/studio/blueprints/wizard/…`). Does **not** edit the **blueprints** git submodule. Enablement and operators: [wizard usage](blueprints-wizard-usage.html).
+Guided methodology-aligned flow in **Forge Studio** only (`/studio/blueprints/wizard/…`). Does **not** edit the **blueprints** git submodule. **Operators:** [wizard usage](blueprints-wizard-usage.html).
+
+**End-user guides** (published): [Wizard guides index](wizard-index.html) — see also **`docs/website/wizard/`**.
 
 - [Blueprints Wizard — usage](blueprints-wizard-usage.html) — feature flags, hub vs session, telemetry, LLM trust
 - [Blueprints Wizard — architecture](blueprints-wizard-architecture.html)
@@ -36,7 +51,7 @@ Guided methodology-aligned flow in **Forge Studio** only (`/studio/blueprints/wi
 
 ## Reference (Python package)
 
-Generated from **`docs/`** (including nested paths) and **`lenses/website/`**:
+Built by `generator/build-lenses-docs.py` from **`docs/`** (internal pages), **`docs/website/`** (user-facing pages; flat slugs), and **`lenses/website/`** (maintainer package reference). See `_load_pages()` in the generator for ordering.
 
 - [Roadmap — Project Management (governance)](roadmap-project-management.html) — planned PM governance capabilities (NOW / NEXT / LATER), aligned with blueprints PRODUCT-MANAGEMENT §2 / §10 / §11
 - [Package architecture](architecture.html)

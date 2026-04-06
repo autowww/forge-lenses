@@ -31,6 +31,7 @@ _REPO_STR = str(REPO_ROOT)
 if _REPO_STR not in sys.path:
     sys.path.insert(0, _REPO_STR)
 DOCS_SRC = REPO_ROOT / "docs"
+WEBSITE_USER = REPO_ROOT / "docs" / "website"
 WEBSITE_DOCS = REPO_ROOT / "lenses" / "website"
 OUTPUT_DIR = REPO_ROOT / "lenses-docs"
 KS_ROOT = REPO_ROOT / "kitchensink"
@@ -68,13 +69,21 @@ def _page_dict_from_md(md: Path, root: Path) -> dict:
 
 
 def _load_pages() -> list[dict]:
-    """Handbook sources: ``docs/**/*.md`` recursively, then ``lenses/website/*.md`` (same as bpw staging)."""
+    """Handbook sources: ``docs/**/*.md`` except ``docs/website/``, then ``docs/website/**/*.md`` (user-facing, flat slugs), then ``lenses/website/*.md`` (maintainer reference). Matches blueprints-website staging for ``docs/website``."""
     pages: list[dict] = []
     if DOCS_SRC.is_dir():
         for md in sorted(DOCS_SRC.rglob("*.md")):
             if any(x in md.parts for x in (".git", "node_modules")):
                 continue
-            pages.append(_page_dict_from_md(md, DOCS_SRC))
+            try:
+                md.relative_to(WEBSITE_USER)
+            except ValueError:
+                pages.append(_page_dict_from_md(md, DOCS_SRC))
+            else:
+                continue
+    if WEBSITE_USER.is_dir():
+        for md in sorted(WEBSITE_USER.rglob("*.md")):
+            pages.append(_page_dict_from_md(md, WEBSITE_USER))
     if WEBSITE_DOCS.is_dir():
         for md in sorted(WEBSITE_DOCS.glob("*.md")):
             pages.append(_page_dict_from_md(md, WEBSITE_DOCS))

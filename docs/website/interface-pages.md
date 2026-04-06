@@ -1,6 +1,6 @@
 # Lenses interface (plan-aware model)
 
-Lenses is **one Python backend** (`python3 -m lenses`) serving JSON APIs and HTML. The **commercial product** is described as **four plan-aware shells** (Free, Personal, Team, Enterprise) over that backend—not as a flat list of routes. Screen-level detail lives in [Dashboard pages](dashboard-pages.html). APIs and bind rules are in [HTTP API and routes](http-api-and-routes.html). Forge plan artifacts and tabs are in [Forge plan UI map (roadmap → evidence)](ui-map-workflow.html).
+Lenses is **one Python backend** (`python3 -m lenses`) serving JSON APIs and HTML. The **commercial product** is described as **four plan-aware shells** (Free, Personal, Team, Enterprise) over that backend—not as a flat list of routes. Screen-level detail lives in [Dashboard pages](dashboard-pages.md). For bind rules and JSON APIs, see the maintainer reference on GitHub: [HTTP API and routes](https://github.com/autowww/forge-lenses/blob/main/lenses/website/http-api-and-routes.md). Forge plan artifacts and tabs are in [Forge plan UI map (roadmap → evidence)](ui-map-workflow.md).
 
 ## Dual-surface architecture: Studio first, Classic in sync
 
@@ -23,7 +23,7 @@ These rules apply across plans and surfaces:
 
 ### Lenses Studio (Enterprise) — unified IA (Flow / Artifacts)
 
-The Studio SPA (**`/studio/`**) uses the **same routes** for both lenses; only grouping and labels change. **Flow** is the default **workspace lens** (cookie **`workspace_lens`**, with legacy **`nav_mode`** read on first visit). **Header row:** brand, **Search**, **Workspace Lens** switcher, stubs for **Notifications** and **Workspace** switcher until backends exist, and **Auth**. **Top row:** primary areas (Flow: **Workspace** → Plans → Delivery → Projects → Sites → **Knowledge**; Artifacts: adds **Roadmaps** and **Boards** as top-level tabs). **Below the top nav:** enterprise **context bar** (scope, time horizon, compare, saved view / filters placeholders), **executive KPI strip**, **attention stream** (exception-style items from workspace scan), then main content + **evidence rail** — see [`docs/studio-flow-shell-mvp-scope.md`](../../docs/studio-flow-shell-mvp-scope.md). **Left column:** section-specific destinations (including classic **`/roadmaps/*`** links where the SPA has no page). **Discovery** and a real activity/inbox are **out of scope** for this v1 chrome refresh.
+The Studio SPA (**`/studio/`**) uses the **same routes** for both lenses; only grouping and labels change. **Flow** is the default **workspace lens** (cookie **`workspace_lens`**, with legacy **`nav_mode`** read on first visit). **Header row:** brand, **Search**, **Workspace Lens** switcher, stubs for **Notifications** and **Workspace** switcher until backends exist, and **Auth**. **Top row:** primary areas (Flow: **Workspace** → Plans → Delivery → Projects → Sites → **Knowledge**; Artifacts: adds **Roadmaps** and **Boards** as top-level tabs). **Below the top nav:** enterprise **context bar** (scope, time horizon, compare, saved view / filters placeholders), **executive KPI strip**, **attention stream** (exception-style items from workspace scan), then main content + **evidence rail** — see the [Studio flow shell MVP scope](https://github.com/autowww/forge-lenses/blob/main/docs/studio-flow-shell-mvp-scope.md) (maintainer doc). **Left column:** section-specific destinations (including classic **`/roadmaps/*`** links where the SPA has no page). **Discovery** and a real activity/inbox are **out of scope** for this v1 chrome refresh.
 
 ## Four plan shells — primary nav, landing, notes
 
@@ -54,7 +54,7 @@ Product IA for hosted SKUs; the open-source server may expose all routes—**ent
 | Work (Team) | `/board`, `/board/<id>` (boards; activity/assignments evolve with product) |
 | Knowledge | `/tutorials`, `/docs`, `/wbs`, `/wbs/view`, `/workspace-md/view` |
 | Sites (Team) | `/websites`, `/websites/browse` |
-| Admin | Team workspace RBAC and policy (see [Registry configuration](registry-configuration.html)); not a single URL yet |
+| Admin | Team workspace RBAC and policy (see [Registry configuration](registry-configuration.md)); not a single URL yet |
 
 ## Product tiers (commercial packaging)
 
@@ -105,7 +105,7 @@ Independent from workspace RBAC (below). The same Python server serves both. Whi
 | Surface | What it is |
 |---------|------------|
 | **Classic Lenses** | Server-rendered HTML from `lenses/render.py` — full dashboard (nav, Overview, Projects, Plan, Websites, docs, and routes in the [backend URL map](#backend-url-map-reference)). Default when you open the server in a browser or use **`./scripts/run-lenses.sh`**. |
-| **Lenses Studio** | React SPA under **`/studio/`** (Vite build in `lenses/static/studio/`): client-side routing to native views (Overview, Projects, Plan, Timeline, boards, search, etc.) backed by the **same JSON API** as Classic. Charts on **`/studio/overview/charts`** and **`/studio/projects/<name>/charts`** use **`forge-data-charts.js`** (same contract as Classic charts-api pages). Unknown paths under **`/studio/…`** fall back to **`index.html`**. See [ADR 001: Lenses Studio shell](adr-001-lenses-studio-shell.html) and the repo **README** § *Lenses Studio*. |
+| **Lenses Studio** | React SPA under **`/studio/`** (Vite build in `lenses/static/studio/`): client-side routing to native views (Overview, Projects, Plan, Timeline, boards, search, etc.) backed by the **same JSON API** as Classic. Charts on **`/studio/overview/charts`** and **`/studio/projects/<name>/charts`** use **`forge-data-charts.js`** (same contract as Classic charts-api pages). Unknown paths under **`/studio/…`** fall back to **`index.html`**. See [ADR 001: Lenses Studio shell](https://github.com/autowww/forge-lenses/blob/main/docs/adr-001-lenses-studio-shell.md) and the repo **README** § *Lenses Studio*. |
 
 **Electron:** set **`LENSES_STUDIO_UI=1`** (or legacy **`LENSES_ENTERPRISE_UI=1`**) when launching the desktop app to open **`http://127.0.0.1:<port>/studio/`** instead of **`/`** (`desktop/main.js`).
 
@@ -120,7 +120,7 @@ This axis is about **who may read or write** which projects — not Classic vs S
 | **Open workspace** | No **`lenses-access.json`**, or policy exists but **`bootstrap_completed`** is not set. | RBAC is not enforced; the server behaves in **legacy open** mode for access checks. |
 | **Team workspace** | After the first successful **`POST /api/auth/github`**, **`bootstrap_completed`** is true in **`<workspace>/.lenses-local/lenses-access.json`**. | Per-project **viewer / member / discipline_power_user** roles, super admins, sticker board ACL, gated project APIs, and allowlisted **Websites** actions apply. |
 
-Details: [Registry configuration](registry-configuration.html) § Access policy (RBAC).
+Details: [Registry configuration](registry-configuration.md) § Access policy (RBAC).
 
 ## Environment toggles (UI-relevant)
 
@@ -133,11 +133,11 @@ Details: [Registry configuration](registry-configuration.html) § Access policy 
 | **`LENSES_ALLOW_ACTIONS`** | **`1`**: allow GitHub auth and related **POST** from non-loopback when bound beyond localhost. |
 | **`LENSES_SKIP_CURSOR_METRICS`** | **`1`**: skip reading **`~/.cursor`** on Overview (privacy / CI). |
 
-For bind address, kitchensink assets, and search indexing, see [HTTP API and routes](http-api-and-routes.html).
+For bind address, kitchensink assets, and search indexing, see [HTTP API and routes](https://github.com/autowww/forge-lenses/blob/main/lenses/website/http-api-and-routes.md).
 
 ### Assets and previews (supporting URLs)
 
-Not separate “products,” but used by the UI: **`/__ks/…`** (kitchensink CSS/JS/assets), **`/__lenses/js/…`** (dashboard JS), **`/local-site/<repo>/…`** (static preview of each workspace child), **`/board-preview/<id>.png`** (sticker board thumbnails). See [HTTP API and routes](http-api-and-routes.html) § Kitchensink assets and § Local site preview.
+Not separate “products,” but used by the UI: **`/__ks/…`** (kitchensink CSS/JS/assets), **`/__lenses/js/…`** (dashboard JS), **`/local-site/<repo>/…`** (static preview of each workspace child), **`/board-preview/<id>.png`** (sticker board thumbnails). See [HTTP API and routes](https://github.com/autowww/forge-lenses/blob/main/lenses/website/http-api-and-routes.md) § Kitchensink assets and § Local site preview.
 
 ## Backend URL map (reference)
 
@@ -180,7 +180,7 @@ Top navigation and sidebar (Classic): workspace pages (including **Tutorials** �
 
 ## See also
 
-- [Dashboard pages](dashboard-pages.html) — narrative description of each major screen.
-- [Forge plan UI map (roadmap → evidence)](ui-map-workflow.html) — artifacts, tabs, and APIs for **`/plan`**.
-- [HTTP API and routes](http-api-and-routes.html) — bind safety, assets, JSON API, and POST contracts.
-- **Kitchen Sink — Lenses Studio shell** (engineering guideline, source repo): `forgesdlc-kitchensink/docs/design/lenses-studio-shell.md` — Electron **`BrowserWindow`**, preload **`window.lensesElectron`**, **`/__ks/`** theme and shared CSS/JS, React **`WorkspaceLensControl`** sync; complements [ADR 001: Lenses Studio shell](adr-001-lenses-studio-shell.html) and [Forge Enterprise UI](https://github.com/autowww/forgesdlc-kitchensink/blob/main/docs/design/forge-enterprise-ui.md) on GitHub.
+- [Dashboard pages](dashboard-pages.md) — narrative description of each major screen.
+- [Forge plan UI map (roadmap → evidence)](ui-map-workflow.md) — artifacts, tabs, and APIs for **`/plan`**.
+- [HTTP API and routes](https://github.com/autowww/forge-lenses/blob/main/lenses/website/http-api-and-routes.md) — bind safety, assets, JSON API, and POST contracts.
+- **Kitchen Sink — Lenses Studio shell** (engineering guideline, source repo): [`forgesdlc-kitchensink/docs/design/lenses-studio-shell.md`](https://github.com/autowww/forgesdlc-kitchensink/blob/main/docs/design/lenses-studio-shell.md) — Electron **`BrowserWindow`**, preload **`window.lensesElectron`**, **`/__ks/`** theme and shared CSS/JS, React **`WorkspaceLensControl`** sync; complements [ADR 001: Lenses Studio shell](https://github.com/autowww/forge-lenses/blob/main/docs/adr-001-lenses-studio-shell.md) and [Forge Enterprise UI](https://github.com/autowww/forgesdlc-kitchensink/blob/main/docs/design/forge-enterprise-ui.md) on GitHub.

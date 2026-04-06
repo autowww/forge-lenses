@@ -1,6 +1,6 @@
 # Forge plan UI map (roadmap → evidence)
 
-This page describes how **artifacts** in a Forge-style repo connect to **tabs and panes** on **`/plan`** (Forge plan lens). It complements [HTTP API and routes](http-api-and-routes.html).
+This page describes how **artifacts** in a Forge-style repo connect to **tabs and panes** on **`/plan`** (Forge plan lens). For HTTP routes and APIs, see the maintainer reference [HTTP API and routes](https://github.com/autowww/forge-lenses/blob/main/lenses/website/http-api-and-routes.md).
 
 ## Flow
 

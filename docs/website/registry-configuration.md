@@ -4,6 +4,16 @@ Optional file **`workspace-registry.json`** at the root of the **forge-lenses** 
 
 If **`lenses-workspace-registry.json`** exists at the **workspace root** (the directory passed as `--workspace-root` or implied by `LENSES_WORKSPACE_ROOT`), it is merged **after** the forge-lenses file so per-machine or per-workspace overrides stay out of the submodule.
 
+## Access policy (RBAC)
+
+**`<workspace>/.lenses-local/lenses-access.json`** (gitignored) stores per-project roles after the first GitHub sign-in. It is **not** part of `workspace-registry.json`.
+
+- **First successful `POST /api/auth/github`** creates the file and sets **`super_admins`** to that GitHub login (workspace super admin).
+- Later users must be listed under **`projects.<slug>.members`** (or be a super admin) or sign-in returns **`access_denied_not_invited`**.
+- Each project may define **`default_role`**, **`require_explicit_membership`**, and **`members`** (map of GitHub login → `{ "role": "viewer"|"member"|"discipline_power_user", "disciplines": [...] }`).
+
+Super admins retain full policy control; **effective write** to a repo is still blocked when the checkout directory is not writable (read-only mount), regardless of role.
+
 ## Default values
 
 If the file is missing or invalid JSON, defaults apply:
@@ -36,7 +46,7 @@ If the file is missing or invalid JSON, defaults apply:
 | `overview_metrics_manual` | object | Optional **Overview** “time comparison” numbers (not measured by lenses). Suggested keys: **`human_hours_week`**, **`estimated_hours_without_genai`** (or alias **`hours_without_genai`**), **`estimated_hours_genai_potential`** (or **`hours_genai_potential`**), **`methodology_note`** (string). Merged into **`lenses-docs/overview-metrics.json`** when **`collect-lenses-overview-data.py`** runs. |
 | `standards_compliance_ignore_checks` | array of strings | Optional list of **check ids** to skip in the heuristic **Standards and agentic hygiene** score (e.g. `forge_artifacts` when not using Forge). See **`lenses/standards_compliance.py`** (`CHECK_DEFS`). |
 | `standards_compliance_overrides` | object | Map **child directory name** → `{ "ignore_checks": ["…"] }` — per-repo extra ignores (merged with global **`standards_compliance_ignore_checks`**). |
-| `github_login` | string | Expected GitHub username for **POST `/api/auth/github`** and **POST `/api/actions/run`**. If empty, the server also tries **one** subdirectory name under **`<workspace>/.lenses-repo/`** or `gh api user` from the workspace. |
+| `github_login` | string | Resolves the **canonical login** for **shared sticker board** paths under **`<workspace>/.lenses-repo/<login>/`**. It does **not** restrict which GitHub users may sign in once **`lenses-access.json`** exists (use access policy for that). If empty, the server also tries **one** subdirectory under **`.lenses-repo/`** or `gh api user`. **POST `/api/auth/github`** still requires this to be configured so shared boards and actions have a resolved workspace identity. |
 | `actions` | object | Allowlisted subprocess actions: map **site directory name** → map **action key** → `{ "argv": ["cmd", "…"], "cwd_relative": "child_dir" }`. **`cwd_relative`** must stay under the workspace root. No shell is used; **`argv`** is passed directly to `subprocess`. |
 
 ### `actions` example
