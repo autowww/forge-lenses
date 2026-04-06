@@ -1,5 +1,7 @@
 # Blueprints Wizard — internal usage
 
+**Browser vs app routes:** Forge Studio is served at **`/studio/`** on your Lenses server. The Wizard’s client routes are **`/blueprints/wizard/...`** (hub and session) **inside** that app, so the paths you open in the browser are **`/studio/blueprints/wizard`** and **`/studio/blueprints/wizard/session/<sessionId>`** — the same as the [public Wizard overview](../handbook-public/08-wizard-overview.md). Shorter paths below (`/blueprints/wizard`, `session/:sessionId`) name the same screens in the React router.
+
 The Blueprints Wizard is **experimental**. Enable it on both the Python server and the Studio client before relying on session APIs or the `/blueprints/wizard` routes.
 
 ## Feature flags
