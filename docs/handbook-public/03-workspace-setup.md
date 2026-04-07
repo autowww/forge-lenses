@@ -23,31 +23,13 @@ Before you rely on multi-repo overview, project cards, or cross-repo links — o
 - Server runs ([Install and run](02-install-and-run.md)).
 - You know the absolute path to the folder that should be the workspace root.
 
-## Common layouts
+## Topics
 
-| Layout | Typical `LENSES_WORKSPACE_ROOT` | When it works well |
-|--------|----------------------------------|--------------------|
-| **Sibling repos** | Parent folder listing `forge-lenses/`, `product-a/`, `product-b/` | Most teams; clearest scans |
-| **Single product + submodule** | Host repository root after `lenses-startup` | One primary product repo with Lenses nested |
-
-## Choosing the root (good vs bad)
-
-| Good | Bad |
-|------|-----|
-| Parent of **all** repos you want cards for | A single repo folder when you need multi-repo visibility |
-| Stable path your team can document | A transient mount that changes between sessions |
-
-If **Projects** or **Overview** look empty, the root is almost always too shallow or too deep — move up or down one directory and restart the server.
-
-## Steps
-
-1. **Prefer an environment variable** — Set **`LENSES_WORKSPACE_ROOT`** to the parent folder that contains your clones (the directory that lists `forge-lenses/` next to other repos). Restart the server after changing it.
-
-2. **Optional registry** — Some teams use a small **`workspace-registry.json`** at the forge-lenses repo root to label repos and tune scanning. You only need this if your team already standardized on it; otherwise start without it.
-
-3. **Host-repo layout** — When forge-lenses is a **submodule** of a product repo, run **`./scripts/lenses-startup.sh`** once from the documented flow so **`.lenses-local/`** and **`.lenses-repo/<login>/`** are created at the **host** root (not inside `forge-lenses/`). That keeps local caches and shared notes where your team expects them.
-
-Desktop app and JSON config details for workspace resolution are documented for operators in the **forge-lenses** repository on GitHub (maintainer documentation).
+| Topic | Page |
+|-------|------|
+| **Common layouts** | [Common layouts](03-workspace-setup_01-layouts.md) |
+| **Choosing the root** | [Choosing the root](03-workspace-setup_02-root-choice.md) |
+| **Scan and host setup** | [Scan and host setup](03-workspace-setup_03-scan-host.md) |
 
 ## How to verify success
 

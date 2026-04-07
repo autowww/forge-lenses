@@ -22,39 +22,14 @@ After [Wizard 201](10-wizard-201.md), when you are tuning outputs or exports.
 
 - Stable **server-enabled** sessions when possible ([Wizard 201](10-wizard-201.md)).
 
-## Artifact bundles (emphasis matrix)
+## Topics
 
-| Emphasis (labels vary by build) | Best when you need… |
-|----------------------------------|---------------------|
-| **Planning** | Roadmaps, milestones, decision log |
-| **Engineering** | Tasks, risks, technical guardrails |
-| **Execution** | Near-term steps and owners |
-| **Full stack** | End-to-end slice across roles |
-
-Treat emphasis as **what the generator highlights**, not as automatic commits to your repo.
-
-## Steps
-
-### Refine
-
-Steps like **Understanding** may offer **Refine**. You stay in control: read output, edit notes, refine again. Paste **constraints** and **non-goals** explicitly.
-
-### Review vs recheck
-
-| Stage | Your job |
-|-------|----------|
-| **Review & generate** | Read artifacts against upstream notes; fix the *session* and regenerate instead of only editing preview text |
-| **Recheck / repair** | Resolve consistency failures or explicitly accept gaps with rationale |
-
-### Cursor Launch Pack
-
-The last step can package context for **Cursor** (or another editor). Read warnings; strict modes may block export until slices are locked.
-
-### Optional integrations
-
-Some environments offer extra steps (for example creating a remote repository after confirmation). Whether those appear depends on **server policy and configuration** where you run Lenses — not on fields in your session file. If your organization restricts that flow, complete exports manually and place artifacts in your own repo.
-
-Operator setup for experimental Wizard options and repository integrations is documented for maintainers in the **forge-lenses** repository on GitHub.
+| Topic | Page |
+|-------|------|
+| **Artifact bundles** | [Artifact bundles](11-wizard-301_01-artifact-bundles.md) |
+| **Refine** | [Refine](11-wizard-301_02-refine.md) |
+| **Review and recheck** | [Review and recheck](11-wizard-301_03-review-recheck.md) |
+| **Cursor Launch Pack** | [Cursor Launch Pack](11-wizard-301_04-cursor-launch-pack.md) |
 
 ## How to verify success
 
