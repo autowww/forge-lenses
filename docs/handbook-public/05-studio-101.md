@@ -23,6 +23,24 @@ Right after [Install and run](02-install-and-run.md), before deeper Studio or Wi
 - Server running.
 - Modern browser.
 
+## Glossary (labels you may see)
+
+| Label | Meaning in practice |
+|-------|---------------------|
+| **Workspace** | The lens across your scanned repos |
+| **Projects** | A single product/repo focus |
+| **Plans / Flow** | Delivery-oriented views (names vary) |
+
+Exact wording changes between builds; use this table only to orient, not as an API.
+
+## First session flow
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 1 | Confirm Classic loads at `/` | Server healthy ([Install and run](02-install-and-run.md)) |
+| 2 | Open `/studio/` | Chrome appears — not a blank document |
+| 3 | Use sidebar once | One area shows real content |
+
 ## Steps
 
 1. Open **`http://127.0.0.1:8080/studio/`** (adjust host/port if yours differs).

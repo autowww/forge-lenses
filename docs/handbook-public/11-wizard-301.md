@@ -3,7 +3,9 @@ nav_title: Wizard 301
 public_publish: true
 audience: public
 product_area: wizard
-tier: "301"
+tier: '301'
+handbook_area: wizard
+learning_level: '301'
 ---
 
 # Wizard 301 — Advanced usage
@@ -20,19 +22,29 @@ After [Wizard 201](10-wizard-201.md), when you are tuning outputs or exports.
 
 - Stable **server-enabled** sessions when possible ([Wizard 201](10-wizard-201.md)).
 
+## Artifact bundles (emphasis matrix)
+
+| Emphasis (labels vary by build) | Best when you need… |
+|----------------------------------|---------------------|
+| **Planning** | Roadmaps, milestones, decision log |
+| **Engineering** | Tasks, risks, technical guardrails |
+| **Execution** | Near-term steps and owners |
+| **Full stack** | End-to-end slice across roles |
+
+Treat emphasis as **what the generator highlights**, not as automatic commits to your repo.
+
 ## Steps
-
-### Artifact bundles
-
-Depending on **Target & output pack**, generation can emphasize **planning**, **engineering**, **execution**, or **full stack** slices. Labels vary by version — treat them as emphasis, not automatic repo edits.
 
 ### Refine
 
 Steps like **Understanding** may offer **Refine**. You stay in control: read output, edit notes, refine again. Paste **constraints** and **non-goals** explicitly.
 
-### Review, approve, recheck
+### Review vs recheck
 
-Use **Review & generate** as a gate: fix upstream notes and regenerate rather than patching only the preview. **Recheck / repair** runs consistency checks; **refresh** after you persist new summaries.
+| Stage | Your job |
+|-------|----------|
+| **Review & generate** | Read artifacts against upstream notes; fix the *session* and regenerate instead of only editing preview text |
+| **Recheck / repair** | Resolve consistency failures or explicitly accept gaps with rationale |
 
 ### Cursor Launch Pack
 

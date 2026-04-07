@@ -3,7 +3,9 @@ nav_title: Studio 201
 public_publish: true
 audience: public
 product_area: studio
-tier: "201"
+tier: '201'
+handbook_area: studio
+learning_level: '201'
 ---
 
 # Studio 201 — Day-to-day use
@@ -19,6 +21,30 @@ After [Studio 101](05-studio-101.md), when Studio is your default surface.
 ## Prerequisites
 
 - Studio loads reliably at **`/studio/`**.
+
+## Flow vs Artifacts (decision guide)
+
+| Lens | Prefer when… | You usually leave with… |
+|------|----------------|-------------------------|
+| **Flow** | You are tracking delivery steps, handoffs, or “what happens next” | A clear next action on the plan or board |
+| **Artifacts** | You need roadmaps, boards, or document-shaped views your build exposes | A stable view of scope and status artifacts |
+
+If you are unsure, start in **Flow** for execution days and **Artifacts** for planning or review meetings.
+
+## Recurring jobs (examples)
+
+| Job | A simple Studio path |
+|-----|----------------------|
+| Daily stand-in | Workspace → one project → latest plan or board note |
+| Prep for refinement | **Artifacts** (if available) → scope slice for the increment |
+| Cross-team alignment | Same project in Studio, then confirm the same project in **Classic** at `/` if a report only exists there |
+
+## Do / avoid
+
+| Do | Avoid |
+|----|-------|
+| Pick **one** project per short session and finish one loop | Switching workspace roots mid-session without reason |
+| Name sessions and plans the way your team already searches | Treating chart views as canonical if Classic disagrees |
 
 ## Steps
 

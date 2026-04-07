@@ -4,6 +4,8 @@ public_publish: true
 audience: public
 product_area: lenses
 tier: overview
+handbook_area: lenses
+learning_level: overview
 ---
 
 # Lenses overview
@@ -19,6 +21,14 @@ Three **products** sit on top of the same server:
 | **Lenses (Classic)** | Server-rendered dashboard at the site root — projects, overview, plan views, and knowledge links. |
 | **Forge Studio** | React app at **`/studio/`** — newer UI for the same workspace; where **Blueprints Wizard** lives. |
 | **Blueprints Wizard** | Guided session flow inside Studio at **`/studio/blueprints/wizard/`** — structured workshops and exports; it does **not** auto-commit to your `blueprints/` submodule. |
+
+### Which surface for which job
+
+| Job | Start here |
+|-----|------------|
+| Daily scan of repos and health | **Classic** `/` |
+| Newer UX, Studio-only flows | **Forge Studio** `/studio/` |
+| Facilitated workshop or export pack | **Wizard** ([Wizard overview](08-wizard-overview.md)) |
 
 ## When to use it
 

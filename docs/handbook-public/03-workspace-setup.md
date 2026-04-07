@@ -4,6 +4,8 @@ public_publish: true
 audience: public
 product_area: lenses
 tier: overview
+handbook_area: lenses
+learning_level: '201'
 ---
 
 # Workspace setup
@@ -20,6 +22,22 @@ Before you rely on multi-repo overview, project cards, or cross-repo links — o
 
 - Server runs ([Install and run](02-install-and-run.md)).
 - You know the absolute path to the folder that should be the workspace root.
+
+## Common layouts
+
+| Layout | Typical `LENSES_WORKSPACE_ROOT` | When it works well |
+|--------|----------------------------------|--------------------|
+| **Sibling repos** | Parent folder listing `forge-lenses/`, `product-a/`, `product-b/` | Most teams; clearest scans |
+| **Single product + submodule** | Host repository root after `lenses-startup` | One primary product repo with Lenses nested |
+
+## Choosing the root (good vs bad)
+
+| Good | Bad |
+|------|-----|
+| Parent of **all** repos you want cards for | A single repo folder when you need multi-repo visibility |
+| Stable path your team can document | A transient mount that changes between sessions |
+
+If **Projects** or **Overview** look empty, the root is almost always too shallow or too deep — move up or down one directory and restart the server.
 
 ## Steps
 

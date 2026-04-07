@@ -4,6 +4,8 @@ public_publish: true
 audience: public
 product_area: lenses
 tier: overview
+handbook_area: lenses
+learning_level: '101'
 ---
 
 # Install and run
@@ -18,8 +20,19 @@ First time you clone forge-lenses, or after updating dependencies.
 
 ## Prerequisites
 
-- **Git**, **Python 3**, **pip**
-- Network access to `pip install` dependencies
+| Requirement | Notes |
+|-------------|--------|
+| **Git**, **Python 3**, **pip** | Use a venv below — do not rely on system Python on macOS/Linux if your distro is strict |
+| Network | Needed once for `pip install` |
+
+## Standalone vs submodule
+
+| Approach | Prefer when… |
+|----------|----------------|
+| **Standalone clone** | Lenses is a tool beside your product repos (typical) |
+| **Submodule** | A parent “workspace” repo should pin the same Lenses revision for everyone |
+
+Both paths end with a venv, `pip install -r requirements.txt`, and `./scripts/run-lenses.sh`.
 
 ## Steps
 
@@ -50,6 +63,16 @@ Then create a venv, `pip install -r requirements.txt`, and run `./scripts/run-le
 ### Default URL
 
 Open **http://127.0.0.1:8080/** (or the port shown in the terminal if yours differs).
+
+## Health checks
+
+| Check | Pass criteria |
+|-------|----------------|
+| Classic UI | `http://127.0.0.1:8080/` loads |
+| API | `http://127.0.0.1:8080/api/workspace-state` returns JSON |
+| Studio | `http://127.0.0.1:8080/studio/` loads after Classic works |
+
+If Classic works but **Studio** does not, see [Studio 101](05-studio-101.md) and [Troubleshooting](12-troubleshooting.md).
 
 ## How to verify success
 

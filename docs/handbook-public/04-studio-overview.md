@@ -23,6 +23,22 @@ Any time you want the newer navigation, Studio-only flows, or the Wizard — aft
 - Lenses running; browser available.
 - If **`/studio/`** looks empty, confirm the server is running, try a hard refresh, then follow [Studio 101](05-studio-101.md) or [Troubleshooting](12-troubleshooting.md).
 
+## First-value path (landing to useful work)
+
+| Step | Action | You should see |
+|------|--------|------------------|
+| 1 | Open **`/studio/`** | Shell with header + sidebar |
+| 2 | Open **workspace** or **projects** from the sidebar | Content for your scanned repos |
+| 3 | Pick **one** project | Detail or plan entry points |
+| 4 | Optional — **Blueprints Wizard** | Hub at `/studio/blueprints/wizard` ([Wizard overview](08-wizard-overview.md)) |
+
+## Classic vs Studio (task-level)
+
+| Task | Start in… |
+|------|-----------|
+| Legacy report or route you already use daily | **Classic** `/` |
+| Newer flows, Wizard, or Studio-only views | **Forge Studio** `/studio/` |
+
 ## Steps
 
 1. Open **`http://127.0.0.1:<port>/studio/`** (same host/port as Classic).

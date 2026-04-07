@@ -3,7 +3,9 @@ nav_title: Studio 301
 public_publish: true
 audience: public
 product_area: studio
-tier: "301"
+tier: '301'
+handbook_area: studio
+learning_level: '301'
 ---
 
 # Studio 301 — Advanced
@@ -19,6 +21,21 @@ After [Studio 201](06-studio-201.md), when you are tuning how you work across St
 ## Prerequisites
 
 - Comfortable with [Studio 201](06-studio-201.md).
+
+## Advanced scenarios
+
+| Scenario | Suggested approach |
+|----------|-------------------|
+| Chart empty in Studio | Verify the **same project** in Classic first; refresh Studio |
+| Conflicting status | Pick **one** surface for status meetings; reconcile before switching |
+| Large workspace slow after restart | Wait for scan idle before deep navigation |
+
+## Limitations and fallbacks
+
+| Limitation | Fallback |
+|------------|----------|
+| Classic route not in Studio yet | Use **Classic** at `/` for that report |
+| Experimental Studio feature unstable | Same task in **Classic** until your build catches up |
 
 ## Steps
 

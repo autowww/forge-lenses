@@ -3,7 +3,9 @@ nav_title: Wizard 101
 public_publish: true
 audience: public
 product_area: wizard
-tier: "101"
+tier: '101'
+handbook_area: wizard
+learning_level: '101'
 ---
 
 # Wizard 101 — First session
@@ -38,18 +40,22 @@ After [Wizard overview](08-wizard-overview.md) and [Studio 101](05-studio-101.md
 
 ### The twelve steps (what you see in the UI)
 
-1. **Mission** — Why you are here (see [Wizard 201](10-wizard-201.md) for modes).
-2. **Contribution setup** — Roles, repos, expectations.
-3. **Context intake** — What is already true.
-4. **Understanding** — Shared picture; **Refine** may appear.
-5. **Clarification** — Resolve ambiguities.
-6. **Target & output pack** — Done shape and artifact bundles ([Wizard 301](11-wizard-301.md)).
-7. **Autonomy & mutation** — Allowed change vs stability.
-8. **Scope selection** — This increment vs later.
-9. **Run plan** — Ordered steps and checks.
-10. **Review & generate** — Inspect generated artifacts.
-11. **Recheck / repair** — Consistency checks.
-12. **Experimental build** — **Cursor Launch Pack** and related exports.
+| Step | Intent | Typical output |
+|------|--------|----------------|
+| 1 **Mission** | Why you are here | Mode + posture (see [Wizard 201](10-wizard-201.md)) |
+| 2 **Contribution setup** | Roles, repos, expectations | Named participants and boundaries |
+| 3 **Context intake** | What is already true | Facts and links the team agrees on |
+| 4 **Understanding** | Shared picture | Narrative; **Refine** may appear |
+| 5 **Clarification** | Resolve ambiguities | Decisions or explicit open questions |
+| 6 **Target & output pack** | Done shape | Artifact emphasis ([Wizard 301](11-wizard-301.md)) |
+| 7 **Autonomy & mutation** | Allowed change vs stability | Guardrails for the plan |
+| 8 **Scope selection** | This increment vs later | Scoped slice |
+| 9 **Run plan** | Ordered steps and checks | Executable sequence |
+| 10 **Review & generate** | Inspect artifacts | Approved or iterated bundle |
+| 11 **Recheck / repair** | Consistency | Pass or listed gaps |
+| 12 **Experimental build** | Handoff | **Cursor Launch Pack** or related exports when offered |
+
+Detail for each row follows the same order in the stepper UI.
 
 ### Worked example — “Start from idea”
 

@@ -3,7 +3,9 @@ nav_title: Wizard 201
 public_publish: true
 audience: public
 product_area: wizard
-tier: "201"
+tier: '201'
+handbook_area: wizard
+learning_level: '201'
 ---
 
 # Wizard 201 — Mission modes
@@ -19,6 +21,35 @@ When you pick **Mission** in a new or resumed session ([Wizard 101](09-wizard-10
 ## Prerequisites
 
 - [Wizard 101](09-wizard-101.md) concepts understood.
+
+## Mission modes at a glance
+
+| Mode | Choose it when… | Primary outcome |
+|------|-----------------|-----------------|
+| **Start from idea** | Discovery is open; problem and constraints are still fuzzy | A crisp brief, explicit assumptions, artifacts for a spike or RFC |
+| **Assess current project** | Code exists but Forge / Blueprints practices are uneven | An adoption plan that respects legacy risk |
+| **Resume and advance** | Foundation work exists; you need the **next chapter** (for example MVP to scale) | Updated artifacts and a run plan that continues the story |
+| **Repair stage** | Process drift, inconsistent artifacts, or a blocked stage | A corrective run plan and recheck you can track to closure |
+
+### Decision prompts (plain language)
+
+Answer these before locking **Mission**; the first row that matches is usually enough:
+
+| Question | If “yes” → |
+|----------|------------|
+| Are we still proving the problem and value? | **Start from idea** |
+| Do we have shipping code but messy process or docs? | **Assess current project** |
+| Do we already have a plan and need the *next* increment? | **Resume and advance** |
+| Are we stuck, inconsistent, or blocked on a stage? | **Repair stage** |
+
+### Short examples (generic)
+
+| Mode | Starting situation | What “good” looks like after the session |
+|------|--------------------|------------------------------------------|
+| **Start from idea** | Notes in three tools; no shared brief | One agreed problem statement and a spike-sized next step |
+| **Assess current project** | Mixed ADRs and no ceremony rhythm | Adoption plan with owners and a first ceremony to standardize |
+| **Resume and advance** | MVP shipped; scale and SRE need a plan | Run plan for the next increment with explicit risks |
+| **Repair stage** | Recheck keeps failing on the same gap | Fewer open inconsistencies; recheck passes or gaps are explicitly accepted |
 
 ## Steps
 
