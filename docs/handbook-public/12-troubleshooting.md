@@ -30,12 +30,14 @@ Something failed during [Install and run](02-install-and-run.md), [Workspace set
 | 2 | URL matches host/port; no stale bookmark |
 | 3 | **`LENSES_WORKSPACE_ROOT`** points at the parent of your clones ([Workspace setup](03-workspace-setup.md)) |
 
-## Evidence to gather (for yourself or your operator)
+## If you are comfortable checking locally (advanced)
 
-| Item | Why it helps |
-|------|--------------|
-| Last 20 lines of server stderr | Shows import, port, or scan errors |
-| `GET /api/workspace-state` result | Separates “UI only” from “server unhealthy” |
+Use this when the fast triage above is not enough **and** you run or can ask whoever runs the Lenses process. Skip it if you only need a user-facing workaround from the **Steps** table below.
+
+| Check | Why it helps |
+|-------|--------------|
+| Last lines of output in the terminal where the server runs | Often shows import, port, or scan errors in plain language |
+| Whether the workspace health endpoint returns data in your browser (when your runbook names it) | Separates “UI only” from “server unhealthy” |
 | Whether Classic `/` works but `/studio/` does not | Narrows to Studio asset or routing issues |
 
 ## Steps

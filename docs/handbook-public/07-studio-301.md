@@ -22,6 +22,23 @@ After [Studio 201](06-studio-201.md), when you are tuning how you work across St
 
 - Comfortable with [Studio 201](06-studio-201.md).
 
+## Decision framework (when to reach for 301)
+
+Use **Studio 301** when you already know [Studio 201](06-studio-201.md) basics and you need to **choose** between Classic and Studio deliberately, or when you are **debugging** a mismatch (empty chart, slow scan) without reinstalling. Stay on **Studio 201** if you are still learning navigation and first-session checks.
+
+| Situation | Prefer |
+|-----------|--------|
+| New team member first week | [Studio 201](06-studio-201.md) only |
+| Same data in Classic but not in Studio | This page + [Troubleshooting](12-troubleshooting.md) |
+| Experimental Studio-only flow | This page; fall back to Classic if the flow blocks work |
+
+### Advanced vs Classic (visual)
+
+```blueprint-diagram
+key: decision
+alt: Prefer Studio 201 for learning; use Studio 301 when choosing Classic vs Studio or debugging mismatches
+```
+
 ## Advanced scenarios
 
 | Scenario | Suggested approach |
@@ -36,6 +53,7 @@ After [Studio 201](06-studio-201.md), when you are tuning how you work across St
 |------------|----------|
 | Classic route not in Studio yet | Use **Classic** at `/` for that report |
 | Experimental Studio feature unstable | Same task in **Classic** until your build catches up |
+| Wizard or export step unavailable in Studio | Complete the step in **Classic** or retry after refresh ([Wizard 301](11-wizard-301.md) for advanced Wizard flows) |
 
 ## Steps
 

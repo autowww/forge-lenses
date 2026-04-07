@@ -27,6 +27,18 @@ How **Target & output pack** emphasizes planning, engineering, execution, or ful
 
 Treat emphasis as **what the generator highlights**, not as automatic commits to your repo.
 
+## Step-by-step usage (typical)
+
+1. Reach **Target & output pack** in the stepper after you have a shared picture in earlier steps ([Wizard 101](09-wizard-101.md) order).
+2. Choose an emphasis that matches the **decision or handoff** you need (planning vs engineering vs execution vs full stack). Labels in the UI may vary by build.
+3. Scan the generated outline: if the wrong slice is highlighted, adjust emphasis and regenerate rather than editing only surface text.
+4. Proceed to **Review & generate**, then **Recheck** ([Review and recheck](11-wizard-301_03-review-recheck.md)) before you export.
+
+### UI affordances (plain language)
+
+- **Emphasis** controls what the session **foregrounds** in artifacts — it does not replace your repo’s branching or CI.
+- If your build shows **pack** or **bundle** wording, treat it as the same idea: **what this session optimizes for**.
+
 ## What to do next
 
 - [Wizard 301 — Advanced usage](11-wizard-301.md)

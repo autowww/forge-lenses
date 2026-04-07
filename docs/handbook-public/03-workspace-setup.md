@@ -14,6 +14,8 @@ learning_level: '201'
 
 Choosing **which folders** Lenses scans: usually a **parent directory** that contains your product repos and the **forge-lenses** checkout as siblings.
 
+**Read this first:** Lenses treats one directory on disk as the **workspace root**. Everything else — which repos appear, how links resolve, and whether Studio feels “empty” — follows from that choice. If the root is too narrow, you will only see one clone; if it is wrong, scans and project cards will not match what you expect. The child pages below unpack **layouts**, **how to pick the root**, and **scan/host** details when something is misaligned.
+
 ## When to use it
 
 Before you rely on multi-repo overview, project cards, or cross-repo links — or when the dashboard shows the wrong tree.
@@ -24,6 +26,12 @@ Before you rely on multi-repo overview, project cards, or cross-repo links — o
 - You know the absolute path to the folder that should be the workspace root.
 
 ## Topics
+
+**Common layouts** describes sibling checkouts versus a host-repo layout — the shape of folders on disk before you set any environment variable. Use it when you are unsure whether `forge-lenses` should sit next to product repos or inside another tree.
+
+**Choosing the root** is where you commit to a single path for `LENSES_WORKSPACE_ROOT` (or equivalent). Read it when the UI shows fewer repos than you have on disk, or when you intentionally want a smaller scope.
+
+**Scan and host setup** covers how the server discovers projects and common host permission issues. Use it when the root looks correct but scans stay empty or errors mention access.
 
 | Topic | Page |
 |-------|------|

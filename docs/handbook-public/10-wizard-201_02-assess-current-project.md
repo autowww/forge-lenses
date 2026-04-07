@@ -24,6 +24,30 @@ When the team needs an adoption-shaped plan without pretending the repo is green
 
 An adoption plan that respects legacy risk.
 
+## When not to use it
+
+Do not use this mode to **pretend greenfield** when the real need is a narrow bugfix or release checklist — reserve Wizard time for **alignment** on how practices should evolve. If leadership only wants a **readout** of current maturity, summarize outside the Wizard and use a shorter session.
+
+## Inputs you need before the session
+
+| Input | Why |
+|-------|-----|
+| What is already working (shipping, tests, ceremonies) | Grounds the plan in reality |
+| Audit or compliance drivers | Shapes **Understanding** and **Run plan** |
+| Named owners for ceremonies | Makes adoption stick |
+
+## Map to Wizard 101
+
+See the **twelve steps** table in [Wizard 101](09-wizard-101.md). For **Assess current project**, **Understanding**, **Clarification**, and **Run plan** usually carry more weight than **Mission** does for a brand-new idea.
+
+## Common mistakes
+
+| Mistake | What to do |
+|---------|------------|
+| Boiling the ocean | Pick **one** ceremony or artifact to standardize first |
+| Hiding legacy risk | Record it explicitly in **Understanding** |
+| No named owner per gap | One owner per gap class going into **Recheck** |
+
 ## Example scenario (mission mode)
 
 | | |
