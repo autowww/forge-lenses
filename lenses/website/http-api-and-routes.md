@@ -50,7 +50,7 @@ Non-HTML files (CSS, JS, fonts, images, etc.) are returned **unchanged**. **`Con
 
 ## HTML dashboard
 
-Single-page route catalog (surfaces and access modes): [Interface pages](interface-pages.html).
+Route catalog (maintainer): see **`docs/maintainer/website/interface-pages.md`** in the repository. Public users start from the [Studio overview](https://blueprints.forgesdlc.com/lenses/guides/04-studio-overview.html) guide.
 
 | Path | Purpose |
 |------|---------|
