@@ -3,7 +3,9 @@ nav_title: Studio 101
 public_publish: true
 audience: public
 product_area: studio
-tier: "101"
+tier: '101'
+handbook_area: studio
+learning_level: '101'
 ---
 
 # Studio 101 — First session
@@ -25,7 +27,7 @@ Right after [Install and run](02-install-and-run.md), before deeper Studio or Wi
 
 1. Open **`http://127.0.0.1:8080/studio/`** (adjust host/port if yours differs).
 
-2. If you see a **blank page** or missing assets, treat it as an environment issue: confirm the server started cleanly, then follow [Troubleshooting](12-troubleshooting.md). Build and packaging steps for contributors live in the **forge-lenses** repository README, not in this handbook.
+2. If you see a **blank page** or missing assets, treat it as an environment issue: confirm the server started cleanly, then follow [Troubleshooting](12-troubleshooting.md).
 
 3. Use the **sidebar** to open **one** primary area (for example **Projects** or **Workspace**) and confirm content appears.
 

@@ -4,6 +4,8 @@ public_publish: true
 audience: public
 product_area: studio
 tier: overview
+handbook_area: studio
+learning_level: overview
 ---
 
 # Forge Studio overview
@@ -19,7 +21,7 @@ Any time you want the newer navigation, Studio-only flows, or the Wizard — aft
 ## Prerequisites
 
 - Lenses running; browser available.
-- If the Studio page is empty, you may need to build the Studio bundle once (see [Studio 101](05-studio-101.md)).
+- If **`/studio/`** looks empty, confirm the server is running, try a hard refresh, then follow [Studio 101](05-studio-101.md) or [Troubleshooting](12-troubleshooting.md).
 
 ## Steps
 

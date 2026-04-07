@@ -4,6 +4,8 @@ public_publish: true
 audience: public
 product_area: lenses
 tier: troubleshooting
+handbook_area: lenses
+learning_level: troubleshooting
 ---
 
 # Troubleshooting
@@ -24,7 +26,7 @@ Something failed during [Install and run](02-install-and-run.md), [Workspace set
 
 | Symptom | What to try |
 |---------|-------------|
-| **`/studio/` blank** | Confirm the Python server is running and the URL/port match [Install and run](02-install-and-run.md). If the dashboard works but Studio does not, reinstall or update from a fresh clone and follow the **forge-lenses** README for front-end build requirements for your environment. |
+| **`/studio/` blank** | Confirm the Python server is running and the URL/port match [Install and run](02-install-and-run.md). If the dashboard works but Studio does not, reinstall or update from a fresh clone and repeat [Install and run](02-install-and-run.md). If it still fails, ask whoever runs or maintains your Lenses server. |
 | **Wizard missing** | Confirm you are in Forge Studio under the Wizard entry points described in [Wizard overview](08-wizard-overview.md). If the feature is disabled in your deployment, ask whoever runs the server to enable it or use a build where it is available. |
 | **“Local draft only”** | Ensure Lenses is running; click **Retry**; check server logs for errors. |
 | **Wrong repos scanned** | Set **`LENSES_WORKSPACE_ROOT`** to the parent of your clones; restart the server. |
