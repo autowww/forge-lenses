@@ -24,11 +24,14 @@ When the initiative is mid-flight and you need a coherent run plan for the next 
 
 Updated artifacts and a run plan that continues the story.
 
-## Short example
+## Example scenario (mission mode)
 
-| Starting situation | What “good” looks like after the session |
-|--------------------|------------------------------------------|
-| MVP shipped; scale and SRE need a plan | Run plan for the next increment with explicit risks |
+| | |
+|--|--|
+| **Starting situation** | MVP shipped; scale and SRE need a plan; you must not rewrite history. |
+| **Action taken** | Focus **Scope selection** and **Run plan** on the next increment; carry forward artifacts from prior sessions. |
+| **Expected result** | Run plan for the next increment with explicit risks and owners. |
+| **What to check** | Stakeholders agree what is “done” for this increment vs deferred. |
 
 ## What to do next
 

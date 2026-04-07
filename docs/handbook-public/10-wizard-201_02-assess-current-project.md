@@ -24,11 +24,14 @@ When the team needs an adoption-shaped plan without pretending the repo is green
 
 An adoption plan that respects legacy risk.
 
-## Short example
+## Example scenario (mission mode)
 
-| Starting situation | What “good” looks like after the session |
-|--------------------|------------------------------------------|
-| Mixed ADRs and no ceremony rhythm | Adoption plan with owners and a first ceremony to standardize |
+| | |
+|--|--|
+| **Starting situation** | Mixed ADRs and no ceremony rhythm; shipping continues but audits complain about traceability. |
+| **Action taken** | Session emphasizes **Understanding** and **Run plan** with legacy constraints explicit; no pretend greenfield. |
+| **Expected result** | Adoption plan with named owners and a first ceremony to standardize without stopping the line. |
+| **What to check** | Recheck lists shrink or gaps are explicitly accepted with dates. |
 
 ## What to do next
 

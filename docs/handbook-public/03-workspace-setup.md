@@ -31,6 +31,15 @@ Before you rely on multi-repo overview, project cards, or cross-repo links — o
 | **Choosing the root** | [Choosing the root](03-workspace-setup_02-root-choice.md) |
 | **Scan and host setup** | [Scan and host setup](03-workspace-setup_03-scan-host.md) |
 
+### Topic order (visual)
+
+Read **layouts**, then **root choice**, then **scan and host** if multi-repo overview misbehaves.
+
+```blueprint-diagram
+key: decision
+alt: Workspace setup — common layouts, then choosing the root, then scan and host troubleshooting
+```
+
 ## How to verify success
 
 - **Projects** and **Overview** reflect repos you expect under the chosen root.

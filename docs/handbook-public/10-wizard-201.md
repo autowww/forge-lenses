@@ -40,6 +40,15 @@ When you pick **Mission** in a new or resumed session ([Wizard 101](09-wizard-10
 | Do we already have a plan and need the *next* increment? | **Resume and advance** |
 | Are we stuck, inconsistent, or blocked on a stage? | **Repair stage** |
 
+### Mission modes (visual)
+
+The four modes differ by how much is unknown vs how much is already shipping; use the table above to pick a child page.
+
+```blueprint-diagram
+key: quadrant
+alt: Wizard 201 mission modes — idea vs assess vs resume vs repair
+```
+
 ### Sessions
 
 - Prefer **one session per initiative**; start a **new session** on a hard pivot.

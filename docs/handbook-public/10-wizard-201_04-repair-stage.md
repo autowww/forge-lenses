@@ -24,11 +24,14 @@ When recheck or review keeps surfacing the same class of gap and you need a corr
 
 A corrective run plan and recheck you can track to closure.
 
-## Short example
+## Example scenario (mission mode)
 
-| Starting situation | What “good” looks like after the session |
-|--------------------|------------------------------------------|
-| Recheck keeps failing on the same gap | Fewer open inconsistencies; recheck passes or gaps are explicitly accepted |
+| | |
+|--|--|
+| **Starting situation** | Recheck keeps failing on the same gap; delivery pressure is high. |
+| **Action taken** | Use **Repair** posture in Mission; prioritize **Recheck / repair** steps and one corrective owner per gap class. |
+| **Expected result** | Fewer open inconsistencies; recheck passes or gaps are explicitly accepted with risk recorded. |
+| **What to check** | Same failure does not recur on the next recheck without a documented exception. |
 
 ## What to do next
 

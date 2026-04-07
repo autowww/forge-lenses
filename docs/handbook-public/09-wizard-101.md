@@ -38,6 +38,15 @@ After [Wizard overview](08-wizard-overview.md) and [Studio 101](05-studio-101.md
 | **Hub** | `/studio/blueprints/wizard` | List sessions, create new, see last step |
 | **Session** | `/studio/blueprints/wizard/session/<sessionId>` | Full stepper, notes, saves, exports |
 
+## Example first session (generic)
+
+| | |
+|--|--|
+| **Starting situation** | Team agreed to try the Wizard for a small initiative; Studio is already open at `/studio/`. |
+| **Action taken** | Create a new session from the hub, complete **Mission** with a mode from [Wizard 201](10-wizard-201.md), stop after **Run plan** or **Review** for a dry run. |
+| **Expected result** | Session URL is shareable; steps show saved notes; at least one artifact or export path is visible before closing. |
+| **What to check** | If the hub is empty, confirm Wizard feature flags and routes from [Wizard overview](08-wizard-overview.md). |
+
 ### The twelve steps (what you see in the UI)
 
 | Step | Intent | Typical output |

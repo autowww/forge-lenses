@@ -24,11 +24,14 @@ When **Mission** should emphasize a new initiative and the team has not locked p
 
 A crisp brief, explicit assumptions, artifacts for a spike or RFC.
 
-## Short example
+## Example scenario (mission mode)
 
-| Starting situation | What “good” looks like after the session |
-|--------------------|------------------------------------------|
-| Notes in three tools; no shared brief | One agreed problem statement and a spike-sized next step |
+| | |
+|--|--|
+| **Starting situation** | Notes in three tools; no shared brief; sponsor asks for alignment before funding. |
+| **Action taken** | Run a Wizard session in this mode; emphasize **Mission** and **Context intake**; end with a spike or RFC-sized next step. |
+| **Expected result** | One agreed problem statement, explicit assumptions, and a single next owner. |
+| **What to check** | Stakeholders can repeat the problem sentence without referring to private chat only. |
 
 ## What to do next
 

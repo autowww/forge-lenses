@@ -22,6 +22,15 @@ Three **products** sit on top of the same server:
 | **Forge Studio** | React app at **`/studio/`** — newer UI for the same workspace; where **Blueprints Wizard** lives. |
 | **Blueprints Wizard** | Guided session flow inside Studio at **`/studio/blueprints/wizard/`** — structured workshops and exports; it does **not** auto-commit to your `blueprints/` submodule. |
 
+### Three surfaces (visual)
+
+Classic, Forge Studio, and the Blueprints Wizard share one local server; pick the surface by job (see table below).
+
+```blueprint-diagram
+key: tree
+alt: Lenses server — Classic at /, Forge Studio at /studio/, Wizard inside Studio
+```
+
 ### Which surface for which job
 
 | Job | Start here |
