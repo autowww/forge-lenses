@@ -33,11 +33,13 @@ Before you rely on multi-repo overview, project cards, or cross-repo links — o
 
 **Scan and host setup** covers how the server discovers projects and common host permission issues. Use it when the root looks correct but scans stay empty or errors mention access.
 
+Each child page is **scenario-first**: worked examples, folder trees, symptom-to-fix tables, and an **expected outcome** in plain language before you jump to the next topic.
+
 | Topic | Page |
 |-------|------|
-| **Common layouts** | [Common layouts](03-workspace-setup_01-layouts.md) |
-| **Choosing the root** | [Choosing the root](03-workspace-setup_02-root-choice.md) |
-| **Scan and host setup** | [Scan and host setup](03-workspace-setup_03-scan-host.md) |
+| **Layouts (siblings vs host)** | [Common workspace layouts](03-workspace-setup_01-layouts.md) |
+| **Choosing the workspace root** | [How to choose `LENSES_WORKSPACE_ROOT`](03-workspace-setup_02-root-choice.md) |
+| **Scan, env var, caches** | [Scan, env var, and host caches](03-workspace-setup_03-scan-host.md) |
 
 ### Topic order (visual)
 

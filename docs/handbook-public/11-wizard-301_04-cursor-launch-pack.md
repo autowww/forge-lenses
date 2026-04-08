@@ -34,6 +34,8 @@ Some environments offer extra steps (for example creating a remote repository af
 
 If your team maintains the server, advanced setup lives with the **forge-lenses** project; everyday users should rely on this handbook and [Troubleshooting](12-troubleshooting.md).
 
+**Tie-in:** The **worked example session** on [Wizard 301 — Advanced usage](11-wizard-301.md) ends with a **Launch Pack** that carries summary, tasks, and constraints into an editor — the same handoff shape this page describes step by step.
+
 ## What to do next
 
 - [Wizard 301 — Advanced usage](11-wizard-301.md)

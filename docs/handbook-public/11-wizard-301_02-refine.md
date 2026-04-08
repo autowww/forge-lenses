@@ -20,6 +20,8 @@ Steps like **Understanding** may offer **Refine**: LLM-assisted iteration while 
 
 Read output, edit notes, refine again. Paste **constraints** and **non-goals** explicitly.
 
+**Tie-in:** In the **worked example session** on [Wizard 301 — Advanced usage](11-wizard-301.md), Refine almost drops an **SLO** until the team edits notes and runs Refine again — same pattern you should use when the model smooths away facts you need.
+
 ## Step-by-step usage (typical)
 
 1. When **Understanding** (or a similar step) offers **Refine**, run it on a **short** paragraph you already agree is directionally right — not on empty text.

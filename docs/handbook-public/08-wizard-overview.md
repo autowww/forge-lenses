@@ -14,6 +14,14 @@ learning_level: overview
 
 The **Blueprints Wizard** is a guided flow **inside Forge Studio** that walks a team through mission, context, clarification, targets, scope, run plan, review, recheck, and optional **Cursor Launch Pack** export. It aligns with Blueprints concepts; it does **not** automatically modify your **`blueprints/`** git submodule.
 
+### Terms (quick read)
+
+| Term | Plain language |
+|------|----------------|
+| **Wizard** | **Guided planning / assessment workflow** — structured steps and artifacts, not auto-edits to your repo. |
+| **Forge Studio** | **Local workspace UI** where the Wizard runs (`/studio/`). |
+| **Artifact bundle / pack** | Emphasis the session gives to planning vs engineering vs execution outputs (labels vary by build). |
+
 ## Good for / not for
 
 | Good for | Not the best tool when… |

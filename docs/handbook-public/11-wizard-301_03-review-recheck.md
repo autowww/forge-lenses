@@ -23,6 +23,8 @@ learning_level: '301'
 | **Review & generate** | Read artifacts against upstream notes; fix the *session* and regenerate instead of only editing preview text |
 | **Recheck / repair** | Resolve consistency failures or explicitly accept gaps with rationale |
 
+**Tie-in:** The **worked example session** on [Wizard 301 — Advanced usage](11-wizard-301.md) shows **Review** catching duplicate risk owners and **Recheck** failing until the session notes and regeneration align — not a cosmetic text fix.
+
 ## Step-by-step usage (typical)
 
 1. **Review & generate** — Read generated artifacts **against** your session notes. If something is wrong, fix the **session** (steps or notes) and regenerate; do not only patch preview text if the underlying notes are stale.

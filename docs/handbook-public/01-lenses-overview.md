@@ -14,6 +14,14 @@ learning_level: overview
 
 **Lenses** is a local workspace dashboard for Forge- and Blueprints-aligned repositories: you run a small Python server on your machine and use the browser (or an optional desktop shell) to inspect projects, plans, and knowledge in one place.
 
+### Terms (quick read)
+
+| Term | Plain language |
+|------|----------------|
+| **Lenses** | **Local engineering workspace dashboard** — Python server + browser UI for repo visibility. |
+| **Forge Studio** | **Local workspace UI** at `/studio/` on that server — newer flows and the Wizard. |
+| **Wizard** | **Guided project planning workflow** inside Studio — sessions and exports. |
+
 Three **products** sit on top of the same server:
 
 | Product | What you use it for |

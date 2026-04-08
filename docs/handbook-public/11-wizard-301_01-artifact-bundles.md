@@ -1,5 +1,5 @@
 ---
-nav_title: "Wizard 301: Artifact bundles"
+nav_title: Choose Wizard artifact bundles for planning, engineering, or execution
 public_publish: true
 audience: public
 product_area: wizard
@@ -8,7 +8,7 @@ handbook_area: wizard
 learning_level: '301'
 ---
 
-# Wizard 301 — Artifact bundles
+# Choose Wizard artifact bundles for planning, engineering, or execution
 
 ## What it is
 
@@ -26,6 +26,8 @@ How **Target & output pack** emphasizes planning, engineering, execution, or ful
 | **Full stack** | End-to-end slice across roles |
 
 Treat emphasis as **what the generator highlights**, not as automatic commits to your repo.
+
+**Tie-in:** The **worked example session** on [Wizard 301 — Advanced usage](11-wizard-301.md) starts with choosing the **Engineering** bundle for an API reliability initiative — see that story for how emphasis connects to Refine and Recheck.
 
 ## Step-by-step usage (typical)
 
