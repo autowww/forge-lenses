@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Run desktop npm ci, Studio screenshot tour, Python tests, and Playwright Electron smoke.
 # Starts Lenses on LENSES_PORT if /studio/ is not reachable; restarts it if the tour hits connection errors.
+#
+# Env: STUDIO_EXPLORE_MODE=full → capture all Studio routes (tours/full-studio-ui/tour.yaml).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -88,9 +90,13 @@ restart_lenses_if_ours() {
 
 run_studio_explore_with_retries() {
   local attempt max=3 a
+  local explore_cmd="studio-explore"
+  if [[ "${STUDIO_EXPLORE_MODE:-}" == "full" ]]; then
+    explore_cmd="studio-explore:full"
+  fi
   for attempt in $(seq 1 "$max"); do
-    log "studio-explore attempt $attempt/$max"
-    if (cd "$ROOT/desktop" && npm run studio-explore); then
+    log "$explore_cmd attempt $attempt/$max"
+    if (cd "$ROOT/desktop" && npm run "$explore_cmd"); then
       return 0
     fi
     a=$?

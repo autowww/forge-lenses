@@ -29,6 +29,14 @@ From **`forge-lenses/`** repo root (starts Lenses if `/studio/` is down; retries
 ./scripts/run-desktop-and-explore-checks.sh
 ```
 
+**Full Studio UI** (all read-only routes; optional steps skip on error):
+
+```bash
+npm run studio-explore:full
+```
+
+Tour file: [`tours/full-studio-ui/tour.yaml`](tours/full-studio-ui/tour.yaml).
+
 ## Run (default sample tour)
 
 From **`forge-lenses/desktop/`**:

@@ -1,0 +1,250 @@
+# Full Lenses Studio UI — read-only navigation (GET routes only).
+# Optional steps are skipped if the workspace has no matching project/site/slug (no failure).
+version: 1
+title: Full Studio UI (read-only)
+
+base_url: http://127.0.0.1:8080
+
+defaults:
+  max_shots_per_folder: 20
+  viewport:
+    width: 1440
+    height: 900
+
+folders:
+  - id: 01-core-shell
+    title: Home, overview, discovery, settings
+    max_shots: 12
+    steps:
+      - id: studio-home
+        title: Studio home
+        path: /studio/
+        wait_ms: 2800
+        wait_selector: body
+        annotation: Shell + home content.
+      - id: overview-charts
+        title: Overview charts
+        path: /studio/overview/charts
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Lazy-loaded overview charts.
+      - id: projects
+        title: Projects list
+        path: /studio/projects
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Scanned projects.
+      - id: search
+        title: Search
+        path: /studio/search
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Studio search.
+      - id: chat
+        title: Chat
+        path: /studio/chat
+        wait_ms: 2500
+        wait_selector: body
+        annotation: LLM chat surface.
+      - id: settings-llm
+        title: LLM settings
+        path: /studio/settings/llm
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Provider keys and models.
+      - id: toolset
+        title: Toolset index
+        path: /studio/toolset
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Workspace root shell scripts.
+      - id: websites
+        title: Websites
+        path: /studio/websites
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Static site previews list.
+
+  - id: 02-wbs-and-plan
+    title: WBS and planning views
+    max_shots: 12
+    steps:
+      - id: wbs
+        title: WBS
+        path: /studio/wbs
+        wait_ms: 2800
+        wait_selector: body
+        annotation: Work breakdown entry.
+      - id: wbs-view
+        title: WBS view
+        path: /studio/wbs/view
+        wait_ms: 2800
+        wait_selector: body
+        annotation: WBS table/view mode.
+      - id: plan
+        title: Plan
+        path: /studio/plan
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Plan page (lazy).
+      - id: plan-matrix
+        title: Plan matrix
+        path: /studio/plan/matrix
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Roadmap / plan matrix.
+      - id: timeline
+        title: Timeline
+        path: /studio/timeline
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Timeline visualization.
+
+  - id: 03-roadmap-board-learning
+    title: Roadmap section, board hub, tutorials, showcase
+    max_shots: 12
+    steps:
+      - id: roadmap-section
+        title: Roadmap section
+        path: /studio/roadmap-section
+        wait_ms: 3000
+        wait_selector: body
+        annotation: Roadmap section view.
+      - id: board-hub
+        title: Sticker board hub
+        path: /studio/board
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Board registry and create flow (navigate only).
+      - id: tutorials
+        title: Tutorials
+        path: /studio/tutorials
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Tutorials hub.
+      - id: feature-showcase
+        title: Feature showcase
+        path: /studio/feature-showcase
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Studio feature showcase demo.
+      - id: workspace-md
+        title: Workspace Markdown
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Workspace Markdown browser.
+
+  - id: 04-workspace-md-view-blog-docs
+    title: Workspace MD view, blog, embedded docs
+    max_shots: 12
+    steps:
+      - id: workspace-md-view
+        title: Workspace Markdown (view)
+        path: /studio/workspace-md/view
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Alternate workspace-md route.
+      - id: blog-index
+        title: Blog index
+        path: /studio/blog
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Forge blog in Studio.
+      - id: view-docs-root
+        title: Embedded Lenses reference (root)
+        path: /studio/view/docs
+        wait_ms: 3500
+        wait_selector: body
+        annotation: iframe to /docs (reference handbook).
+
+  - id: 05-embeds-and-browse
+    title: Docs path, local-site embed, website browse
+    max_shots: 12
+    steps:
+      - id: view-docs-index-html
+        title: Embedded docs — index.html
+        path: /studio/view/docs/index.html
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Explicit docs index in embed.
+      - id: view-local-site-placeholder
+        title: Local site embed (placeholder path)
+        path: /studio/view/local-site/README.md
+        optional: true
+        wait_ms: 2000
+        wait_selector: body
+        annotation: May skip if path missing in workspace.
+      - id: websites-browse-forgesdlc
+        title: Browse website — forgesdlc
+        path: /studio/websites/browse/forgesdlc
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Classic browse chrome; optional if site not configured.
+      - id: websites-browse-blueprints
+        title: Browse website — blueprints-website
+        path: /studio/websites/browse/blueprints-website
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Optional second site.
+
+  - id: 06-project-routes
+    title: Project detail routes (workspace-specific)
+    max_shots: 12
+    steps:
+      - id: project-detail
+        title: Project detail — forge-lenses
+        path: /studio/projects/forge-lenses
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Detail when project name matches scan.
+      - id: project-charts
+        title: Project charts — forge-lenses
+        path: /studio/projects/forge-lenses/charts
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Per-project charts.
+      - id: project-strategy
+        title: Project strategy — forge-lenses
+        path: /studio/projects/forge-lenses/strategy
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Strategy view for project.
+
+  - id: 07-toolset-run-board-wizard-blog-post
+    title: Toolset run, board editor, wizard, sample blog post
+    max_shots: 12
+    steps:
+      - id: toolset-run-sync-script
+        title: Toolset run page (example script)
+        path: /studio/toolset/sync-kitchensink-and-rebuild.sh
+        optional: true
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Only if that script exists at workspace root (e.g. Code/).
+      - id: board-editor-probe
+        title: Board editor (probe id)
+        path: /studio/board/local-demo-board
+        optional: true
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Optional; may redirect or empty if id unknown.
+      - id: blueprints-wizard
+        title: Blueprints wizard hub
+        path: /studio/blueprints/wizard
+        optional: true
+        wait_ms: 3000
+        wait_selector: body
+        annotation: Only when LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD enables route.
+      - id: blog-post-sample
+        title: Blog post (sample slug)
+        path: /studio/blog/post/welcome
+        optional: true
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Optional; slug must exist in blog manifest.

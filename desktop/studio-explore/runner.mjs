@@ -154,6 +154,7 @@ async function main() {
       };
 
       let n = 0;
+      let captured = 0;
       for (const step of steps) {
         n += 1;
         const sid = String(step.id || `step-${n}`).replace(/[^a-zA-Z0-9._-]+/g, "_");
@@ -164,33 +165,64 @@ async function main() {
           throw new Error(`Step ${prefix} missing path`);
         }
 
-        const finalUrl = await runStep(page, step, baseUrl, viewport);
-        const pngPath = path.join(folderDir, pngName);
-        await page.screenshot({ path: pngPath, fullPage: !!step.full_page });
+        const optional = !!step.optional;
+        let finalUrl = "";
+        let skipped = false;
+        let skipReason = "";
+        try {
+          finalUrl = await runStep(page, step, baseUrl, viewport);
+        } catch (err) {
+          if (optional) {
+            skipped = true;
+            skipReason = err instanceof Error ? err.message : String(err);
+            console.warn(`[optional skip] ${sid}: ${skipReason}`);
+          } else {
+            throw err;
+          }
+        }
 
         const meta = {
           id: sid,
           title: step.title || sid,
           path: step.path,
-          url: finalUrl,
+          url: skipped ? "" : finalUrl,
           viewport,
           annotation: step.annotation || "",
           notes: step.notes || "",
+          optional,
+          skipped,
+          ...(skipped ? { error: skipReason } : {}),
         };
         fs.writeFileSync(path.join(folderDir, metaName), JSON.stringify(meta, null, 2), "utf8");
 
-        manifest.steps.push({
-          id: sid,
-          title: step.title || sid,
-          path: step.path,
-          annotation: step.annotation || "",
-          screenshot: pngName,
-          meta: metaName,
-        });
+        if (!skipped) {
+          const pngPath = path.join(folderDir, pngName);
+          await page.screenshot({ path: pngPath, fullPage: !!step.full_page });
+          captured += 1;
+          manifest.steps.push({
+            id: sid,
+            title: step.title || sid,
+            path: step.path,
+            annotation: step.annotation || "",
+            screenshot: pngName,
+            meta: metaName,
+          });
+        } else {
+          manifest.steps.push({
+            id: sid,
+            title: step.title || sid,
+            path: step.path,
+            annotation: step.annotation || "",
+            skipped: true,
+            error: skipReason,
+            screenshot: null,
+            meta: metaName,
+          });
+        }
       }
 
       fs.writeFileSync(path.join(folderDir, "manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
-      console.log(`Wrote ${n} screenshot(s) → ${folderDir}`);
+      console.log(`Wrote ${captured} screenshot(s), ${n - captured} optional skip(s) → ${folderDir}`);
     }
   } finally {
     await browser.close();
