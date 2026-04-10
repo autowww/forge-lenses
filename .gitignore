@@ -1,3 +1,9 @@
+# Electron desktop shell (Phase 1)
+desktop/node_modules/
+desktop/test-results/
+desktop/playwright-report/
+desktop/blob-report/
+
 # Machine-local lenses data (forge-lenses checkout)
 .lenses-local/
 

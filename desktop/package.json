@@ -1,0 +1,18 @@
+{
+  "name": "forge-lenses-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron shell for forge-lenses (Phase 1, dev-only — spawns python3 -m lenses)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "start:studio": "LENSES_STUDIO_UI=1 LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
+    "dev": "LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
+    "build:enterprise": "cd ../lenses-enterprise && npm run build",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "electron": "^33.3.0"
+  }
+}
