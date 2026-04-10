@@ -1,0 +1,86 @@
+# Sample Lenses Studio exploration — keep each `folders[].steps` under max_shots (default 20).
+version: 1
+
+base_url: http://127.0.0.1:8080
+
+defaults:
+  max_shots_per_folder: 20
+  viewport:
+    width: 1440
+    height: 900
+
+folders:
+  - id: 01-home-and-discovery
+    title: Home and discovery
+    max_shots: 12
+    steps:
+      - id: studio-home
+        title: Studio home
+        path: /studio/
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Default Studio shell after workspace bootstrap; nav and home content.
+      - id: projects-list
+        title: Projects
+        path: /studio/projects
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Project list; content depends on scanned workspace.
+      - id: search
+        title: Search
+        path: /studio/search
+        wait_ms: 1500
+        wait_selector: body
+        annotation: Studio search surface.
+
+  - id: 02-planning-views
+    title: Planning views
+    max_shots: 12
+    steps:
+      - id: plan
+        title: Plan
+        path: /studio/plan
+        wait_ms: 3000
+        wait_selector: body
+        annotation: Plan page (lazy); may show loading briefly.
+      - id: plan-matrix
+        title: Plan matrix
+        path: /studio/plan/matrix
+        wait_ms: 3000
+        wait_selector: body
+        annotation: Matrix view for roadmap/planning context.
+      - id: wbs
+        title: WBS
+        path: /studio/wbs
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Work breakdown structure entry.
+      - id: timeline
+        title: Timeline
+        path: /studio/timeline
+        wait_ms: 3000
+        wait_selector: body
+        annotation: Timeline visualization.
+
+  - id: 03-content-and-demos
+    title: Content and demos
+    max_shots: 10
+    steps:
+      - id: feature-showcase
+        title: Feature showcase
+        path: /studio/feature-showcase
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Studio feature showcase route.
+      - id: tutorials
+        title: Tutorials
+        path: /studio/tutorials
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Tutorials hub.
+      - id: blog
+        title: Blog index
+        path: /studio/blog
+        wait_ms: 2000
+        wait_selector: body
+        annotation: Forge blog index in Studio.

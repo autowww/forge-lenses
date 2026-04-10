@@ -9,10 +9,13 @@
     "start:studio": "LENSES_STUDIO_UI=1 LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
     "dev": "LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
     "build:enterprise": "cd ../lenses-enterprise && npm run build",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "studio-explore": "node studio-explore/runner.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0",
-    "electron": "^33.3.0"
+    "electron": "^33.3.0",
+    "js-yaml": "^4.1.0",
+    "playwright-core": "^1.50.0"
   }
 }
