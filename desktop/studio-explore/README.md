@@ -35,7 +35,13 @@ From **`forge-lenses/`** repo root (starts Lenses if `/studio/` is down; retries
 npm run studio-explore:full
 ```
 
-Tour file: [`tours/full-studio-ui/tour.yaml`](tours/full-studio-ui/tour.yaml).
+Tour file: [`tours/full-studio-ui/tour.yaml`](tours/full-studio-ui/tour.yaml) — output folders mirror **top navigation**:
+
+- **`flow/<Section>/`** — Flow lens (`workspace_lens=flow`); sections match top tabs + sidebar (`Workspace`, `Plans`, `Delivery`, `Projects`, `Sites`, `Blog`, `Knowledge`).
+- **`artifacts/<Section>/`** — Artifacts lens (`Roadmaps`, `Boards`, …).
+- **`flow/Shared/Extra-routes/`** — SPA routes from `App.tsx` that are not primary sidebar links.
+
+YAML fields: `directory` (multi-level, `/`-separated), `workspace_lens` (`flow` | `artifacts`), `nav_section`, plus `optional` steps.
 
 ## Run (default sample tour)
 

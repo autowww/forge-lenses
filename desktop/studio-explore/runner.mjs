@@ -42,6 +42,35 @@ function sanitizeFolderId(id) {
   return String(id).replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^\.+/, "") || "folder";
 }
 
+/** Multi-level output path from YAML `directory` (e.g. flow/Workspace). */
+function sanitizePathSegment(seg) {
+  const s = String(seg).trim();
+  if (!s) return "";
+  return s.replace(/[^a-zA-Z0-9._ -]+/g, "_").replace(/^\.+/, "").replace(/\s+/g, "-") || "segment";
+}
+
+function resolveFolderDir(outRoot, folder) {
+  if (folder.directory && typeof folder.directory === "string") {
+    const parts = folder.directory
+      .split("/")
+      .map((p) => sanitizePathSegment(p))
+      .filter(Boolean);
+    if (parts.length) return path.join(outRoot, ...parts);
+  }
+  return path.join(outRoot, sanitizeFolderId(folder.id || "folder"));
+}
+
+/** Align Studio shell with Flow vs Artifacts top nav (cookie workspace_lens). */
+async function applyWorkspaceLens(context, page, baseUrl, lens) {
+  if (lens !== "flow" && lens !== "artifacts") return;
+  await context.addCookies([
+    { name: "workspace_lens", value: lens, url: baseUrl },
+    { name: "nav_mode", value: lens, url: baseUrl },
+  ]);
+  await page.goto(buildUrl(baseUrl, "/studio/"), { waitUntil: "domcontentloaded", timeout: 60_000 });
+  await new Promise((r) => setTimeout(r, 900));
+}
+
 function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
@@ -109,9 +138,10 @@ async function main() {
 
   ensureDir(outRoot);
 
-  const runMd = [
+  const runMdLines = [
     `# Studio explore run`,
     ``,
+    ...(doc.title ? [`- **Tour title:** ${doc.title}`] : []),
     `- **When:** ${new Date().toISOString()}`,
     `- **Tour:** \`${tourPath}\``,
     `- **Base URL:** ${baseUrl}`,
@@ -119,7 +149,8 @@ async function main() {
     `- **Git:** ${gitHead(repoRoot)}`,
     `- **Viewport:** ${viewport.width}x${viewport.height}`,
     ``,
-  ].join("\n");
+  ];
+  const runMd = runMdLines.join("\n");
   fs.writeFileSync(path.join(outRoot, "RUN.md"), runMd, "utf8");
 
   const browser = await chromium.launch({
@@ -141,12 +172,19 @@ async function main() {
         );
       }
 
-      const folderDir = path.join(outRoot, fid);
+      const folderDir = resolveFolderDir(outRoot, folder);
       ensureDir(folderDir);
+
+      if (folder.workspace_lens) {
+        await applyWorkspaceLens(context, page, baseUrl, folder.workspace_lens);
+      }
 
       const manifest = {
         folder_id: fid,
         folder_title: folder.title || fid,
+        directory: folder.directory || fid,
+        workspace_lens: folder.workspace_lens || null,
+        nav_section: folder.nav_section || null,
         base_url: baseUrl,
         captured_at: new Date().toISOString(),
         viewport,

@@ -1,7 +1,8 @@
-# Full Lenses Studio UI — read-only navigation (GET routes only).
-# Optional steps are skipped if the workspace has no matching project/site/slug (no failure).
+# Full Lenses Studio UI — aligned with TopNavigation + SectionSidebar (navigationConfig.ts).
+# Output directories: <workspace_lens>/<section>/…  plus flow/Shared for routes not on the sidebar.
+# Run twice worth of top tabs: Flow lens and Artifacts lens (cookie workspace_lens).
 version: 1
-title: Full Studio UI (read-only)
+title: Full Studio UI — navigation layout
 
 base_url: http://127.0.0.1:8080
 
@@ -12,239 +13,577 @@ defaults:
     height: 900
 
 folders:
-  - id: 01-core-shell
-    title: Home, overview, discovery, settings
+  # --- Flow lens (top nav: Workspace, Plans, Delivery, Projects, Sites, Blog, Knowledge) ---
+  - id: flow-workspace
+    directory: flow/Workspace
+    workspace_lens: flow
+    nav_section: home
+    title: "Flow · Workspace (sidebar)"
     max_shots: 12
     steps:
-      - id: studio-home
-        title: Studio home
+      - id: portfolio-overview
+        title: Portfolio overview
         path: /studio/
         wait_ms: 2800
         wait_selector: body
-        annotation: Shell + home content.
-      - id: overview-charts
-        title: Overview charts
-        path: /studio/overview/charts
+        annotation: Top tab Workspace — portfolio overview.
+      - id: today
+        title: What needs attention today
+        path: /studio/plan?tab=today
         wait_ms: 3500
         wait_selector: body
-        annotation: Lazy-loaded overview charts.
-      - id: projects
-        title: Projects list
+      - id: boards-from-workspace
+        title: Execution boards
+        path: /studio/board
+        wait_ms: 2500
+        wait_selector: body
+      - id: all-projects
+        title: All projects
         path: /studio/projects
         wait_ms: 2500
         wait_selector: body
-        annotation: Scanned projects.
+      - id: overview-charts
+        title: Workspace activity charts
+        path: /studio/overview/charts
+        wait_ms: 3500
+        wait_selector: body
+      - id: llm-settings
+        title: LLM preferences
+        path: /studio/settings/llm
+        wait_ms: 2000
+        wait_selector: body
       - id: search
         title: Search
         path: /studio/search
         wait_ms: 2000
         wait_selector: body
-        annotation: Studio search.
       - id: chat
-        title: Chat
+        title: LLM chat (demo)
         path: /studio/chat
         wait_ms: 2500
         wait_selector: body
-        annotation: LLM chat surface.
-      - id: settings-llm
-        title: LLM settings
-        path: /studio/settings/llm
-        wait_ms: 2000
-        wait_selector: body
-        annotation: Provider keys and models.
-      - id: toolset
-        title: Toolset index
-        path: /studio/toolset
-        wait_ms: 2000
-        wait_selector: body
-        annotation: Workspace root shell scripts.
-      - id: websites
-        title: Websites
-        path: /studio/websites
-        wait_ms: 2500
-        wait_selector: body
-        annotation: Static site previews list.
 
-  - id: 02-wbs-and-plan
-    title: WBS and planning views
+  - id: flow-plans
+    directory: flow/Plans
+    workspace_lens: flow
+    nav_section: plans
+    title: "Flow · Plans (sidebar)"
     max_shots: 12
     steps:
-      - id: wbs
-        title: WBS
-        path: /studio/wbs
-        wait_ms: 2800
-        wait_selector: body
-        annotation: Work breakdown entry.
-      - id: wbs-view
-        title: WBS view
-        path: /studio/wbs/view
-        wait_ms: 2800
-        wait_selector: body
-        annotation: WBS table/view mode.
-      - id: plan
-        title: Plan
+      - id: plan-overview
+        title: Plan Overview
         path: /studio/plan
         wait_ms: 3500
         wait_selector: body
-        annotation: Plan page (lazy).
       - id: plan-matrix
-        title: Plan matrix
+        title: Roadmap matrix
         path: /studio/plan/matrix
         wait_ms: 3500
         wait_selector: body
-        annotation: Roadmap / plan matrix.
+      - id: story-cockpit
+        title: Story Cockpit
+        path: /studio/plan?tab=story
+        wait_ms: 3500
+        wait_selector: body
+      - id: wbs
+        title: Work Breakdown
+        path: /studio/wbs
+        wait_ms: 2800
+        wait_selector: body
+      - id: wbs-view
+        title: Work Breakdown (detail)
+        path: /studio/wbs/view
+        wait_ms: 2800
+        wait_selector: body
+      - id: roadmaps-summary-classic
+        title: Roadmaps (classic HTML)
+        path: /roadmaps/summary
+        wait_ms: 3000
+        wait_selector: body
+        annotation: Same-origin classic page outside SPA basename; sidebar uses href.
       - id: timeline
         title: Timeline
         path: /studio/timeline
         wait_ms: 3500
         wait_selector: body
-        annotation: Timeline visualization.
+      - id: source-context
+        title: Source Context
+        path: /studio/plan?tab=source
+        wait_ms: 3500
+        wait_selector: body
 
-  - id: 03-roadmap-board-learning
-    title: Roadmap section, board hub, tutorials, showcase
+  - id: flow-delivery
+    directory: flow/Delivery
+    workspace_lens: flow
+    nav_section: delivery
+    title: "Flow · Delivery (sidebar)"
     max_shots: 12
     steps:
-      - id: roadmap-section
-        title: Roadmap section
-        path: /studio/roadmap-section
-        wait_ms: 3000
+      - id: today-delivery
+        title: Today
+        path: /studio/plan?tab=today
+        wait_ms: 3500
         wait_selector: body
-        annotation: Roadmap section view.
-      - id: board-hub
-        title: Sticker board hub
+      - id: boards-delivery
+        title: Boards
         path: /studio/board
         wait_ms: 2500
         wait_selector: body
-        annotation: Board registry and create flow (navigate only).
-      - id: tutorials
-        title: Tutorials
-        path: /studio/tutorials
-        wait_ms: 2500
+      - id: timeline-delivery
+        title: Timeline
+        path: /studio/timeline
+        wait_ms: 3500
         wait_selector: body
-        annotation: Tutorials hub.
-      - id: feature-showcase
-        title: Feature showcase
-        path: /studio/feature-showcase
-        wait_ms: 2500
+      - id: plan-tree
+        title: Plan and work tree
+        path: /studio/plan
+        wait_ms: 3500
         wait_selector: body
-        annotation: Studio feature showcase demo.
-      - id: workspace-md
-        title: Workspace Markdown
-        path: /studio/workspace-md
-        wait_ms: 2500
+      - id: charts-delivery
+        title: Workspace activity charts
+        path: /studio/overview/charts
+        wait_ms: 3500
         wait_selector: body
-        annotation: Workspace Markdown browser.
 
-  - id: 04-workspace-md-view-blog-docs
-    title: Workspace MD view, blog, embedded docs
+  - id: flow-projects
+    directory: flow/Projects
+    workspace_lens: flow
+    nav_section: projects
+    title: "Flow · Projects (sidebar)"
     max_shots: 12
     steps:
-      - id: workspace-md-view
-        title: Workspace Markdown (view)
-        path: /studio/workspace-md/view
+      - id: projects-list
+        title: All Projects
+        path: /studio/projects
         wait_ms: 2500
         wait_selector: body
-        annotation: Alternate workspace-md route.
-      - id: blog-index
-        title: Blog index
-        path: /studio/blog
-        wait_ms: 2500
-        wait_selector: body
-        annotation: Forge blog in Studio.
-      - id: view-docs-root
-        title: Embedded Lenses reference (root)
-        path: /studio/view/docs
-        wait_ms: 3500
-        wait_selector: body
-        annotation: iframe to /docs (reference handbook).
-
-  - id: 05-embeds-and-browse
-    title: Docs path, local-site embed, website browse
-    max_shots: 12
-    steps:
-      - id: view-docs-index-html
-        title: Embedded docs — index.html
-        path: /studio/view/docs/index.html
-        wait_ms: 3500
-        wait_selector: body
-        annotation: Explicit docs index in embed.
-      - id: view-local-site-placeholder
-        title: Local site embed (placeholder path)
-        path: /studio/view/local-site/README.md
-        optional: true
-        wait_ms: 2000
-        wait_selector: body
-        annotation: May skip if path missing in workspace.
-      - id: websites-browse-forgesdlc
-        title: Browse website — forgesdlc
-        path: /studio/websites/browse/forgesdlc
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-        annotation: Classic browse chrome; optional if site not configured.
-      - id: websites-browse-blueprints
-        title: Browse website — blueprints-website
-        path: /studio/websites/browse/blueprints-website
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-        annotation: Optional second site.
-
-  - id: 06-project-routes
-    title: Project detail routes (workspace-specific)
-    max_shots: 12
-    steps:
-      - id: project-detail
-        title: Project detail — forge-lenses
+      - id: project-overview
+        title: Project Overview
         path: /studio/projects/forge-lenses
         optional: true
         wait_ms: 3500
         wait_selector: body
-        annotation: Detail when project name matches scan.
-      - id: project-charts
-        title: Project charts — forge-lenses
-        path: /studio/projects/forge-lenses/charts
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-        annotation: Per-project charts.
       - id: project-strategy
-        title: Project strategy — forge-lenses
+        title: Architecture & Repo Strategy
         path: /studio/projects/forge-lenses/strategy
         optional: true
         wait_ms: 3500
         wait_selector: body
-        annotation: Strategy view for project.
+      - id: project-charts
+        title: Project charts
+        path: /studio/projects/forge-lenses/charts
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: toolset
+        title: Automation (toolset)
+        path: /studio/toolset
+        wait_ms: 2500
+        wait_selector: body
+      - id: workspace-md
+        title: Technical Evidence
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
 
-  - id: 07-toolset-run-board-wizard-blog-post
-    title: Toolset run, board editor, wizard, sample blog post
+  - id: flow-sites
+    directory: flow/Sites
+    workspace_lens: flow
+    nav_section: sites
+    title: "Flow · Sites (sidebar)"
     max_shots: 12
     steps:
-      - id: toolset-run-sync-script
-        title: Toolset run page (example script)
+      - id: websites
+        title: All sites
+        path: /studio/websites
+        wait_ms: 2500
+        wait_selector: body
+      - id: browse-first-site
+        title: Browse and preview (first site name)
+        path: /studio/websites/browse/forgesdlc
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: browse-alt-site
+        title: Browse alternate site
+        path: /studio/websites/browse/blueprints-website
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: tutorials-sites
+        title: Tutorials
+        path: /studio/tutorials
+        wait_ms: 2500
+        wait_selector: body
+
+  - id: flow-blog
+    directory: flow/Blog
+    workspace_lens: flow
+    nav_section: blog
+    title: "Flow · Blog (sidebar)"
+    max_shots: 8
+    steps:
+      - id: blog-index
+        title: All posts
+        path: /studio/blog
+        wait_ms: 2500
+        wait_selector: body
+
+  - id: flow-knowledge
+    directory: flow/Knowledge
+    workspace_lens: flow
+    nav_section: documentation
+    title: "Flow · Knowledge (sidebar)"
+    max_shots: 12
+    steps:
+      - id: search-knowledge
+        title: Search
+        path: /studio/search
+        wait_ms: 2000
+        wait_selector: body
+      - id: chat-knowledge
+        title: LLM chat (demo)
+        path: /studio/chat
+        wait_ms: 2500
+        wait_selector: body
+      - id: blueprints-wizard
+        title: Blueprints Wizard (experimental)
+        path: /studio/blueprints/wizard
+        optional: true
+        wait_ms: 3000
+        wait_selector: body
+      - id: lenses-reference
+        title: Lenses reference docs (embed)
+        path: /studio/view/docs
+        wait_ms: 3500
+        wait_selector: body
+      - id: lenses-reference-index
+        title: Lenses reference — index.html
+        path: /studio/view/docs/index.html
+        wait_ms: 3500
+        wait_selector: body
+      - id: tutorials-knowledge
+        title: Tutorials
+        path: /studio/tutorials
+        wait_ms: 2500
+        wait_selector: body
+      - id: workspace-md-view-flow
+        title: Work logs — view route
+        path: /studio/workspace-md/view
+        wait_ms: 2500
+        wait_selector: body
+      - id: workspace-md-knowledge
+        title: Work logs and evidence
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
+
+  # --- Artifacts lens (top nav: … Roadmaps, Boards, …) ---
+  - id: artifacts-workspace
+    directory: artifacts/Workspace
+    workspace_lens: artifacts
+    nav_section: home
+    title: "Artifacts · Workspace (sidebar)"
+    max_shots: 12
+    steps:
+      - id: portfolio-overview-art
+        title: Portfolio overview
+        path: /studio/
+        wait_ms: 2800
+        wait_selector: body
+      - id: plan-art-home
+        title: Plan
+        path: /studio/plan
+        wait_ms: 3500
+        wait_selector: body
+      - id: timeline-art-home
+        title: Roadmaps timeline
+        path: /studio/timeline
+        wait_ms: 3500
+        wait_selector: body
+      - id: board-art-home
+        title: Boards
+        path: /studio/board
+        wait_ms: 2500
+        wait_selector: body
+      - id: llm-art-home
+        title: LLM preferences
+        path: /studio/settings/llm
+        wait_ms: 2000
+        wait_selector: body
+      - id: search-art-home
+        title: Search
+        path: /studio/search
+        wait_ms: 2000
+        wait_selector: body
+      - id: chat-art-home
+        title: LLM chat (demo)
+        path: /studio/chat
+        wait_ms: 2500
+        wait_selector: body
+
+  - id: artifacts-plans
+    directory: artifacts/Plans
+    workspace_lens: artifacts
+    nav_section: plans
+    title: "Artifacts · Plans (sidebar)"
+    max_shots: 12
+    steps:
+      - id: all-plans
+        title: All Plans
+        path: /studio/plan
+        wait_ms: 3500
+        wait_selector: body
+      - id: plan-matrix-art
+        title: Roadmap matrix
+        path: /studio/plan/matrix
+        wait_ms: 3500
+        wait_selector: body
+      - id: story-art
+        title: Story Cockpit
+        path: /studio/plan?tab=story
+        wait_ms: 3500
+        wait_selector: body
+      - id: wbs-art
+        title: Work Breakdown
+        path: /studio/wbs
+        wait_ms: 2800
+        wait_selector: body
+      - id: wbs-view-art
+        title: Work Breakdown (detail)
+        path: /studio/wbs/view
+        wait_ms: 2800
+        wait_selector: body
+      - id: today-art-plans
+        title: Today
+        path: /studio/plan?tab=today
+        wait_ms: 3500
+        wait_selector: body
+      - id: source-art
+        title: Source Context
+        path: /studio/plan?tab=source
+        wait_ms: 3500
+        wait_selector: body
+
+  - id: artifacts-roadmaps
+    directory: artifacts/Roadmaps
+    workspace_lens: artifacts
+    nav_section: roadmaps
+    title: "Artifacts · Roadmaps (sidebar)"
+    max_shots: 12
+    steps:
+      - id: all-roadmaps
+        title: All Roadmaps
+        path: /studio/timeline
+        wait_ms: 3500
+        wait_selector: body
+      - id: roadmaps-summary-classic-art
+        title: Summary (classic HTML)
+        path: /roadmaps/summary
+        wait_ms: 3000
+        wait_selector: body
+      - id: roadmap-section
+        title: Section Preview
+        path: /studio/roadmap-section
+        wait_ms: 3000
+        wait_selector: body
+
+  - id: artifacts-projects
+    directory: artifacts/Projects
+    workspace_lens: artifacts
+    nav_section: projects
+    title: "Artifacts · Projects (sidebar)"
+    max_shots: 12
+    steps:
+      - id: projects-list-art
+        title: All Projects
+        path: /studio/projects
+        wait_ms: 2500
+        wait_selector: body
+      - id: project-dashboard
+        title: Project Dashboard
+        path: /studio/projects/forge-lenses
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: project-strategy-art
+        title: Architecture & Repo Strategy
+        path: /studio/projects/forge-lenses/strategy
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: project-charts-art
+        title: Project charts
+        path: /studio/projects/forge-lenses/charts
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: toolset-art
+        title: Automation (toolset)
+        path: /studio/toolset
+        wait_ms: 2500
+        wait_selector: body
+      - id: workspace-md-art
+        title: Technical Evidence
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
+
+  - id: artifacts-boards
+    directory: artifacts/Boards
+    workspace_lens: artifacts
+    nav_section: boards
+    title: "Artifacts · Boards (sidebar)"
+    max_shots: 12
+    steps:
+      - id: all-boards
+        title: All boards
+        path: /studio/board
+        wait_ms: 2500
+        wait_selector: body
+      - id: today-boards
+        title: Today
+        path: /studio/plan?tab=today
+        wait_ms: 3500
+        wait_selector: body
+      - id: charts-boards
+        title: Workspace charts
+        path: /studio/overview/charts
+        wait_ms: 3500
+        wait_selector: body
+
+  - id: artifacts-sites
+    directory: artifacts/Sites
+    workspace_lens: artifacts
+    nav_section: sites
+    title: "Artifacts · Sites (sidebar)"
+    max_shots: 12
+    steps:
+      - id: websites-art
+        title: All sites
+        path: /studio/websites
+        wait_ms: 2500
+        wait_selector: body
+      - id: browse-art-a
+        title: Browse and preview (forgesdlc)
+        path: /studio/websites/browse/forgesdlc
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: browse-art-b
+        title: Browse and preview (blueprints-website)
+        path: /studio/websites/browse/blueprints-website
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: tutorials-art-sites
+        title: Tutorials
+        path: /studio/tutorials
+        wait_ms: 2500
+        wait_selector: body
+
+  - id: artifacts-blog
+    directory: artifacts/Blog
+    workspace_lens: artifacts
+    nav_section: blog
+    title: "Artifacts · Blog (sidebar)"
+    max_shots: 8
+    steps:
+      - id: blog-index-art
+        title: All posts
+        path: /studio/blog
+        wait_ms: 2500
+        wait_selector: body
+
+  - id: artifacts-knowledge
+    directory: artifacts/Knowledge
+    workspace_lens: artifacts
+    nav_section: documentation
+    title: "Artifacts · Knowledge (sidebar)"
+    max_shots: 12
+    steps:
+      - id: search-art-know
+        title: Search
+        path: /studio/search
+        wait_ms: 2000
+        wait_selector: body
+      - id: chat-art-know
+        title: LLM chat (demo)
+        path: /studio/chat
+        wait_ms: 2500
+        wait_selector: body
+      - id: wizard-art-know
+        title: Blueprints Wizard (experimental)
+        path: /studio/blueprints/wizard
+        optional: true
+        wait_ms: 3000
+        wait_selector: body
+      - id: docs-art-know
+        title: Lenses reference docs (embed)
+        path: /studio/view/docs
+        wait_ms: 3500
+        wait_selector: body
+      - id: docs-index-art-know
+        title: Lenses reference — index.html
+        path: /studio/view/docs/index.html
+        wait_ms: 3500
+        wait_selector: body
+      - id: tutorials-art-know
+        title: Tutorials
+        path: /studio/tutorials
+        wait_ms: 2500
+        wait_selector: body
+      - id: workspace-md-view
+        title: Work logs — view route
+        path: /studio/workspace-md/view
+        wait_ms: 2500
+        wait_selector: body
+      - id: workspace-md-art-know
+        title: Work logs and evidence
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
+
+  # --- Registered SPA routes not duplicated above (single capture; Flow lens cookie) ---
+  - id: flow-shared-extra-routes
+    directory: flow/Shared/Extra-routes
+    workspace_lens: flow
+    title: "Extra Studio routes (App.tsx; not all on sidebar)"
+    max_shots: 12
+    steps:
+      - id: feature-showcase
+        title: Feature showcase demo
+        path: /studio/feature-showcase
+        wait_ms: 2500
+        wait_selector: body
+      - id: local-site-embed
+        title: Local site embed (sample path)
+        path: /studio/view/local-site/README.md
+        optional: true
+        wait_ms: 2000
+        wait_selector: body
+      - id: toolset-run-sample
+        title: Toolset run page (sample script)
         path: /studio/toolset/sync-kitchensink-and-rebuild.sh
         optional: true
         wait_ms: 2500
         wait_selector: body
-        annotation: Only if that script exists at workspace root (e.g. Code/).
       - id: board-editor-probe
         title: Board editor (probe id)
         path: /studio/board/local-demo-board
         optional: true
         wait_ms: 2500
         wait_selector: body
-        annotation: Optional; may redirect or empty if id unknown.
-      - id: blueprints-wizard
-        title: Blueprints wizard hub
-        path: /studio/blueprints/wizard
-        optional: true
-        wait_ms: 3000
-        wait_selector: body
-        annotation: Only when LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD enables route.
       - id: blog-post-sample
         title: Blog post (sample slug)
         path: /studio/blog/post/welcome
         optional: true
         wait_ms: 2500
         wait_selector: body
-        annotation: Optional; slug must exist in blog manifest.
+      - id: blueprints-wizard-session-probe
+        title: Blueprints wizard session (probe id)
+        path: /studio/blueprints/wizard/session/00000000-0000-0000-0000-000000000001
+        optional: true
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Optional; empty or error state unless session exists.
