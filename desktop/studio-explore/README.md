@@ -21,6 +21,14 @@ Playwright-driven **tours** that open routes under `/studio/`, wait for the UI, 
 
 3. **Linux without display:** Chromium headless is used by default; no `xvfb` required for this script.
 
+## One-shot: full desktop + explore + pytest + E2E
+
+From **`forge-lenses/`** repo root (starts Lenses if `/studio/` is down; retries `studio-explore` on connection errors):
+
+```bash
+./scripts/run-desktop-and-explore-checks.sh
+```
+
 ## Run (default sample tour)
 
 From **`forge-lenses/desktop/`**:

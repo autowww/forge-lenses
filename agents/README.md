@@ -7,3 +7,5 @@ Mutable automation workspace per [`blueprints/agents/ORCHESTRATION.md`](blueprin
 | `workspaces/` | Gitignored run output (e.g. Studio screenshot tours). |
 
 **Studio exploration:** from `desktop/`, run `npm run studio-explore` (requires `python3 -m lenses` on `LENSES_BASE_URL`). See [`desktop/studio-explore/README.md`](../desktop/studio-explore/README.md).
+
+**Full check matrix** (npm ci, tour with retries, pytest, Playwright E2E): [`scripts/run-desktop-and-explore-checks.sh`](../scripts/run-desktop-and-explore-checks.sh).
