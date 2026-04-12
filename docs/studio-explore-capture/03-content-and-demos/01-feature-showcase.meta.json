@@ -1,0 +1,14 @@
+{
+  "id": "feature-showcase",
+  "title": "Feature showcase",
+  "path": "/studio/feature-showcase",
+  "url": "http://127.0.0.1:8080/studio/feature-showcase",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "annotation": "Studio feature showcase route.",
+  "notes": "",
+  "optional": false,
+  "skipped": false
+}

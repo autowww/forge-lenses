@@ -1,0 +1,14 @@
+{
+  "id": "wbs",
+  "title": "WBS",
+  "path": "/studio/wbs",
+  "url": "http://127.0.0.1:8080/studio/wbs",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "annotation": "Work breakdown structure entry.",
+  "notes": "",
+  "optional": false,
+  "skipped": false
+}

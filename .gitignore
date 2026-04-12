@@ -7,7 +7,10 @@ desktop/blob-report/
 # Machine-local lenses data (forge-lenses checkout)
 .lenses-local/
 
-lenses-docs/
+# Built lenses handbook HTML is local-only; version reference PNG previews (Playwright) for parity.
+lenses-docs/*
+!lenses-docs/previews/
+!lenses-docs/previews/**
 
 # forge-autodoc tutorial output + dashboard sync (see build-fa-tutorials.sh)
 lenses/tutorials/

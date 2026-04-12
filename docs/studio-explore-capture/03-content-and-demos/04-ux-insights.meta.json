@@ -1,0 +1,14 @@
+{
+  "id": "ux-insights",
+  "title": "UX insights",
+  "path": "/studio/settings/ux-insights",
+  "url": "http://127.0.0.1:8080/studio/settings/ux-insights",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "annotation": "Session-local diagnostics; gear menu entry in product shell.",
+  "notes": "",
+  "optional": false,
+  "skipped": false
+}

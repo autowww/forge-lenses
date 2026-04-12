@@ -1,0 +1,47 @@
+{
+  "folder_id": "03-content-and-demos",
+  "folder_title": "Content and demos",
+  "directory": "03-content-and-demos",
+  "workspace_lens": null,
+  "nav_section": null,
+  "base_url": "http://127.0.0.1:8080",
+  "captured_at": "2026-04-12T06:26:28.009Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "steps": [
+    {
+      "id": "feature-showcase",
+      "title": "Feature showcase",
+      "path": "/studio/feature-showcase",
+      "annotation": "Studio feature showcase route.",
+      "screenshot": "01-feature-showcase.png",
+      "meta": "01-feature-showcase.meta.json"
+    },
+    {
+      "id": "tutorials",
+      "title": "Tutorials",
+      "path": "/studio/tutorials",
+      "annotation": "Tutorials hub.",
+      "screenshot": "02-tutorials.png",
+      "meta": "02-tutorials.meta.json"
+    },
+    {
+      "id": "blog",
+      "title": "Blog index",
+      "path": "/studio/blog",
+      "annotation": "Forge blog index in Studio.",
+      "screenshot": "03-blog.png",
+      "meta": "03-blog.meta.json"
+    },
+    {
+      "id": "ux-insights",
+      "title": "UX insights",
+      "path": "/studio/settings/ux-insights",
+      "annotation": "Session-local diagnostics; gear menu entry in product shell.",
+      "screenshot": "04-ux-insights.png",
+      "meta": "04-ux-insights.meta.json"
+    }
+  ]
+}

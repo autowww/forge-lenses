@@ -1,0 +1,14 @@
+{
+  "id": "tutorials",
+  "title": "Tutorials",
+  "path": "/studio/tutorials",
+  "url": "http://127.0.0.1:8080/studio/tutorials",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "annotation": "Tutorials hub.",
+  "notes": "",
+  "optional": false,
+  "skipped": false
+}

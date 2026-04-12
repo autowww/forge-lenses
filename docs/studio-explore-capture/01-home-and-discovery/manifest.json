@@ -1,0 +1,39 @@
+{
+  "folder_id": "01-home-and-discovery",
+  "folder_title": "Home and discovery",
+  "directory": "01-home-and-discovery",
+  "workspace_lens": null,
+  "nav_section": null,
+  "base_url": "http://127.0.0.1:8080",
+  "captured_at": "2026-04-12T06:26:08.080Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "steps": [
+    {
+      "id": "studio-home",
+      "title": "Studio home",
+      "path": "/studio/",
+      "annotation": "Default Studio shell after workspace bootstrap; nav and home content.",
+      "screenshot": "01-studio-home.png",
+      "meta": "01-studio-home.meta.json"
+    },
+    {
+      "id": "projects-list",
+      "title": "Projects",
+      "path": "/studio/projects",
+      "annotation": "Project list; content depends on scanned workspace.",
+      "screenshot": "02-projects-list.png",
+      "meta": "02-projects-list.meta.json"
+    },
+    {
+      "id": "search",
+      "title": "Search",
+      "path": "/studio/search",
+      "annotation": "Studio search surface.",
+      "screenshot": "03-search.png",
+      "meta": "03-search.meta.json"
+    }
+  ]
+}
