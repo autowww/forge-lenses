@@ -1,0 +1,15 @@
+{
+  "changelog": "lenses-enterprise/CHANGELOG.md",
+  "watch_path_prefixes": [
+    "lenses-enterprise/",
+    "lenses/",
+    "desktop/"
+  ],
+  "default_section": "Changed",
+  "version_files": [
+    {
+      "path": "lenses-enterprise/package.json",
+      "kind": "npm"
+    }
+  ]
+}
