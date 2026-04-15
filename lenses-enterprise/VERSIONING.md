@@ -29,7 +29,7 @@ The **forge-lenses** repository versions the **server and Classic UI** separatel
 2. Bump **`package.json`** `version` to match the release you just documented.
 3. Optionally publish a **[GitHub Release](https://github.com/autowww/forge-lenses/releases)** for the **forge-lenses** repo (even without attachments) and include Studio highlights when Studio changed—see the root **[README.md](../README.md)** release notes bullet.
 
-**Automation (optional):** with **`.forge/version-release.json`** at the repo root and `bash blueprints/sdlc/methodologies/forge/setup/install-version-release-hook.sh`, commits that touch **`lenses-enterprise/`**, **`lenses/`**, or **`desktop/`** append a bullet under **`[Unreleased]`** from the commit subject; when **`lenses-enterprise/package.json`** semver increases vs the parent commit, the hook folds **`[Unreleased]`** into the new version heading. Use **`[skip-changelog]`** in the commit message to skip. See Blueprints **`VERSIONING-AND-RELEASES.md`**.
+**Automation (optional):** with **`.forge/version-release.json`** at the repo root and `bash blueprints/sdlc/methodologies/forge/setup/install-version-release-hook.sh`, commits that touch **`lenses-enterprise/`**, **`lenses/`**, or **`desktop/`** append a bullet under **`[Unreleased]`** from the commit subject, then **auto-increment `PATCH`** in **`lenses-enterprise/package.json`** when you did not edit the **`version`** field yourself in that commit. When **`MAJOR`** or **`MINOR`** increases vs the parent commit (human line change), the hook folds **`[Unreleased]`** into the new version heading (not on PATCH-only bumps). Use **`[skip-changelog]`** in the commit message to skip the hook. See Blueprints **`VERSIONING-AND-RELEASES.md`**.
 
 ## Build metadata (not semver)
 
