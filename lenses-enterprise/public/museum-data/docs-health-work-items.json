@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "work_items": [
+    {
+      "created_at": "2026-01-01T12:00:00+00:00",
+      "finding_id": "abc",
+      "id": "wh-demo-1",
+      "kind": "ktlo",
+      "project": "demo-repo",
+      "run_id": "run1",
+      "status": "open",
+      "title": "Confirm documentation review date"
+    }
+  ]
+}

@@ -1,0 +1,1788 @@
+{
+  "schema_version": 1,
+  "comment": "Sprint 1 demo — one story traced to PR, commit, build, test run, artifact, release, environment, vuln, incident, evidence.",
+  "entities": [
+    {
+      "id": "ogs:demo:objective:platform-reliability",
+      "kind": "objective",
+      "display_name": "Platform reliability and abuse resistance",
+      "summary": "Keep Forge-hosted surfaces responsive under load and misuse.",
+      "payload_json": { "horizon": "FY26" },
+      "external_ref": "demo:objective:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "obj-1"
+    },
+    {
+      "id": "ogs:demo:initiative:oauth-hardening",
+      "kind": "initiative",
+      "display_name": "OAuth and API hardening",
+      "summary": "Reduce token abuse and noisy-neighbor effects on auth paths.",
+      "payload_json": { "owner": "Platform" },
+      "external_ref": "demo:init:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "init-1"
+    },
+    {
+      "id": "ogs:demo:epic:api-security",
+      "kind": "epic",
+      "display_name": "API security controls",
+      "summary": "Rate limits, scopes, and observability for public APIs.",
+      "payload_json": { "epic_key": "SEC-API" },
+      "external_ref": "demo:epic:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "epic-1"
+    },
+    {
+      "id": "ogs:demo:story:rate-limit-auth",
+      "kind": "story",
+      "display_name": "Rate-limit authentication endpoints per tenant",
+      "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+      "payload_json": { "story_id": "S-1842", "points": 5, "duration_days": 5 },
+      "external_ref": "demo:story:rate-limit-auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "story-1842"
+    },
+    {
+      "id": "ogs:demo:task:token-bucket",
+      "kind": "task",
+      "display_name": "Implement token-bucket limiter middleware",
+      "summary": "Configurable burst + sustained RPS; emit metrics labels tenant_id.",
+      "payload_json": { "task_id": "T-9012" },
+      "external_ref": "demo:task:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "task-9012"
+    },
+    {
+      "id": "ogs:demo:repo:forgesdlc",
+      "kind": "repo",
+      "display_name": "forgesdlc",
+      "summary": "Product site generator repository (workspace child name may differ).",
+      "payload_json": { "workspace_child": "forgesdlc", "remote_hint": "git@github.com:example/forgesdlc.git" },
+      "external_ref": "github:repo:example/forgesdlc",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "repo-forgesdlc"
+    },
+    {
+      "id": "ogs:demo:branch:forgesdlc-main",
+      "kind": "branch",
+      "display_name": "main",
+      "summary": "Default integration branch.",
+      "payload_json": { "ref": "refs/heads/main" },
+      "external_ref": "git:refs/heads/main",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "branch-main"
+    },
+    {
+      "id": "ogs:demo:cr:184",
+      "kind": "change_request",
+      "display_name": "PR #184 — Auth rate limits",
+      "summary": "Adds token-bucket limiter and integration tests.",
+      "payload_json": { "number": 184, "vcs": "github", "state": "merged" },
+      "external_ref": "github:pr:example/forgesdlc:184",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "pr-184"
+    },
+    {
+      "id": "ogs:demo:commit:a1b2c3d",
+      "kind": "commit",
+      "display_name": "a1b2c3d — merge PR #184",
+      "summary": "feat(auth): per-tenant rate limits on /auth/*",
+      "payload_json": { "sha": "a1b2c3d4", "short_sha": "a1b2c3d" },
+      "external_ref": "github:commit:example/forgesdlc:a1b2c3d4",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "commit-a1b2c3d"
+    },
+    {
+      "id": "ogs:demo:build:ci-9912",
+      "kind": "build",
+      "display_name": "CI build 9912",
+      "summary": "main @ a1b2c3d — unit + contract tests green.",
+      "payload_json": { "ci_run_id": "9912", "workflow": "CI" },
+      "external_ref": "github:actions:9912",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "build-9912"
+    },
+    {
+      "id": "ogs:demo:artifact:oci-1.4.0",
+      "kind": "artifact",
+      "display_name": "oci://registry.example/forgesdlc:1.4.0",
+      "summary": "Container image built from merge commit.",
+      "payload_json": { "digest": "sha256:deadbeef", "type": "container_image" },
+      "external_ref": "oci:forgesdlc:1.4.0",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "art-1.4.0"
+    },
+    {
+      "id": "ogs:demo:release:v1.4.0",
+      "kind": "release",
+      "display_name": "Release v1.4.0",
+      "summary": "Production rollout including auth rate limits.",
+      "payload_json": { "tag": "v1.4.0", "semver": "1.4.0" },
+      "external_ref": "github:release:example/forgesdlc:v1.4.0",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "rel-v1.4.0"
+    },
+    {
+      "id": "ogs:demo:env:production",
+      "kind": "environment",
+      "display_name": "production",
+      "summary": "Customer-facing production cells.",
+      "payload_json": { "region": "us-central" },
+      "external_ref": "k8s:cluster:prod",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "env-prod"
+    },
+    {
+      "id": "ogs:demo:testrun:9912-unit",
+      "kind": "test_run",
+      "display_name": "Unit + contract (9912)",
+      "summary": "812 tests, 0 failures.",
+      "payload_json": { "passed": 812, "failed": 0, "skipped": 4 },
+      "external_ref": "ci:testrun:9912",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "tr-9912"
+    },
+    {
+      "id": "ogs:demo:testplan:auth-q2",
+      "kind": "test_plan",
+      "display_name": "Auth & API hardening — Q2",
+      "summary": "Sprint 5 demo test plan.",
+      "payload_json": { "plan_id": "tp-auth-2026" },
+      "external_ref": "demo:testplan:auth-q2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "tp-auth"
+    },
+    {
+      "id": "ogs:demo:testsuite:regression",
+      "kind": "test_suite",
+      "display_name": "Full regression (automated)",
+      "summary": "Pytest regression pack.",
+      "payload_json": { "suite_id": "ts-regression" },
+      "external_ref": "demo:suite:regression",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ts-reg"
+    },
+    {
+      "id": "ogs:demo:testcase:rate-001",
+      "kind": "test_case",
+      "display_name": "TC-RATE-001 — Throttle returns 429",
+      "summary": "Maps to WBS S-1842.",
+      "payload_json": { "case_id": "TC-RATE-001", "story_id": "S-1842" },
+      "external_ref": "demo:tc:rate-001",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "tc-001"
+    },
+    {
+      "id": "ogs:demo:defect:441",
+      "kind": "defect",
+      "display_name": "DEF-441 — Flaky metrics assertion",
+      "summary": "Open major defect linked to TC-RATE-002.",
+      "payload_json": { "defect_id": "DEF-441", "severity": "major", "status": "open" },
+      "external_ref": "demo:def:441",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "def-441"
+    },
+    {
+      "id": "ogs:demo:sf:sast-auth",
+      "kind": "security_finding",
+      "display_name": "SAST — hardcoded cipher mode",
+      "summary": "Sprint 6 demo critical finding on auth story.",
+      "payload_json": { "finding_id": "SAST-AUTH-01", "severity": "critical", "story_id": "S-1842" },
+      "external_ref": "demo:sf:sast-auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "sf-sast"
+    },
+    {
+      "id": "ogs:demo:sf:secret-leak",
+      "kind": "security_finding",
+      "display_name": "Secret scan — legacy/config.yml",
+      "summary": "Demo secret exposure covered by time-boxed exception.",
+      "payload_json": { "finding_id": "SECRET-LEG-1", "severity": "high", "category": "secret" },
+      "external_ref": "demo:sf:secret",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "sf-sec"
+    },
+    {
+      "id": "ogs:demo:exception:exc-demo",
+      "kind": "compliance_exception",
+      "display_name": "EXC-2026-04 — legacy secret rotation",
+      "summary": "Risk acceptance with expiry and audit trail.",
+      "payload_json": { "exception_id": "EXC-2026-04", "expires": "2026-06-30" },
+      "external_ref": "demo:exc:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "exc-1"
+    },
+    {
+      "id": "ogs:demo:control:soc2-cc6",
+      "kind": "control",
+      "display_name": "SOC2 CC6.1 — logical access",
+      "summary": "Control mapped to release with evidence.",
+      "payload_json": { "control_id": "SOC2-CC6.1", "framework": "SOC2" },
+      "external_ref": "demo:ctrl:soc2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ctrl-1"
+    },
+    {
+      "id": "ogs:demo:vuln:ghsa-abc",
+      "kind": "vulnerability",
+      "display_name": "GHSA-abc — timing side channel",
+      "summary": "Disclosed dependency issue; fixed in 1.4.0 dependency bump.",
+      "payload_json": { "severity": "medium", "cve": "CVE-2026-0001" },
+      "external_ref": "ghsa:GHSA-abc",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "vuln-1"
+    },
+    {
+      "id": "ogs:demo:incident:2026-04-sev2",
+      "kind": "incident",
+      "display_name": "INC-2026-042 — auth latency spike",
+      "summary": "Correlated with abusive client; mitigated by rate limits in 1.4.0.",
+      "payload_json": { "severity": "sev2", "status": "resolved" },
+      "external_ref": "pagerduty:INC42",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "inc-42"
+    },
+    {
+      "id": "ogs:demo:evidence:wbs-auth",
+      "kind": "evidence",
+      "display_name": "WBS — Auth & sessions slice",
+      "summary": "Markdown evidence describing acceptance and rollout notes.",
+      "payload_json": { "path_hint": "docs/requirements/WBS.md#auth" },
+      "external_ref": "file:wbs:auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ev-wbs"
+    },
+    {
+      "id": "ogs:demo:scenario:baseline",
+      "kind": "scenario",
+      "display_name": "Baseline FY26",
+      "summary": "Current committed scope and staffing.",
+      "payload_json": {
+        "label": "Baseline",
+        "is_baseline": true,
+        "horizon_shift_days": 0,
+        "capacity_scale": 1.0,
+        "risk_score": 35,
+        "milestone_confidence": 0.78
+      },
+      "external_ref": "demo:scenario:baseline",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "sc-baseline"
+    },
+    {
+      "id": "ogs:demo:scenario:stretch",
+      "kind": "scenario",
+      "display_name": "Stretch — pull-forward",
+      "summary": "Earlier customer date with reduced slack and parallel work.",
+      "payload_json": {
+        "label": "Stretch",
+        "horizon_shift_days": -14,
+        "capacity_scale": 0.85,
+        "risk_score": 52,
+        "milestone_confidence": 0.58
+      },
+      "external_ref": "demo:scenario:stretch",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "sc-stretch"
+    },
+    {
+      "id": "ogs:demo:epic:client-oauth",
+      "kind": "epic",
+      "display_name": "Client OAuth refresh",
+      "summary": "Second product surface — depends on server-side throttles.",
+      "payload_json": { "epic_key": "CLIENT-OAUTH" },
+      "external_ref": "demo:epic:client",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "epic-client"
+    },
+    {
+      "id": "ogs:demo:story:oauth-refresh-ui",
+      "kind": "story",
+      "display_name": "OAuth refresh UI & SDK hooks",
+      "summary": "Cannot ship until auth rate limits exist — cross-product dependency.",
+      "payload_json": { "story_id": "S-2200", "points": 3, "duration_days": 3 },
+      "external_ref": "demo:story:oauth-ui",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "story-2200"
+    },
+    {
+      "id": "ogs:demo:ws:platform",
+      "kind": "workstream",
+      "display_name": "Platform team",
+      "summary": "Capacity placeholder — auth, infra, shared services.",
+      "payload_json": { "capacity_units": 6.0, "team": "platform" },
+      "external_ref": "demo:ws:platform",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ws-platform"
+    },
+    {
+      "id": "ogs:demo:ws:product",
+      "kind": "workstream",
+      "display_name": "Product team",
+      "summary": "Capacity placeholder — client features.",
+      "payload_json": { "capacity_units": 4.0, "team": "product" },
+      "external_ref": "demo:ws:product",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ws-product"
+    },
+    {
+      "id": "ogs:demo:svc:forge-web",
+      "kind": "service",
+      "display_name": "forge-web (product site)",
+      "summary": "Static site + generator runtime surfaced to customers.",
+      "payload_json": { "service_id": "svc-forge-web", "tier": "customer_facing" },
+      "external_ref": "demo:svc:forge-web",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "svc-1"
+    },
+    {
+      "id": "ogs:demo:incident:prod-auth-latency",
+      "kind": "incident",
+      "display_name": "INC-PROD-441 — Auth latency after 1.4.0",
+      "summary": "p99 auth latency spike correlated with 1.4.0 deploy; mitigated by config tune.",
+      "payload_json": { "story_id": "S-1842", "severity": "sev2", "status": "resolved" },
+      "external_ref": "pagerduty:INC441",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "inc-prod-441"
+    },
+    {
+      "id": "ogs:demo:pm:auth-latency-2026",
+      "kind": "postmortem",
+      "display_name": "PM-2026-04 — Auth latency",
+      "summary": "Blameless review linked to S-1842 and release v1.4.0.",
+      "payload_json": { "template_id": "pm-tpl-change-correlated", "status": "published" },
+      "external_ref": "wiki:pm/auth-latency-2026",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "pm-1"
+    },
+    {
+      "id": "ogs:demo:demand:ore-auth-throttle",
+      "kind": "demand_signal",
+      "display_name": "Ore — tenant abuse on /auth/* (demo)",
+      "summary": "Bridge B1: upstream demand signal before scoped commitment.",
+      "payload_json": { "forge_term": "Ore", "trust_level": "stated", "freshness_hint": "demo" },
+      "external_ref": "demo:ore:auth-throttle",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ore-auth"
+    },
+    {
+      "id": "ogs:demo:scoped:ingot-auth-q2",
+      "kind": "scoped_commitment",
+      "display_name": "Ingot — Q2 API protection scope (demo)",
+      "summary": "Approved scope slice tying Ore to delivery work units.",
+      "payload_json": { "forge_term": "Ingot", "trust_level": "approved", "freshness_hint": "demo" },
+      "external_ref": "demo:ingot:auth-q2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ingot-auth"
+    },
+    {
+      "id": "ogs:demo:contrib:lead-alex",
+      "kind": "contributor",
+      "display_name": "Alex (platform lead)",
+      "summary": "Human reviewer placeholder for bridge trace demo.",
+      "payload_json": { "login_hint": "alex", "role": "owner" },
+      "external_ref": "demo:person:alex",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "contrib-alex"
+    },
+    {
+      "id": "ogs:demo:gate:assay-auth-release",
+      "kind": "gate",
+      "display_name": "Assay + release gate — auth train",
+      "summary": "Combined assay evidence and promotion gate placeholder.",
+      "payload_json": { "gate_class": "assay_evidence", "forge_term": "Assay gate" },
+      "external_ref": "demo:gate:assay-auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "gate-assay"
+    },
+    {
+      "id": "ogs:demo:b2:psp",
+      "kind": "methodology_artifact",
+      "display_name": "Product Spark Plan — API protection (demo)",
+      "summary": "Bridge B2 demo: planning artifact between Ingot and story.",
+      "payload_json": {
+        "artifact_type": "plan",
+        "bridge_type": "product_spark_plan",
+        "forge_profile": "product_spark_plan",
+        "neutral_category": "planning_artifact",
+        "evidence_phase": "discovery_validation",
+        "status": "approved",
+        "lineage_note": "Ore → Ingot → Product Spark Plan → work units (demo)."
+      },
+      "external_ref": "demo:b2:psp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-psp"
+    },
+    {
+      "id": "ogs:demo:b2:impl-ev",
+      "kind": "methodology_artifact",
+      "display_name": "Implementation evidence — rate limiter (demo)",
+      "summary": "Test and rollout notes for S-1842 (methodology artifact, not only a file).",
+      "payload_json": {
+        "artifact_type": "evidence",
+        "bridge_type": "implementation_evidence",
+        "forge_profile": "implementation_evidence",
+        "neutral_category": "evidence",
+        "evidence_phase": "implementation",
+        "status": "recorded",
+        "source_path": "docs/demo/b2-implementation-evidence.md",
+        "lineage_note": "Linked from Review Pack inputs."
+      },
+      "external_ref": "demo:b2:impl-ev",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-impl"
+    },
+    {
+      "id": "ogs:demo:b2:launch",
+      "kind": "methodology_artifact",
+      "display_name": "Release / Launch record v1.4.0 (demo)",
+      "summary": "Structured launch record for the auth train release.",
+      "payload_json": {
+        "artifact_type": "release_record",
+        "bridge_type": "release_launch_record",
+        "forge_profile": "release_launch_record",
+        "neutral_category": "release_record",
+        "evidence_phase": "compliance_supporting",
+        "status": "published",
+        "lineage_note": "Ties promotion decision to release entity."
+      },
+      "external_ref": "demo:b2:launch",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-launch"
+    },
+    {
+      "id": "ogs:demo:b2:adr-auth",
+      "kind": "decision_record",
+      "display_name": "ADR — Per-tenant auth throttles",
+      "summary": "Adopt token-bucket limits on /auth/* scoped by tenant.",
+      "payload_json": {
+        "decision_type": "adr",
+        "problem_statement": "Bursty clients can starve others on shared auth paths.",
+        "decision_summary": "Token-bucket per tenant with metrics labels.",
+        "alternatives_considered": ["global RPS cap", "queue-based admission"],
+        "rationale": "Isolates noisy neighbors while preserving burst for well-behaved tenants.",
+        "impact": "Middleware, dashboards, runbooks.",
+        "owner": "Alex",
+        "binding": true,
+        "signoff_state": "signed",
+        "gates_allowed": ["implementation", "review"],
+        "signed_at": "2026-03-15T10:00:00+00:00",
+        "signed_by": "alex"
+      },
+      "external_ref": "demo:b2:adr",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-adr"
+    },
+    {
+      "id": "ogs:demo:b2:directive-sec",
+      "kind": "decision_record",
+      "display_name": "Directive — Ship auth train with assay gate",
+      "summary": "Binding governance: production promotion requires assay evidence pack.",
+      "payload_json": {
+        "decision_type": "directive",
+        "problem_statement": "Releases need explicit governance sign-off.",
+        "decision_summary": "Assay packet + signed directive required before prod.",
+        "alternatives_considered": ["informal checklist"],
+        "rationale": "Auditability and traceability for customer-facing auth changes.",
+        "impact": "Release and delivery teams.",
+        "owner": "Alex",
+        "binding": true,
+        "signoff_state": "signed",
+        "gates_allowed": ["implementation", "review", "assay", "release"],
+        "signed_at": "2026-03-20T14:00:00+00:00",
+        "signed_by": "alex"
+      },
+      "external_ref": "demo:b2:directive",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-dir"
+    },
+    {
+      "id": "ogs:demo:b2:rp-auth",
+      "kind": "review_pack",
+      "display_name": "Review Pack — S-1842 auth limits",
+      "summary": "Aggregated review inputs for the rate-limit story.",
+      "payload_json": {
+        "template_id": "demo",
+        "known_risks": ["Residual abusive client patterns"],
+        "test_results_summary": "812 passed, 0 failed (CI 9912, demo).",
+        "generated_sections": ["Built from: story, PR, implementation evidence, ADR."]
+      },
+      "external_ref": "demo:b2:rp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-rp"
+    },
+    {
+      "id": "ogs:demo:b2:ap-auth",
+      "kind": "assay_packet",
+      "display_name": "Assay Packet — v1.4.0 auth train",
+      "summary": "Gate bundle for release v1.4.0 (demo).",
+      "payload_json": {
+        "primary_release_id": "ogs:demo:release:v1.4.0",
+        "quality_security_compliance": { "sast": "no_critical_demo", "exceptions": "time_boxed" },
+        "approvals": [{ "role": "engineering", "state": "approved" }],
+        "recommended_decision_outcome": "promote",
+        "generated_sections": ["RC: build 9912; inputs listed in graph edges."]
+      },
+      "external_ref": "demo:b2:ap",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b2-ap"
+    },
+    {
+      "id": "ogs:demo:b3:vf:eng",
+      "kind": "versona_family",
+      "display_name": "Engineering Versona family (demo)",
+      "summary": "Sprint B3 agentic bridge — governed agent scope.",
+      "payload_json": {
+        "family_key": "engineering",
+        "status": "active",
+        "owner": "demo",
+        "read_only": false,
+        "write_capable": false,
+        "provenance": { "source": "lenses_demo_seed" }
+      },
+      "external_ref": "demo:b3:vf",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-vf"
+    },
+    {
+      "id": "ogs:demo:b3:vp:se",
+      "kind": "versona_profile",
+      "display_name": "Software engineering profile (demo)",
+      "summary": "Discipline profile linked to engineering family.",
+      "payload_json": {
+        "discipline_key": "software_engineering",
+        "status": "active",
+        "owner": "demo",
+        "read_only": true,
+        "provenance": { "source": "demo_seed" }
+      },
+      "external_ref": "demo:b3:vp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-vp"
+    },
+    {
+      "id": "ogs:demo:b3:tl:cog",
+      "kind": "tasklet",
+      "display_name": "Cognition tasklet — summarize (demo)",
+      "summary": "Registry id tasklet.cognition.summarize_context",
+      "payload_json": {
+        "registry_id": "tasklet.cognition.summarize_context",
+        "tasklet_category": "cognition",
+        "status": "active",
+        "read_only": true,
+        "write_capable": false,
+        "approval_required": false,
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:tl-cog",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-tlc"
+    },
+    {
+      "id": "ogs:demo:b3:tl:exec",
+      "kind": "tasklet",
+      "display_name": "Execution tasklet — patch draft (demo)",
+      "summary": "Registry id tasklet.execution.apply_patch_draft",
+      "payload_json": {
+        "registry_id": "tasklet.execution.apply_patch_draft",
+        "tasklet_category": "execution",
+        "status": "active",
+        "read_only": false,
+        "write_capable": true,
+        "approval_required": true,
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:tl-exec",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-tle"
+    },
+    {
+      "id": "ogs:demo:b3:recipe:plan",
+      "kind": "recipe",
+      "display_name": "Recipe — read-only plan assist (demo)",
+      "summary": "recipe.readonly.plan_assist",
+      "payload_json": {
+        "registry_id": "recipe.readonly.plan_assist",
+        "status": "active",
+        "default_execution_mode": "read_only",
+        "owner": "demo",
+        "read_only": true,
+        "write_capable": false
+      },
+      "external_ref": "demo:b3:recipe",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-rc"
+    },
+    {
+      "id": "ogs:demo:b3:lp:tpl",
+      "kind": "launch_pack",
+      "display_name": "Launch pack template — cursor_session_v1 (demo)",
+      "summary": "Packaging tasklet staging template.",
+      "payload_json": {
+        "template_id": "cursor_session_v1",
+        "status": "template",
+        "owner": "demo",
+        "read_only": true,
+        "write_capable": false
+      },
+      "external_ref": "demo:b3:lp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-lp"
+    },
+    {
+      "id": "ogs:demo:b3:run:readonly",
+      "kind": "agent_run",
+      "display_name": "Agent run — read-only assist (demo)",
+      "summary": "Completed read-only run linked to S-1842.",
+      "payload_json": {
+        "execution_mode": "read_only",
+        "read_only": true,
+        "write_capable": false,
+        "draft_producing": false,
+        "prompt_pack_version": "demo-1",
+        "status": "completed",
+        "owner": "demo",
+        "recipe_registry_id": "recipe.readonly.plan_assist",
+        "launch_context": { "story_id": "S-1842" },
+        "provenance": { "source": "demo_seed" }
+      },
+      "external_ref": "demo:b3:run-ro",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-run-ro"
+    },
+    {
+      "id": "ogs:demo:b3:run:gated",
+      "kind": "agent_run",
+      "display_name": "Agent run — approval gated export (demo)",
+      "summary": "Awaiting human approval before write path.",
+      "payload_json": {
+        "execution_mode": "approval_gated",
+        "read_only": false,
+        "write_capable": true,
+        "draft_producing": true,
+        "prompt_pack_version": "demo-1",
+        "status": "awaiting_approval",
+        "owner": "demo",
+        "recipe_registry_id": "recipe.gated.cursor_export",
+        "provenance": { "source": "demo_seed" }
+      },
+      "external_ref": "demo:b3:run-g",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-run-g"
+    },
+    {
+      "id": "ogs:demo:b3:step:1",
+      "kind": "agent_step",
+      "display_name": "Step 1 — load context (demo)",
+      "summary": "Synthetic step for reviewability.",
+      "payload_json": {
+        "step_index": 1,
+        "status": "succeeded",
+        "read_only": true,
+        "log_excerpt": "Loaded WBS scope and graph neighbors."
+      },
+      "external_ref": "demo:b3:step",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-st1"
+    },
+    {
+      "id": "ogs:demo:b3:out:summary",
+      "kind": "agent_output",
+      "display_name": "Output — implementation summary (demo)",
+      "summary": "Markdown summary artifact eligible for evidence link.",
+      "payload_json": {
+        "format": "markdown",
+        "body_preview": "## Summary\nRate limiter aligns with ADR …",
+        "status": "final",
+        "read_only": true
+      },
+      "external_ref": "demo:b3:out",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-out"
+    },
+    {
+      "id": "ogs:demo:b3:apr:pending",
+      "kind": "approval_request",
+      "display_name": "Approval — gated export run (demo)",
+      "summary": "Pending human approval for write-capable run.",
+      "payload_json": {
+        "status": "pending",
+        "for_run_id": "ogs:demo:b3:run:gated",
+        "requires_human": true,
+        "scope": "write_or_gated_run",
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:apr",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-apr"
+    },
+    {
+      "id": "ogs:demo:b3:pol:writes",
+      "kind": "policy_rule",
+      "display_name": "Policy — writes require approval (demo)",
+      "summary": "Graph policy_rule mirroring registry default.",
+      "payload_json": {
+        "policy_id": "pol.write_requires_approval",
+        "write_capable": true,
+        "binding_decisions": false,
+        "release_impacting": true,
+        "rule_changes": false,
+        "status": "active",
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:pol",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-pol"
+    },
+    {
+      "id": "ogs:demo:b3:xt:workspace",
+      "kind": "execution_target",
+      "display_name": "Execution target — workspace root (demo)",
+      "summary": "Logical target for agent runs (no autonomous mutation).",
+      "payload_json": {
+        "target_kind": "workspace",
+        "read_only_default": true,
+        "status": "active",
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:xt",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-xt"
+    },
+    {
+      "id": "ogs:demo:b3:drift:snap",
+      "kind": "drift_report",
+      "display_name": "Drift snapshot — rules alignment (demo)",
+      "summary": "Last computed drift payload reference.",
+      "payload_json": {
+        "aligned": false,
+        "note": "Demo placeholder; live drift from GET /api/agents/drift",
+        "status": "snapshot",
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:drift",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-drift"
+    },
+    {
+      "id": "ogs:demo:b3:rm:live",
+      "kind": "rules_manifest",
+      "display_name": "Rules manifest — demo row",
+      "summary": "Captured manifest metadata; use API for live scan.",
+      "payload_json": {
+        "cursor_rules_count_hint": 0,
+        "status": "demo",
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:rm",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-rm"
+    },
+    {
+      "id": "ogs:demo:b3:pt:versona",
+      "kind": "prompt_template",
+      "display_name": "Prompt template — Versona §5 shell (demo)",
+      "summary": "Structured report shape reference.",
+      "payload_json": {
+        "template_key": "versona_section_5",
+        "version": "1",
+        "read_only": true,
+        "status": "active",
+        "owner": "demo"
+      },
+      "external_ref": "demo:b3:pt",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b3-pt"
+    },
+    {
+      "id": "ogs:demo:b4:intent:C1",
+      "kind": "ceremony_intent",
+      "display_name": "C1 — Intent and framing",
+      "summary": "Neutral ceremony intent C1 (registry.v1).",
+      "payload_json": { "intent_id": "C1" },
+      "external_ref": "demo:b4:c1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-c1"
+    },
+    {
+      "id": "ogs:demo:b4:intent:C2",
+      "kind": "ceremony_intent",
+      "display_name": "C2 — Scope and commitment",
+      "summary": "Neutral ceremony intent C2.",
+      "payload_json": { "intent_id": "C2" },
+      "external_ref": "demo:b4:c2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-c2"
+    },
+    {
+      "id": "ogs:demo:b4:intent:C3",
+      "kind": "ceremony_intent",
+      "display_name": "C3 — Design and decision",
+      "summary": "Neutral ceremony intent C3.",
+      "payload_json": { "intent_id": "C3" },
+      "external_ref": "demo:b4:c3",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-c3"
+    },
+    {
+      "id": "ogs:demo:b4:intent:C4",
+      "kind": "ceremony_intent",
+      "display_name": "C4 — Build and evidence",
+      "summary": "Neutral ceremony intent C4.",
+      "payload_json": { "intent_id": "C4" },
+      "external_ref": "demo:b4:c4",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-c4"
+    },
+    {
+      "id": "ogs:demo:b4:intent:C5",
+      "kind": "ceremony_intent",
+      "display_name": "C5 — Release and gate",
+      "summary": "Neutral ceremony intent C5.",
+      "payload_json": { "intent_id": "C5" },
+      "external_ref": "demo:b4:c5",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-c5"
+    },
+    {
+      "id": "ogs:demo:b4:intent:C6",
+      "kind": "ceremony_intent",
+      "display_name": "C6 — Reflect and improve",
+      "summary": "Neutral ceremony intent C6.",
+      "payload_json": { "intent_id": "C6" },
+      "external_ref": "demo:b4:c6",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-c6"
+    },
+    {
+      "id": "ogs:demo:b4:dm:human_only",
+      "kind": "delivery_mode",
+      "display_name": "Delivery mode — human_only",
+      "summary": "Binding outputs require in-meeting human sign-off.",
+      "payload_json": { "mode_id": "human_only" },
+      "external_ref": "demo:b4:dm-h",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-dmh"
+    },
+    {
+      "id": "ogs:demo:b4:dm:hybrid",
+      "kind": "delivery_mode",
+      "display_name": "Delivery mode — hybrid",
+      "summary": "Agent synthesis allowed; binding still human-signed.",
+      "payload_json": { "mode_id": "hybrid" },
+      "external_ref": "demo:b4:dm-x",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-dmx"
+    },
+    {
+      "id": "ogs:demo:b4:dm:versona_only_non_binding",
+      "kind": "delivery_mode",
+      "display_name": "Delivery mode — versona_only_non_binding",
+      "summary": "Agent-only synthesis; no binding governance outputs.",
+      "payload_json": { "mode_id": "versona_only_non_binding" },
+      "external_ref": "demo:b4:dm-nb",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-dmnb"
+    },
+    {
+      "id": "ogs:demo:b4:dm:versona_assisted_human_binding",
+      "kind": "delivery_mode",
+      "display_name": "Delivery mode — versona_assisted_human_binding",
+      "summary": "Agent-assisted prep; human signs binding outcomes.",
+      "payload_json": { "mode_id": "versona_assisted_human_binding" },
+      "external_ref": "demo:b4:dm-vb",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-dmvb"
+    },
+    {
+      "id": "ogs:demo:b4:map:c2-charge",
+      "kind": "ceremony_mapping",
+      "display_name": "Mapping — C2 ↔ Charge (Forge)",
+      "summary": "Explicit bridge row; forbids mislabeled Forge ceremonies without mapping.",
+      "payload_json": {
+        "registry_id": "map-c2-charge",
+        "intent_id": "C2",
+        "methodology": "forge",
+        "forge_ritual": "Charge",
+        "studio_route_hint": "/plan"
+      },
+      "external_ref": "demo:b4:map-c2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-mc2"
+    },
+    {
+      "id": "ogs:demo:b4:map:c3-review",
+      "kind": "ceremony_mapping",
+      "display_name": "Mapping — C3 ↔ Review Pack",
+      "summary": "Readiness / review bridge mapping.",
+      "payload_json": {
+        "registry_id": "map-c3-review-pack",
+        "intent_id": "C3",
+        "methodology": "forge",
+        "forge_ritual": "Review Pack",
+        "studio_route_hint": "/plan?tab=today"
+      },
+      "external_ref": "demo:b4:map-c3",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-mc3"
+    },
+    {
+      "id": "ogs:demo:b4:map:c5-gate",
+      "kind": "ceremony_mapping",
+      "display_name": "Mapping — C5 ↔ Release gate",
+      "summary": "Assay / release gate mapping.",
+      "payload_json": {
+        "registry_id": "map-c5-assay-gate",
+        "intent_id": "C5",
+        "methodology": "forge",
+        "forge_ritual": "Release gate",
+        "studio_route_hint": "/plan?tab=today"
+      },
+      "external_ref": "demo:b4:map-c5",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-mc5"
+    },
+    {
+      "id": "ogs:demo:b4:map:c6-ember",
+      "kind": "ceremony_mapping",
+      "display_name": "Mapping — C6 ↔ Ember Log",
+      "summary": "Retrospective / learning loop mapping.",
+      "payload_json": {
+        "registry_id": "map-c6-ember",
+        "intent_id": "C6",
+        "methodology": "forge",
+        "forge_ritual": "Ember Log",
+        "studio_route_hint": "/plan"
+      },
+      "external_ref": "demo:b4:map-c6",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-mc6"
+    },
+    {
+      "id": "ogs:demo:b4:rule:standard",
+      "kind": "decision_binding_rule",
+      "display_name": "Binding rule — standard sign-off",
+      "summary": "Directives and decisions require human sign-off when binding.",
+      "payload_json": {
+        "registry_id": "rule-b4-standard",
+        "requires_human_signoff": true,
+        "applies_output_types": ["directive", "decision_binding", "approved_next_steps"]
+      },
+      "external_ref": "demo:b4:rule-std",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rs"
+    },
+    {
+      "id": "ogs:demo:b4:rule:gate",
+      "kind": "decision_binding_rule",
+      "display_name": "Binding rule — release gate",
+      "summary": "Gate outcomes and assay updates require human sign-off.",
+      "payload_json": {
+        "registry_id": "rule-b4-release-gate",
+        "requires_human_signoff": true,
+        "applies_output_types": ["directive", "assay_update_ref", "approved_next_steps"]
+      },
+      "external_ref": "demo:b4:rule-gate",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rg"
+    },
+    {
+      "id": "ogs:demo:b4:req:planning",
+      "kind": "required_artifact_ref",
+      "display_name": "Required input — planning brief",
+      "summary": "Template requires a planning brief excerpt.",
+      "payload_json": { "artifact_kind": "planning_brief", "required": true },
+      "external_ref": "demo:b4:rq-p",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rqp"
+    },
+    {
+      "id": "ogs:demo:b4:req:evidence",
+      "kind": "required_artifact_ref",
+      "display_name": "Required input — evidence excerpt",
+      "summary": "Readiness template input.",
+      "payload_json": { "artifact_kind": "evidence_excerpt", "required": true },
+      "external_ref": "demo:b4:rq-e",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rqe"
+    },
+    {
+      "id": "ogs:demo:b4:req:assay",
+      "kind": "required_artifact_ref",
+      "display_name": "Required input — assay inputs",
+      "summary": "Gate ceremony input placeholder.",
+      "payload_json": { "artifact_kind": "assay_inputs", "required": true },
+      "external_ref": "demo:b4:rq-a",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rqa"
+    },
+    {
+      "id": "ogs:demo:b4:req:retro",
+      "kind": "required_artifact_ref",
+      "display_name": "Required input — retro notes",
+      "summary": "Retrospective notes seed.",
+      "payload_json": { "artifact_kind": "retro_notes", "required": false },
+      "external_ref": "demo:b4:rq-r",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rqr"
+    },
+    {
+      "id": "ogs:demo:b4:role:participant",
+      "kind": "participant_role",
+      "display_name": "Role — contributor (optional)",
+      "summary": "Participant role placeholder on Charge template.",
+      "payload_json": { "role_key": "contributor", "required": false },
+      "external_ref": "demo:b4:rp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rp"
+    },
+    {
+      "id": "ogs:demo:b4:role:moderator",
+      "kind": "moderator_role",
+      "display_name": "Role — facilitator / moderator",
+      "summary": "Moderator role on Charge template.",
+      "payload_json": { "role_key": "facilitator", "required": true },
+      "external_ref": "demo:b4:rm",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-rm"
+    },
+    {
+      "id": "ogs:demo:b4:tpl:charge",
+      "kind": "ceremony_template",
+      "display_name": "Template — Charge / scope alignment",
+      "summary": "B4 bridge template for C2 (Forge Charge).",
+      "payload_json": {
+        "registry_template_id": "tpl-scope-charge",
+        "intent_id": "C2",
+        "registry_mapping_id": "map-c2-charge",
+        "recurrence": "recurring",
+        "delivery_modes_allowed": ["human_only", "hybrid", "versona_assisted_human_binding"]
+      },
+      "external_ref": "demo:b4:tpl-charge",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-tc"
+    },
+    {
+      "id": "ogs:demo:b4:tpl:readiness",
+      "kind": "ceremony_template",
+      "display_name": "Template — Review Pack readiness",
+      "summary": "B4 template for C3.",
+      "payload_json": {
+        "registry_template_id": "tpl-readiness-review",
+        "intent_id": "C3",
+        "registry_mapping_id": "map-c3-review-pack",
+        "recurrence": "recurring",
+        "delivery_modes_allowed": ["human_only", "hybrid", "versona_only_non_binding", "versona_assisted_human_binding"]
+      },
+      "external_ref": "demo:b4:tpl-r",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-tr"
+    },
+    {
+      "id": "ogs:demo:b4:tpl:assay",
+      "kind": "ceremony_template",
+      "display_name": "Template — Assay / release gate",
+      "summary": "B4 template for C5.",
+      "payload_json": {
+        "registry_template_id": "tpl-assay-gate",
+        "intent_id": "C5",
+        "registry_mapping_id": "map-c5-assay-gate",
+        "recurrence": "one_time",
+        "delivery_modes_allowed": ["human_only", "versona_assisted_human_binding"]
+      },
+      "external_ref": "demo:b4:tpl-a",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-ta"
+    },
+    {
+      "id": "ogs:demo:b4:tpl:retro",
+      "kind": "ceremony_template",
+      "display_name": "Template — Ember Log / retro",
+      "summary": "B4 template for C6.",
+      "payload_json": {
+        "registry_template_id": "tpl-retro-ember",
+        "intent_id": "C6",
+        "registry_mapping_id": "map-c6-ember",
+        "recurrence": "recurring",
+        "delivery_modes_allowed": ["human_only", "hybrid", "versona_only_non_binding"]
+      },
+      "external_ref": "demo:b4:tpl-retro",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-tre"
+    },
+    {
+      "id": "ogs:demo:b4:inst:hybrid",
+      "kind": "ceremony_instance",
+      "display_name": "Ceremony instance — hybrid synthesis (demo)",
+      "summary": "Non-binding agent-assisted synthesis; Forge label projected via mapping.",
+      "payload_json": {
+        "intent_id": "C2",
+        "methodology": "forge",
+        "mapping_id": "map-c2-charge",
+        "forge_projection_label": "Charge",
+        "delivery_mode": "hybrid",
+        "recurrence": "recurring",
+        "status": "completed",
+        "inputs": {
+          "work_unit_ids": ["ogs:demo:story:rate-limit-auth"],
+          "artifact_ids": ["ogs:demo:b2:psp"],
+          "evidence_ids": ["ogs:demo:evidence:wbs-auth"],
+          "metrics_snapshot": { "ci_build": "9912", "tests_passing": 812 },
+          "risks_issues": ["Residual abusive traffic patterns"]
+        }
+      },
+      "external_ref": "demo:b4:ih",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-ih"
+    },
+    {
+      "id": "ogs:demo:b4:inst:binding",
+      "kind": "ceremony_instance",
+      "display_name": "Ceremony instance — human-signed gate (demo)",
+      "summary": "Binding outputs after explicit human sign-off; linked assay and directive.",
+      "payload_json": {
+        "intent_id": "C5",
+        "methodology": "forge",
+        "mapping_id": "map-c5-assay-gate",
+        "forge_projection_label": "Release gate",
+        "delivery_mode": "versona_assisted_human_binding",
+        "recurrence": "one_time",
+        "status": "signed",
+        "last_signoff_at": "2026-04-01T16:00:00+00:00",
+        "last_signoff_by": "alex",
+        "inputs": {
+          "work_unit_ids": ["ogs:demo:story:rate-limit-auth"],
+          "artifact_ids": ["ogs:demo:b2:ap-auth"],
+          "evidence_ids": ["ogs:demo:b2:impl-ev"],
+          "metrics_snapshot": { "release": "v1.4.0", "gate": "assay" },
+          "risks_issues": ["Exception exc-demo time-boxed"]
+        }
+      },
+      "external_ref": "demo:b4:ib",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-ib"
+    },
+    {
+      "id": "ogs:demo:b4:out:synth",
+      "kind": "ceremony_output",
+      "display_name": "Output — non-binding synthesis",
+      "summary": "Hybrid ceremony summary; delivery_mode recorded on payload.",
+      "payload_json": {
+        "output_type": "meeting_summary",
+        "binding": false,
+        "delivery_mode": "hybrid",
+        "summary": "Versona-assisted synthesis of scope vs ingots (non-binding)."
+      },
+      "external_ref": "demo:b4:os",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-os"
+    },
+    {
+      "id": "ogs:demo:b4:out:assay",
+      "kind": "ceremony_output",
+      "display_name": "Output — assay update ref",
+      "summary": "Binding assay update linked to assay packet entity.",
+      "payload_json": {
+        "output_type": "assay_update_ref",
+        "binding": true,
+        "delivery_mode": "versona_assisted_human_binding",
+        "summary": "Assay packet updated after gate review."
+      },
+      "external_ref": "demo:b4:oa",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-oa"
+    },
+    {
+      "id": "ogs:demo:b4:out:next",
+      "kind": "ceremony_output",
+      "display_name": "Output — approved next steps",
+      "summary": "Binding approved steps from gate ceremony.",
+      "payload_json": {
+        "output_type": "approved_next_steps",
+        "binding": true,
+        "delivery_mode": "versona_assisted_human_binding",
+        "summary": "Promote v1.4.0 after assay sign-off."
+      },
+      "external_ref": "demo:b4:on",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-on"
+    },
+    {
+      "id": "ogs:demo:b4:so:alex",
+      "kind": "signoff_record",
+      "display_name": "Sign-off — alex (gate)",
+      "summary": "Human sign-off enabling binding outputs on binding instance.",
+      "payload_json": {
+        "state": "signed",
+        "signed_by": "alex",
+        "signer_role": "release_delegate",
+        "signed_at": "2026-04-01T16:00:00+00:00",
+        "scope": "ceremony_instance:ogs:demo:b4:inst:binding"
+      },
+      "external_ref": "demo:b4:so",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-so"
+    },
+    {
+      "id": "ogs:demo:b4:fu:task",
+      "kind": "followup_action",
+      "display_name": "Follow-up — token bucket task",
+      "summary": "Traceable follow-up from gate ceremony to execution task.",
+      "payload_json": { "action_type": "engineering_task", "notes": "Verify limiter dashboards post-release." },
+      "external_ref": "demo:b4:fu-t",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-fut"
+    },
+    {
+      "id": "ogs:demo:b4:fu:story",
+      "kind": "followup_action",
+      "display_name": "Follow-up — story verification",
+      "summary": "Follow-up linked back to story for orchestration trace.",
+      "payload_json": { "action_type": "story_follow_up", "notes": "Confirm S-1842 acceptance criteria in prod." },
+      "external_ref": "demo:b4:fu-s",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b4-fus"
+    },
+    {
+      "id": "ogs:b5:target:cursor",
+      "kind": "handoff_target",
+      "display_name": "Handoff target — Cursor",
+      "summary": "B5 export profile for Cursor (markdown / JSON manifest).",
+      "payload_json": { "target_key": "cursor", "vendor_neutral": true },
+      "external_ref": "demo:b5:t-cursor",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-tc"
+    },
+    {
+      "id": "ogs:b5:target:claude",
+      "kind": "handoff_target",
+      "display_name": "Handoff target — Claude",
+      "summary": "B5 export profile for Claude sessions.",
+      "payload_json": { "target_key": "claude", "vendor_neutral": true },
+      "external_ref": "demo:b5:t-claude",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-tcl"
+    },
+    {
+      "id": "ogs:demo:b5:pkg:auth-rate",
+      "kind": "handoff_package",
+      "display_name": "Handoff — S-1842 auth rate limits",
+      "summary": "Closed-loop demo: Cursor pack → partial execution return → gaps before assay.",
+      "payload_json": {
+        "objective": "Implement and verify per-tenant token-bucket limits on /auth/*.",
+        "acceptance_criteria": ["perf_acceptable", "security_review_complete"],
+        "scope_boundaries": ["Middleware only", "No billing changes"],
+        "files_of_interest": ["lenses/serve.py", "middleware/rate_limit.py"],
+        "tasklets": ["tasklet.cognition.summarize_context"],
+        "gate_expectations": ["Review Pack refresh", "CI green on auth suite"],
+        "output_contract": { "artifacts": ["diff", "test_evidence", "short_adr_draft"] },
+        "target_key": "cursor",
+        "launch_pack_version": "cursor_session_v1",
+        "status": "returned_partial",
+        "approval_status": "approved",
+        "return_status": "partial",
+        "return_incomplete": true,
+        "last_return_at": "2026-04-08T12:00:00+00:00",
+        "last_return_fingerprint": "demo-fp-b5-auth-rate",
+        "last_execution_session_id": "ogs:demo:b5:sess:auth"
+      },
+      "external_ref": "demo:b5:pkg",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-pkg"
+    },
+    {
+      "id": "ogs:demo:b5:pb:auth",
+      "kind": "prompt_bundle",
+      "display_name": "Prompt bundle — auth rate limits",
+      "summary": "Structured prompt shell for Cursor session.",
+      "payload_json": { "format": "markdown", "preview": "You are assisting on S-1842: token-bucket…" },
+      "external_ref": "demo:b5:pb",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-pb"
+    },
+    {
+      "id": "ogs:demo:b5:cb:auth",
+      "kind": "context_bundle",
+      "display_name": "Context bundle — auth rate limits",
+      "summary": "Graph-linked context for handoff.",
+      "payload_json": { "graph_context": { "story": "ogs:demo:story:rate-limit-auth", "recipe": "recipe.readonly.plan_assist" } },
+      "external_ref": "demo:b5:cb",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-cb"
+    },
+    {
+      "id": "ogs:demo:b5:sess:auth",
+      "kind": "execution_session",
+      "display_name": "Execution session — Cursor (demo)",
+      "summary": "Simulated coding session tied to handoff package.",
+      "payload_json": {
+        "handoff_package_id": "ogs:demo:b5:pkg:auth-rate",
+        "target_key": "cursor",
+        "started_at": "2026-04-08T10:00:00+00:00",
+        "status": "active"
+      },
+      "external_ref": "demo:b5:sess",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-sess"
+    },
+    {
+      "id": "ogs:demo:b5:ret:auth",
+      "kind": "execution_return",
+      "display_name": "Execution return — PR + CI (partial)",
+      "summary": "Partial return: CI noted; security criterion not yet satisfied in graph.",
+      "payload_json": {
+        "ingest_fingerprint": "demo-fp-b5-auth-rate",
+        "ingested_at": "2026-04-08T12:00:00+00:00",
+        "branch_name": "feature/auth-rate-limit-demo",
+        "pr_number": 184,
+        "pr_url": "https://github.com/example/forgesdlc/pull/184",
+        "changed_files": ["middleware/rate_limit.py", "tests/test_rate_limit.py"],
+        "test_summary": { "passed": 812, "failed": 0, "suite": "unit" },
+        "blockers": ["Security peer review pending for edge-case abuse pattern"],
+        "review_state": "commented",
+        "satisfied_acceptance_keys": ["perf_acceptable"],
+        "partial_return": true,
+        "stale": false,
+        "provenance": { "source": "demo_seed", "simulated": true }
+      },
+      "external_ref": "demo:b5:ret",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-ret"
+    },
+    {
+      "id": "ogs:demo:b5:om:auth",
+      "kind": "output_manifest",
+      "display_name": "Output manifest — auth handoff",
+      "summary": "Returned files and notes.",
+      "payload_json": { "items": ["middleware/rate_limit.py", "tests/test_rate_limit.py"] },
+      "external_ref": "demo:b5:om",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-om"
+    },
+    {
+      "id": "ogs:demo:b5:fc:1",
+      "kind": "file_change_summary",
+      "display_name": "rate_limit.py",
+      "summary": "middleware/rate_limit.py",
+      "payload_json": { "path": "middleware/rate_limit.py", "change_kind": "modified" },
+      "external_ref": "demo:b5:fc1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-fc1"
+    },
+    {
+      "id": "ogs:demo:b5:fc:2",
+      "kind": "file_change_summary",
+      "display_name": "test_rate_limit.py",
+      "summary": "tests/test_rate_limit.py",
+      "payload_json": { "path": "tests/test_rate_limit.py", "change_kind": "modified" },
+      "external_ref": "demo:b5:fc2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-fc2"
+    },
+    {
+      "id": "ogs:demo:b5:btr:auth",
+      "kind": "build_test_return",
+      "display_name": "Build/test return — CI 9912",
+      "summary": "Linked demo build and unit run.",
+      "payload_json": { "test_summary": { "passed": 812, "failed": 0 }, "notes": "Demo linkage to graph build/test_run rows." },
+      "external_ref": "demo:b5:btr",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-btr"
+    },
+    {
+      "id": "ogs:demo:b5:cref:auth",
+      "kind": "code_review_ref",
+      "display_name": "PR #184 review",
+      "summary": "code_review_ref → change_request",
+      "payload_json": { "pr_url": "https://github.com/example/forgesdlc/pull/184", "state": "commented" },
+      "external_ref": "demo:b5:cref",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-cref"
+    },
+    {
+      "id": "ogs:demo:b5:ck:auth",
+      "kind": "sync_checkpoint",
+      "display_name": "Sync checkpoint — ingest",
+      "summary": "Idempotency fingerprint recorded.",
+      "payload_json": { "fingerprint": "demo-fp-b5-auth-rate", "recorded_at": "2026-04-08T12:00:00+00:00" },
+      "external_ref": "demo:b5:ck",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b5-ck"
+    },
+    {
+      "id": "ogs:demo:b6:launch:auth-train",
+      "kind": "launch_record",
+      "display_name": "Launch — auth rate-limit train v1.4.0",
+      "summary": "Post-release outcome window for S-1842 / release v1.4.0.",
+      "payload_json": {
+        "source": "demo_seed",
+        "time_window": { "start": "2026-04-01", "end": "2026-04-14" },
+        "scope": "product:auth",
+        "confidence": 0.72,
+        "interpretation_status": "triaged",
+        "owner": "demo-pm",
+        "freshness_at": "2026-04-10T09:00:00+00:00"
+      },
+      "external_ref": "demo:b6:launch",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-launch"
+    },
+    {
+      "id": "ogs:demo:b6:sig:adopt",
+      "kind": "adoption_signal",
+      "display_name": "Adoption — feature flag cohort",
+      "summary": "Rollout cohort shows slower-than-expected uptake on tenant dashboards.",
+      "payload_json": {
+        "source": "metrics_pipeline",
+        "confidence": 0.55,
+        "interpretation_status": "pending",
+        "below_threshold": true,
+        "freshness_at": "2026-04-09T15:00:00+00:00",
+        "owner": "demo-analytics"
+      },
+      "external_ref": "demo:b6:adopt",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-adopt"
+    },
+    {
+      "id": "ogs:demo:b6:sig:supp",
+      "kind": "support_signal",
+      "display_name": "Support — auth throttle tickets",
+      "summary": "Ticket volume +18% vs baseline; themes: burst errors and 429 confusion.",
+      "payload_json": {
+        "source": "zendesk_export",
+        "confidence": 0.68,
+        "interpretation_status": "confirmed",
+        "ticket_spike": true,
+        "freshness_at": "2026-04-10T11:00:00+00:00",
+        "owner": "demo-support"
+      },
+      "external_ref": "demo:b6:supp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-supp"
+    },
+    {
+      "id": "ogs:demo:b6:sig:ret",
+      "kind": "retention_signal",
+      "display_name": "Retention — weekly active (auth paths)",
+      "summary": "WAU flat; no regression vs pre-launch control.",
+      "payload_json": {
+        "source": "warehouse_snapshot",
+        "confidence": 0.62,
+        "interpretation_status": "confirmed",
+        "freshness_at": "2026-04-08T08:00:00+00:00",
+        "owner": "demo-analytics"
+      },
+      "external_ref": "demo:b6:ret",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-ret"
+    },
+    {
+      "id": "ogs:demo:b6:sig:sat",
+      "kind": "satisfaction_signal",
+      "display_name": "Satisfaction — in-app micro-survey",
+      "summary": "NPS dip in segment using new throttle UX.",
+      "payload_json": {
+        "source": "survey_tool",
+        "confidence": 0.5,
+        "interpretation_status": "pending",
+        "sentiment_poor": true,
+        "freshness_at": "2026-04-07T18:00:00+00:00",
+        "owner": "demo-product"
+      },
+      "external_ref": "demo:b6:sat",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-sat"
+    },
+    {
+      "id": "ogs:demo:b6:sig:rev",
+      "kind": "revenue_proxy_signal",
+      "display_name": "Revenue proxy — expansion seats",
+      "summary": "No measurable ARR movement attributed to launch (neutral).",
+      "payload_json": {
+        "source": "finance_stub",
+        "confidence": 0.4,
+        "interpretation_status": "triage",
+        "freshness_at": "2026-04-05T12:00:00+00:00",
+        "owner": "demo-finance"
+      },
+      "external_ref": "demo:b6:rev",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-rev"
+    },
+    {
+      "id": "ogs:demo:b6:ms:w1",
+      "kind": "metric_snapshot",
+      "display_name": "Metric snapshot — DAU / auth errors",
+      "summary": "External snapshot row linked to launch window.",
+      "payload_json": {
+        "source": "datadog_stub",
+        "metric_keys": ["auth.429.count", "auth.latency.p95"],
+        "confidence": 0.7,
+        "interpretation_status": "confirmed",
+        "freshness_at": "2026-04-10T10:00:00+00:00",
+        "owner": "demo-sre"
+      },
+      "external_ref": "demo:b6:ms",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-ms"
+    },
+    {
+      "id": "ogs:demo:b6:exp:guard",
+      "kind": "experiment_result",
+      "display_name": "Experiment — guardrail A/B",
+      "summary": "Variant B increased client retry storms; not shipped broadly.",
+      "payload_json": {
+        "source": "experiment_platform",
+        "confidence": 0.75,
+        "interpretation_status": "confirmed",
+        "variant_worse": true,
+        "freshness_at": "2026-04-09T20:00:00+00:00",
+        "owner": "demo-exp"
+      },
+      "external_ref": "demo:b6:exp",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-exp"
+    },
+    {
+      "id": "ogs:demo:b6:fb:zendesk",
+      "kind": "customer_feedback_ref",
+      "display_name": "Customer feedback — ticket #8821",
+      "summary": "Enterprise tenant reports confusing 429 messaging during burst.",
+      "payload_json": {
+        "source": "zendesk",
+        "external_url": "https://example.zendesk.com/tickets/8821",
+        "confidence": 0.8,
+        "interpretation_status": "confirmed",
+        "freshness_at": "2026-04-10T14:00:00+00:00",
+        "owner": "demo-csm"
+      },
+      "external_ref": "demo:b6:fb",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-fb"
+    },
+    {
+      "id": "ogs:demo:b6:os:health",
+      "kind": "outcome_signal",
+      "display_name": "Composite outcome health (demo)",
+      "summary": "Roll-up health flag synthesizing adoption + support + satisfaction.",
+      "payload_json": {
+        "source": "lenses_demo",
+        "confidence": 0.58,
+        "interpretation_status": "pending",
+        "freshness_at": "2026-04-10T16:00:00+00:00",
+        "owner": "demo-orchestration"
+      },
+      "external_ref": "demo:b6:os",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-os"
+    },
+    {
+      "id": "ogs:demo:b6:learn:postv14",
+      "kind": "learning_summary",
+      "display_name": "Learning summary — post v1.4.0 auth train",
+      "summary": "Adoption lag + support noise + survey dip; retention stable; experiment guardrail negative.",
+      "payload_json": {
+        "source": "demo_rollup",
+        "interpretation_status": "draft",
+        "freshness_at": "2026-04-10T17:00:00+00:00",
+        "owner": "demo-pm",
+        "evidence_note": "Linked signals and review/assay packs inform launch decision support."
+      },
+      "external_ref": "demo:b6:learn",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-learn"
+    },
+    {
+      "id": "ogs:demo:b6:ore:burst",
+      "kind": "followon_ore_candidate",
+      "display_name": "Ore candidate — tenant burst UX + observability",
+      "summary": "Demand shaped from outcome evidence: clarify 429 UX, improve burst dashboards.",
+      "payload_json": {
+        "source": "outcome_b6_demo",
+        "reason": "support_pain_and_low_adoption",
+        "interpretation_status": "draft",
+        "freshness_at": "2026-04-10T17:30:00+00:00",
+        "owner": "demo-pm"
+      },
+      "external_ref": "demo:b6:ore",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-ore"
+    },
+    {
+      "id": "ogs:demo:b6:demand:burst",
+      "kind": "demand_signal",
+      "display_name": "Ore — burst clarity & throttle observability (from outcomes)",
+      "summary": "Prioritize UX copy for 429, burst dashboards, and support runbooks (from B6 loop).",
+      "payload_json": {
+        "source": "outcome_b6_followon",
+        "from_learning_id": "ogs:demo:b6:learn:postv14",
+        "freshness_at": "2026-04-10T17:30:00+00:00",
+        "owner": "demo-pm"
+      },
+      "external_ref": "demo:b6:demand",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b6-demand"
+    }
+  ],
+  "edges": [
+    { "id": "ogs:demo:e1", "from_id": "ogs:demo:objective:platform-reliability", "to_id": "ogs:demo:initiative:oauth-hardening", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e1" },
+    { "id": "ogs:demo:e2", "from_id": "ogs:demo:initiative:oauth-hardening", "to_id": "ogs:demo:epic:api-security", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e2" },
+    { "id": "ogs:demo:e3", "from_id": "ogs:demo:epic:api-security", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e3" },
+    { "id": "ogs:demo:e4", "from_id": "ogs:demo:story:rate-limit-auth", "to_id": "ogs:demo:task:token-bucket", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e4" },
+    { "id": "ogs:demo:e5", "from_id": "ogs:demo:story:rate-limit-auth", "to_id": "ogs:demo:evidence:wbs-auth", "kind": "documented_by", "source_system": "lenses_demo_seed", "source_record_id": "e5" },
+    { "id": "ogs:demo:e6", "from_id": "ogs:demo:cr:184", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "implements", "source_system": "lenses_demo_seed", "source_record_id": "e6" },
+    { "id": "ogs:demo:e7", "from_id": "ogs:demo:cr:184", "to_id": "ogs:demo:commit:a1b2c3d", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e7" },
+    { "id": "ogs:demo:e8", "from_id": "ogs:demo:repo:forgesdlc", "to_id": "ogs:demo:branch:forgesdlc-main", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e8" },
+    { "id": "ogs:demo:e9", "from_id": "ogs:demo:branch:forgesdlc-main", "to_id": "ogs:demo:commit:a1b2c3d", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e9" },
+    { "id": "ogs:demo:e10", "from_id": "ogs:demo:task:token-bucket", "to_id": "ogs:demo:branch:forgesdlc-main", "kind": "targets", "source_system": "lenses_demo_seed", "source_record_id": "e10" },
+    { "id": "ogs:demo:e11", "from_id": "ogs:demo:build:ci-9912", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "tests", "source_system": "lenses_demo_seed", "source_record_id": "e11" },
+    { "id": "ogs:demo:e12", "from_id": "ogs:demo:build:ci-9912", "to_id": "ogs:demo:artifact:oci-1.4.0", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e12" },
+    { "id": "ogs:demo:e13", "from_id": "ogs:demo:testrun:9912-unit", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "tests", "source_system": "lenses_demo_seed", "source_record_id": "e13" },
+    { "id": "ogs:demo:e14", "from_id": "ogs:demo:testrun:9912-unit", "to_id": "ogs:demo:build:ci-9912", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e14" },
+    { "id": "ogs:demo:e25", "from_id": "ogs:demo:testplan:auth-q2", "to_id": "ogs:demo:testsuite:regression", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e25" },
+    { "id": "ogs:demo:e26", "from_id": "ogs:demo:testsuite:regression", "to_id": "ogs:demo:testcase:rate-001", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e26" },
+    { "id": "ogs:demo:e27", "from_id": "ogs:demo:testcase:rate-001", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "validates", "source_system": "lenses_demo_seed", "source_record_id": "e27" },
+    { "id": "ogs:demo:e28", "from_id": "ogs:demo:testcase:rate-001", "to_id": "ogs:demo:defect:441", "kind": "raised_defect", "source_system": "lenses_demo_seed", "source_record_id": "e28" },
+    { "id": "ogs:demo:e29", "from_id": "ogs:demo:defect:441", "to_id": "ogs:demo:release:v1.4.0", "kind": "affects", "source_system": "lenses_demo_seed", "source_record_id": "e29" },
+    { "id": "ogs:demo:e30", "from_id": "ogs:demo:sf:sast-auth", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "affects", "source_system": "lenses_demo_seed", "source_record_id": "e30" },
+    { "id": "ogs:demo:e33", "from_id": "ogs:demo:sf:secret-leak", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "affects", "source_system": "lenses_demo_seed", "source_record_id": "e33" },
+    { "id": "ogs:demo:e31", "from_id": "ogs:demo:exception:exc-demo", "to_id": "ogs:demo:sf:secret-leak", "kind": "accepted_risk_for", "source_system": "lenses_demo_seed", "source_record_id": "e31" },
+    { "id": "ogs:demo:e32", "from_id": "ogs:demo:control:soc2-cc6", "to_id": "ogs:demo:release:v1.4.0", "kind": "satisfies", "source_system": "lenses_demo_seed", "source_record_id": "e32" },
+    { "id": "ogs:demo:e15", "from_id": "ogs:demo:release:v1.4.0", "to_id": "ogs:demo:artifact:oci-1.4.0", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e15" },
+    { "id": "ogs:demo:e16", "from_id": "ogs:demo:release:v1.4.0", "to_id": "ogs:demo:env:production", "kind": "deploys", "source_system": "lenses_demo_seed", "source_record_id": "e16" },
+    { "id": "ogs:demo:e17", "from_id": "ogs:demo:vuln:ghsa-abc", "to_id": "ogs:demo:release:v1.4.0", "kind": "affects", "source_system": "lenses_demo_seed", "source_record_id": "e17" },
+    { "id": "ogs:demo:e18", "from_id": "ogs:demo:incident:2026-04-sev2", "to_id": "ogs:demo:vuln:ghsa-abc", "kind": "caused_by", "source_system": "lenses_demo_seed", "source_record_id": "e18" },
+    { "id": "ogs:demo:e19", "from_id": "ogs:demo:release:v1.4.0", "to_id": "ogs:demo:vuln:ghsa-abc", "kind": "mitigates", "source_system": "lenses_demo_seed", "source_record_id": "e19" },
+    { "id": "ogs:demo:e20", "from_id": "ogs:demo:initiative:oauth-hardening", "to_id": "ogs:demo:epic:client-oauth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e20" },
+    { "id": "ogs:demo:e21", "from_id": "ogs:demo:epic:client-oauth", "to_id": "ogs:demo:story:oauth-refresh-ui", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "e21" },
+    { "id": "ogs:demo:e22", "from_id": "ogs:demo:story:oauth-refresh-ui", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "depends_on", "source_system": "lenses_demo_seed", "source_record_id": "e22" },
+    { "id": "ogs:demo:e23", "from_id": "ogs:demo:story:rate-limit-auth", "to_id": "ogs:demo:ws:platform", "kind": "allocated_to", "source_system": "lenses_demo_seed", "source_record_id": "e23" },
+    { "id": "ogs:demo:e24", "from_id": "ogs:demo:story:oauth-refresh-ui", "to_id": "ogs:demo:ws:product", "kind": "allocated_to", "source_system": "lenses_demo_seed", "source_record_id": "e24" },
+    { "id": "ogs:demo:e34", "from_id": "ogs:demo:incident:prod-auth-latency", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "affects", "source_system": "lenses_demo_seed", "source_record_id": "e34" },
+    { "id": "ogs:demo:e35", "from_id": "ogs:demo:incident:prod-auth-latency", "to_id": "ogs:demo:release:v1.4.0", "kind": "triggered_after", "source_system": "lenses_demo_seed", "source_record_id": "e35" },
+    { "id": "ogs:demo:e36", "from_id": "ogs:demo:incident:prod-auth-latency", "to_id": "ogs:demo:svc:forge-web", "kind": "impacts", "source_system": "lenses_demo_seed", "source_record_id": "e36" },
+    { "id": "ogs:demo:e37", "from_id": "ogs:demo:pm:auth-latency-2026", "to_id": "ogs:demo:incident:prod-auth-latency", "kind": "analyzes", "source_system": "lenses_demo_seed", "source_record_id": "e37" },
+    { "id": "ogs:demo:b1:e1", "from_id": "ogs:demo:demand:ore-auth-throttle", "to_id": "ogs:demo:objective:platform-reliability", "kind": "originates_from", "source_system": "lenses_demo_seed", "source_record_id": "b1-e1" },
+    { "id": "ogs:demo:b1:e2", "from_id": "ogs:demo:demand:ore-auth-throttle", "to_id": "ogs:demo:scoped:ingot-auth-q2", "kind": "decomposes_to", "source_system": "lenses_demo_seed", "source_record_id": "b1-e2" },
+    { "id": "ogs:demo:b1:e3", "from_id": "ogs:demo:scoped:ingot-auth-q2", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "decomposes_to", "source_system": "lenses_demo_seed", "source_record_id": "b1-e3" },
+    { "id": "ogs:demo:b1:e4", "from_id": "ogs:demo:story:rate-limit-auth", "to_id": "ogs:demo:contrib:lead-alex", "kind": "reviewed_by", "source_system": "lenses_demo_seed", "source_record_id": "b1-e4" },
+    { "id": "ogs:demo:b1:e5", "from_id": "ogs:demo:story:rate-limit-auth", "to_id": "ogs:demo:evidence:wbs-auth", "kind": "evidenced_by", "source_system": "lenses_demo_seed", "source_record_id": "b1-e5" },
+    { "id": "ogs:demo:b1:e6", "from_id": "ogs:demo:release:v1.4.0", "to_id": "ogs:demo:gate:assay-auth-release", "kind": "gated_by", "source_system": "lenses_demo_seed", "source_record_id": "b1-e6" },
+    { "id": "ogs:demo:b2:e1", "from_id": "ogs:demo:scoped:ingot-auth-q2", "to_id": "ogs:demo:b2:psp", "kind": "decomposes_to", "source_system": "lenses_demo_seed", "source_record_id": "b2-e1" },
+    { "id": "ogs:demo:b2:e2", "from_id": "ogs:demo:b2:psp", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "decomposes_to", "source_system": "lenses_demo_seed", "source_record_id": "b2-e2" },
+    { "id": "ogs:demo:b2:e3", "from_id": "ogs:demo:b2:adr-auth", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b2-e3" },
+    { "id": "ogs:demo:b2:e4", "from_id": "ogs:demo:b2:directive-sec", "to_id": "ogs:demo:release:v1.4.0", "kind": "approves", "source_system": "lenses_demo_seed", "source_record_id": "b2-e4" },
+    { "id": "ogs:demo:b2:e5", "from_id": "ogs:demo:b2:rp-auth", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b2-e5" },
+    { "id": "ogs:demo:b2:e6", "from_id": "ogs:demo:b2:rp-auth", "to_id": "ogs:demo:cr:184", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b2-e6" },
+    { "id": "ogs:demo:b2:e7", "from_id": "ogs:demo:b2:rp-auth", "to_id": "ogs:demo:b2:impl-ev", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b2-e7" },
+    { "id": "ogs:demo:b2:e8", "from_id": "ogs:demo:b2:rp-auth", "to_id": "ogs:demo:b2:adr-auth", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b2-e8" },
+    { "id": "ogs:demo:b2:e9", "from_id": "ogs:demo:b2:ap-auth", "to_id": "ogs:demo:release:v1.4.0", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b2-e9" },
+    { "id": "ogs:demo:b2:e10", "from_id": "ogs:demo:b2:ap-auth", "to_id": "ogs:demo:build:ci-9912", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b2-e10" },
+    { "id": "ogs:demo:b2:e11", "from_id": "ogs:demo:b2:ap-auth", "to_id": "ogs:demo:exception:exc-demo", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b2-e11" },
+    { "id": "ogs:demo:b2:e12", "from_id": "ogs:demo:b2:launch", "to_id": "ogs:demo:release:v1.4.0", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b2-e12" },
+    { "id": "ogs:demo:b3:e1", "from_id": "ogs:demo:b3:vf:eng", "to_id": "ogs:demo:b3:vp:se", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b3-e1" },
+    { "id": "ogs:demo:b3:e2", "from_id": "ogs:demo:b3:recipe:plan", "to_id": "ogs:demo:b3:tl:cog", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b3-e2" },
+    { "id": "ogs:demo:b3:e3", "from_id": "ogs:demo:b3:recipe:plan", "to_id": "ogs:demo:b3:tl:exec", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b3-e3" },
+    { "id": "ogs:demo:b3:e4", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:b3:recipe:plan", "kind": "executes", "source_system": "lenses_demo_seed", "source_record_id": "b3-e4" },
+    { "id": "ogs:demo:b3:e5", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:b3:tl:cog", "kind": "invokes", "source_system": "lenses_demo_seed", "source_record_id": "b3-e5" },
+    { "id": "ogs:demo:b3:e6", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:b3:out:summary", "kind": "emits", "source_system": "lenses_demo_seed", "source_record_id": "b3-e6" },
+    { "id": "ogs:demo:b3:e7", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e7" },
+    { "id": "ogs:demo:b3:e8", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:b3:step:1", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b3-e8" },
+    { "id": "ogs:demo:b3:e9", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:b3:pt:versona", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e9" },
+    { "id": "ogs:demo:b3:e10", "from_id": "ogs:demo:b3:run:gated", "to_id": "ogs:demo:b3:recipe:plan", "kind": "executes", "source_system": "lenses_demo_seed", "source_record_id": "b3-e10" },
+    { "id": "ogs:demo:b3:e11", "from_id": "ogs:demo:b3:run:gated", "to_id": "ogs:demo:b3:apr:pending", "kind": "seeks_approval", "source_system": "lenses_demo_seed", "source_record_id": "b3-e11" },
+    { "id": "ogs:demo:b3:e12", "from_id": "ogs:demo:b3:out:summary", "to_id": "ogs:demo:b2:impl-ev", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e12" },
+    { "id": "ogs:demo:b3:e13", "from_id": "ogs:demo:b3:pol:writes", "to_id": "ogs:demo:b3:run:gated", "kind": "constrains", "source_system": "lenses_demo_seed", "source_record_id": "b3-e13" },
+    { "id": "ogs:demo:b3:e14", "from_id": "ogs:demo:b3:lp:tpl", "to_id": "ogs:demo:b3:recipe:plan", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e14" },
+    { "id": "ogs:demo:b3:e15", "from_id": "ogs:demo:b3:drift:snap", "to_id": "ogs:demo:b3:rm:live", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e15" },
+    { "id": "ogs:demo:b3:e16", "from_id": "ogs:demo:b3:run:readonly", "to_id": "ogs:demo:b3:xt:workspace", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e16" },
+    { "id": "ogs:demo:b3:e17", "from_id": "ogs:demo:b3:run:gated", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e17" },
+    { "id": "ogs:demo:b3:e18", "from_id": "ogs:demo:b3:drift:snap", "to_id": "ogs:demo:b3:recipe:plan", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e18" },
+    { "id": "ogs:demo:b3:e19", "from_id": "ogs:demo:b3:recipe:plan", "to_id": "ogs:demo:b3:vf:eng", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b3-e19" },
+    { "id": "ogs:demo:b4:e1", "from_id": "ogs:demo:b4:map:c2-charge", "to_id": "ogs:demo:b4:intent:C2", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e1" },
+    { "id": "ogs:demo:b4:e2", "from_id": "ogs:demo:b4:map:c3-review", "to_id": "ogs:demo:b4:intent:C3", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e2" },
+    { "id": "ogs:demo:b4:e3", "from_id": "ogs:demo:b4:map:c5-gate", "to_id": "ogs:demo:b4:intent:C5", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e3" },
+    { "id": "ogs:demo:b4:e4", "from_id": "ogs:demo:b4:map:c6-ember", "to_id": "ogs:demo:b4:intent:C6", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e4" },
+    { "id": "ogs:demo:b4:e5", "from_id": "ogs:demo:b4:tpl:charge", "to_id": "ogs:demo:b4:intent:C2", "kind": "realizes_intent", "source_system": "lenses_demo_seed", "source_record_id": "b4-e5" },
+    { "id": "ogs:demo:b4:e6", "from_id": "ogs:demo:b4:tpl:readiness", "to_id": "ogs:demo:b4:intent:C3", "kind": "realizes_intent", "source_system": "lenses_demo_seed", "source_record_id": "b4-e6" },
+    { "id": "ogs:demo:b4:e7", "from_id": "ogs:demo:b4:tpl:assay", "to_id": "ogs:demo:b4:intent:C5", "kind": "realizes_intent", "source_system": "lenses_demo_seed", "source_record_id": "b4-e7" },
+    { "id": "ogs:demo:b4:e8", "from_id": "ogs:demo:b4:tpl:retro", "to_id": "ogs:demo:b4:intent:C6", "kind": "realizes_intent", "source_system": "lenses_demo_seed", "source_record_id": "b4-e8" },
+    { "id": "ogs:demo:b4:e9", "from_id": "ogs:demo:b4:tpl:charge", "to_id": "ogs:demo:b4:map:c2-charge", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e9" },
+    { "id": "ogs:demo:b4:e10", "from_id": "ogs:demo:b4:tpl:readiness", "to_id": "ogs:demo:b4:map:c3-review", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e10" },
+    { "id": "ogs:demo:b4:e11", "from_id": "ogs:demo:b4:tpl:assay", "to_id": "ogs:demo:b4:map:c5-gate", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e11" },
+    { "id": "ogs:demo:b4:e12", "from_id": "ogs:demo:b4:tpl:retro", "to_id": "ogs:demo:b4:map:c6-ember", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e12" },
+    { "id": "ogs:demo:b4:e13", "from_id": "ogs:demo:b4:tpl:charge", "to_id": "ogs:demo:b4:req:planning", "kind": "requires_input", "source_system": "lenses_demo_seed", "source_record_id": "b4-e13" },
+    { "id": "ogs:demo:b4:e14", "from_id": "ogs:demo:b4:tpl:readiness", "to_id": "ogs:demo:b4:req:evidence", "kind": "requires_input", "source_system": "lenses_demo_seed", "source_record_id": "b4-e14" },
+    { "id": "ogs:demo:b4:e15", "from_id": "ogs:demo:b4:tpl:assay", "to_id": "ogs:demo:b4:req:assay", "kind": "requires_input", "source_system": "lenses_demo_seed", "source_record_id": "b4-e15" },
+    { "id": "ogs:demo:b4:e16", "from_id": "ogs:demo:b4:tpl:retro", "to_id": "ogs:demo:b4:req:retro", "kind": "requires_input", "source_system": "lenses_demo_seed", "source_record_id": "b4-e16" },
+    { "id": "ogs:demo:b4:e17", "from_id": "ogs:demo:b4:tpl:charge", "to_id": "ogs:demo:b4:role:participant", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b4-e17" },
+    { "id": "ogs:demo:b4:e18", "from_id": "ogs:demo:b4:tpl:charge", "to_id": "ogs:demo:b4:role:moderator", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b4-e18" },
+    { "id": "ogs:demo:b4:e19", "from_id": "ogs:demo:b4:rule:standard", "to_id": "ogs:demo:b4:tpl:charge", "kind": "constrains", "source_system": "lenses_demo_seed", "source_record_id": "b4-e19" },
+    { "id": "ogs:demo:b4:e20", "from_id": "ogs:demo:b4:rule:standard", "to_id": "ogs:demo:b4:tpl:readiness", "kind": "constrains", "source_system": "lenses_demo_seed", "source_record_id": "b4-e20" },
+    { "id": "ogs:demo:b4:e21", "from_id": "ogs:demo:b4:rule:standard", "to_id": "ogs:demo:b4:tpl:retro", "kind": "constrains", "source_system": "lenses_demo_seed", "source_record_id": "b4-e21" },
+    { "id": "ogs:demo:b4:e22", "from_id": "ogs:demo:b4:rule:gate", "to_id": "ogs:demo:b4:tpl:assay", "kind": "constrains", "source_system": "lenses_demo_seed", "source_record_id": "b4-e22" },
+    { "id": "ogs:demo:b4:e23", "from_id": "ogs:demo:b4:inst:hybrid", "to_id": "ogs:demo:b4:tpl:charge", "kind": "instantiates", "source_system": "lenses_demo_seed", "source_record_id": "b4-e23" },
+    { "id": "ogs:demo:b4:e24", "from_id": "ogs:demo:b4:inst:hybrid", "to_id": "ogs:demo:b4:dm:hybrid", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e24" },
+    { "id": "ogs:demo:b4:e25", "from_id": "ogs:demo:b4:inst:hybrid", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e25" },
+    { "id": "ogs:demo:b4:e26", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:b4:tpl:assay", "kind": "instantiates", "source_system": "lenses_demo_seed", "source_record_id": "b4-e26" },
+    { "id": "ogs:demo:b4:e27", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:b4:dm:versona_assisted_human_binding", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e27" },
+    { "id": "ogs:demo:b4:e28", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e28" },
+    { "id": "ogs:demo:b4:e29", "from_id": "ogs:demo:b4:inst:hybrid", "to_id": "ogs:demo:b4:out:synth", "kind": "yields_output", "source_system": "lenses_demo_seed", "source_record_id": "b4-e29" },
+    { "id": "ogs:demo:b4:e30", "from_id": "ogs:demo:b4:out:synth", "to_id": "ogs:demo:b3:out:summary", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e30" },
+    { "id": "ogs:demo:b4:e31", "from_id": "ogs:demo:b4:so:alex", "to_id": "ogs:demo:b4:inst:binding", "kind": "approves", "source_system": "lenses_demo_seed", "source_record_id": "b4-e31" },
+    { "id": "ogs:demo:b4:e32", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:b4:out:assay", "kind": "yields_output", "source_system": "lenses_demo_seed", "source_record_id": "b4-e32" },
+    { "id": "ogs:demo:b4:e33", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:b4:out:next", "kind": "yields_output", "source_system": "lenses_demo_seed", "source_record_id": "b4-e33" },
+    { "id": "ogs:demo:b4:e34", "from_id": "ogs:demo:b4:out:assay", "to_id": "ogs:demo:b2:ap-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e34" },
+    { "id": "ogs:demo:b4:e35", "from_id": "ogs:demo:b4:out:next", "to_id": "ogs:demo:b2:directive-sec", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e35" },
+    { "id": "ogs:demo:b4:e36", "from_id": "ogs:demo:b4:out:next", "to_id": "ogs:demo:b2:rp-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e36" },
+    { "id": "ogs:demo:b4:e37", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:b4:fu:task", "kind": "follows_up_with", "source_system": "lenses_demo_seed", "source_record_id": "b4-e37" },
+    { "id": "ogs:demo:b4:e38", "from_id": "ogs:demo:b4:inst:binding", "to_id": "ogs:demo:b4:fu:story", "kind": "follows_up_with", "source_system": "lenses_demo_seed", "source_record_id": "b4-e38" },
+    { "id": "ogs:demo:b4:e39", "from_id": "ogs:demo:b4:fu:task", "to_id": "ogs:demo:task:token-bucket", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e39" },
+    { "id": "ogs:demo:b4:e40", "from_id": "ogs:demo:b4:fu:story", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e40" },
+    { "id": "ogs:demo:b4:e41", "from_id": "ogs:demo:b4:out:synth", "to_id": "ogs:demo:evidence:wbs-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b4-e41" },
+    { "id": "ogs:demo:b5:e1", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:demo:b5:pb:auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e1" },
+    { "id": "ogs:demo:b5:e2", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:demo:b5:cb:auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e2" },
+    { "id": "ogs:demo:b5:e3", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:b5:target:cursor", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e3" },
+    { "id": "ogs:demo:b5:e4", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "scopes_handoff", "source_system": "lenses_demo_seed", "source_record_id": "b5-e4" },
+    { "id": "ogs:demo:b5:e5", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:demo:b3:lp:tpl", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e5" },
+    { "id": "ogs:demo:b5:e6", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:demo:b3:recipe:plan", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e6" },
+    { "id": "ogs:demo:b5:e7", "from_id": "ogs:demo:b5:pkg:auth-rate", "to_id": "ogs:demo:b2:rp-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e7" },
+    { "id": "ogs:demo:b5:e8", "from_id": "ogs:demo:b5:sess:auth", "to_id": "ogs:demo:b5:pkg:auth-rate", "kind": "session_for", "source_system": "lenses_demo_seed", "source_record_id": "b5-e8" },
+    { "id": "ogs:demo:b5:e9", "from_id": "ogs:demo:b5:ret:auth", "to_id": "ogs:demo:b5:sess:auth", "kind": "derived_from", "source_system": "lenses_demo_seed", "source_record_id": "b5-e9" },
+    { "id": "ogs:demo:b5:e10", "from_id": "ogs:demo:b5:ret:auth", "to_id": "ogs:demo:b5:om:auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e10" },
+    { "id": "ogs:demo:b5:e11", "from_id": "ogs:demo:b5:om:auth", "to_id": "ogs:demo:b5:fc:1", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e11" },
+    { "id": "ogs:demo:b5:e12", "from_id": "ogs:demo:b5:om:auth", "to_id": "ogs:demo:b5:fc:2", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e12" },
+    { "id": "ogs:demo:b5:e13", "from_id": "ogs:demo:b5:ret:auth", "to_id": "ogs:demo:b5:btr:auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e13" },
+    { "id": "ogs:demo:b5:e14", "from_id": "ogs:demo:b5:btr:auth", "to_id": "ogs:demo:build:ci-9912", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e14" },
+    { "id": "ogs:demo:b5:e15", "from_id": "ogs:demo:b5:btr:auth", "to_id": "ogs:demo:testrun:9912-unit", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e15" },
+    { "id": "ogs:demo:b5:e16", "from_id": "ogs:demo:b5:ret:auth", "to_id": "ogs:demo:b5:cref:auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e16" },
+    { "id": "ogs:demo:b5:e17", "from_id": "ogs:demo:b5:cref:auth", "to_id": "ogs:demo:cr:184", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b5-e17" },
+    { "id": "ogs:demo:b5:e18", "from_id": "ogs:demo:b5:ret:auth", "to_id": "ogs:demo:b5:ck:auth", "kind": "contains", "source_system": "lenses_demo_seed", "source_record_id": "b5-e18" },
+    { "id": "ogs:demo:b6:e1", "from_id": "ogs:demo:b6:launch:auth-train", "to_id": "ogs:demo:release:v1.4.0", "kind": "launch_for", "source_system": "lenses_demo_seed", "source_record_id": "b6-e1" },
+    { "id": "ogs:demo:b6:e2", "from_id": "ogs:demo:b6:launch:auth-train", "to_id": "ogs:demo:b2:launch", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b6-e2" },
+    { "id": "ogs:demo:b6:e3", "from_id": "ogs:demo:b6:sig:adopt", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e3" },
+    { "id": "ogs:demo:b6:e4", "from_id": "ogs:demo:b6:sig:supp", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e4" },
+    { "id": "ogs:demo:b6:e5", "from_id": "ogs:demo:b6:sig:ret", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e5" },
+    { "id": "ogs:demo:b6:e6", "from_id": "ogs:demo:b6:sig:sat", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e6" },
+    { "id": "ogs:demo:b6:e7", "from_id": "ogs:demo:b6:sig:rev", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e7" },
+    { "id": "ogs:demo:b6:e8", "from_id": "ogs:demo:b6:ms:w1", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e8" },
+    { "id": "ogs:demo:b6:e9", "from_id": "ogs:demo:b6:exp:guard", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e9" },
+    { "id": "ogs:demo:b6:e10", "from_id": "ogs:demo:b6:fb:zendesk", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e10" },
+    { "id": "ogs:demo:b6:e11", "from_id": "ogs:demo:b6:os:health", "to_id": "ogs:demo:b6:launch:auth-train", "kind": "outcome_observed", "source_system": "lenses_demo_seed", "source_record_id": "b6-e11" },
+    { "id": "ogs:demo:b6:e12", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:sig:adopt", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e12" },
+    { "id": "ogs:demo:b6:e13", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:sig:supp", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e13" },
+    { "id": "ogs:demo:b6:e14", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:sig:ret", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e14" },
+    { "id": "ogs:demo:b6:e15", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:sig:sat", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e15" },
+    { "id": "ogs:demo:b6:e16", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:sig:rev", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e16" },
+    { "id": "ogs:demo:b6:e17", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:ms:w1", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e17" },
+    { "id": "ogs:demo:b6:e18", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:exp:guard", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e18" },
+    { "id": "ogs:demo:b6:e19", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:fb:zendesk", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e19" },
+    { "id": "ogs:demo:b6:e20", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:os:health", "kind": "aggregates", "source_system": "lenses_demo_seed", "source_record_id": "b6-e20" },
+    { "id": "ogs:demo:b6:e21", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b2:rp-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b6-e21" },
+    { "id": "ogs:demo:b6:e22", "from_id": "ogs:demo:b6:learn:postv14", "to_id": "ogs:demo:b6:ore:burst", "kind": "proposes_followon", "source_system": "lenses_demo_seed", "source_record_id": "b6-e22" },
+    { "id": "ogs:demo:b6:e23", "from_id": "ogs:demo:b6:ore:burst", "to_id": "ogs:demo:b6:demand:burst", "kind": "bridges_to_demand", "source_system": "lenses_demo_seed", "source_record_id": "b6-e23" },
+    { "id": "ogs:demo:b6:e24", "from_id": "ogs:demo:b6:demand:burst", "to_id": "ogs:demo:objective:platform-reliability", "kind": "originates_from", "source_system": "lenses_demo_seed", "source_record_id": "b6-e24" },
+    { "id": "ogs:demo:b6:e25", "from_id": "ogs:demo:b6:demand:burst", "to_id": "ogs:demo:story:rate-limit-auth", "kind": "references", "source_system": "lenses_demo_seed", "source_record_id": "b6-e25" }
+  ]
+}

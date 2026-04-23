@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "registry_version": "2026.04.12",
+  "forge_artifact_profiles": {
+    "ore": { "neutral_category": "demand_signal", "evidence_phase": "discovery_validation" },
+    "ingot": { "neutral_category": "scoped_commitment", "evidence_phase": "discovery_validation" },
+    "product_spark_plan": { "neutral_category": "planning_artifact", "evidence_phase": "discovery_validation" },
+    "forge_spark": { "neutral_category": "execution_unit", "evidence_phase": "implementation" },
+    "charge": { "neutral_category": "commitment_artifact", "evidence_phase": "implementation" },
+    "ember_log": { "neutral_category": "narrative_decision", "evidence_phase": "retrospective" },
+    "adr": { "neutral_category": "architecture_decision", "evidence_phase": "implementation" },
+    "directive": { "neutral_category": "governance_decision", "evidence_phase": "compliance_supporting" },
+    "review_pack": { "neutral_category": "review_bundle", "evidence_phase": "implementation" },
+    "assay_packet": { "neutral_category": "quality_gate_bundle", "evidence_phase": "implementation" },
+    "release_launch_record": { "neutral_category": "release_record", "evidence_phase": "compliance_supporting" },
+    "discovery_validation_evidence": { "neutral_category": "evidence", "evidence_phase": "discovery_validation" },
+    "implementation_evidence": { "neutral_category": "evidence", "evidence_phase": "implementation" },
+    "retrospective_evidence": { "neutral_category": "evidence", "evidence_phase": "retrospective" },
+    "compliance_supporting_evidence": { "neutral_category": "evidence", "evidence_phase": "compliance_supporting" }
+  },
+  "decision_type_profiles": {
+    "ember_log": { "binding_default": false, "gates": [], "human_signoff_required_for_binding": false },
+    "adr": { "binding_default": true, "gates": ["implementation", "review"], "human_signoff_required_for_binding": true },
+    "directive": { "binding_default": true, "gates": ["implementation", "review", "assay", "release"], "human_signoff_required_for_binding": true }
+  },
+  "gating_rules": {
+    "implementation": { "requires_decision_types": ["adr", "directive"], "requires_binding_signoff": true },
+    "review": { "requires_decision_types": ["adr"], "requires_binding_signoff": false },
+    "assay": { "requires_artifact_profiles": ["assay_packet"], "requires_binding_signoff": false },
+    "release": { "requires_artifact_profiles": ["release_launch_record", "assay_packet"], "requires_binding_signoff": true }
+  },
+  "readiness_hints": {
+    "release_entity_suggested_edges_in": [
+      { "from_kind": "assay_packet", "edge_kind": "gated_by" },
+      { "from_kind": "review_pack", "edge_kind": "references" }
+    ]
+  },
+  "ingest_defaults": {
+    "scan_roots": ["forge", "docs", "ember-logs", "knowledge"],
+    "max_file_bytes": 524288
+  }
+}

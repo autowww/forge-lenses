@@ -14,7 +14,7 @@ learning_level: '201'
 
 Choosing **which folders** Lenses scans: usually a **parent directory** that contains your product repos and the **forge-lenses** checkout as siblings.
 
-**Read this first:** Lenses treats one directory on disk as the **workspace root**. Everything else — which repos appear, how links resolve, and whether Studio feels “empty” — follows from that choice. If the root is too narrow, you will only see one clone; if it is wrong, scans and project cards will not match what you expect. The child pages below unpack **layouts**, **how to pick the root**, and **scan/host** details when something is misaligned.
+**Read this first:** Lenses treats one directory on disk as the **workspace root**. Everything else — which repos appear, how links resolve, and whether Studio feels “empty” — follows from that choice. If the root is too narrow, you will only see one clone; if it is wrong, scans and project cards will not match what you expect. The child pages below unpack **layouts**, **how to pick the root**, and **what to do when projects or scans still look wrong**.
 
 ## When to use it
 
@@ -31,7 +31,7 @@ Before you rely on multi-repo overview, project cards, or cross-repo links — o
 
 **Choosing the root** is where you commit to a single path for `LENSES_WORKSPACE_ROOT` (or equivalent). Read it when the UI shows fewer repos than you have on disk, or when you intentionally want a smaller scope.
 
-**Scan and host setup** covers how the server discovers projects and common host permission issues. Use it when the root looks correct but scans stay empty or errors mention access.
+**When projects or scans look wrong** walks through the usual **env var + restart** fix first, then optional **advanced** notes for nested/host layouts. Use it when the root looks correct but **Projects** is still empty, permissions fail, or caches are not where your team expects.
 
 Each child page is **scenario-first**: worked examples, folder trees, symptom-to-fix tables, and an **expected outcome** in plain language before you jump to the next topic.
 
@@ -39,15 +39,15 @@ Each child page is **scenario-first**: worked examples, folder trees, symptom-to
 |-------|------|
 | **Layouts (siblings vs host)** | [Common workspace layouts](03-workspace-setup_01-layouts.md) |
 | **Choosing the workspace root** | [How to choose `LENSES_WORKSPACE_ROOT`](03-workspace-setup_02-root-choice.md) |
-| **Scan, env var, caches** | [Scan, env var, and host caches](03-workspace-setup_03-scan-host.md) |
+| **When projects or scans look wrong** | [When projects or scans look wrong](03-workspace-setup_03-scan-host.md) |
 
 ### Topic order (visual)
 
-Read **layouts**, then **root choice**, then **scan and host** if multi-repo overview misbehaves.
+Read **layouts**, then **root choice**, then **when projects or scans look wrong** if the overview still misbehaves.
 
 ```blueprint-diagram
 key: decision
-alt: Workspace setup — common layouts, then choosing the root, then scan and host troubleshooting
+alt: Workspace setup — common layouts, then choosing the root, then fixes when projects or scans look wrong
 ```
 
 ## How to verify success

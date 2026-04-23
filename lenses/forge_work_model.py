@@ -6,13 +6,14 @@ import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import urlencode
 
 from lenses.forge_spine import (
     index_versona_sessions,
     parse_charge_sparks,
 )
 from lenses.roadmap_outline import extract_gantt_model
-from lenses.safe_forge_paths import workspace_md_view_link
+from lenses.safe_forge_paths import roadmap_timeline_view_link, workspace_md_view_link
 from lenses.wbs_model import WBS_ID_RE, WbsModel, parse_wbs_markdown
 
 NodeKind = Literal[
@@ -150,10 +151,16 @@ class ForgeWorkModel:
 
 def _prov(path: str, role: str) -> dict[str, str]:
     p = path.replace("\\", "/")
+    if role == "roadmap":
+        vh = roadmap_timeline_view_link(p)
+    elif role == "wbs":
+        vh = f"/wbs/view?{urlencode({'p': p})}"
+    else:
+        vh = workspace_md_view_link(p)
     return {
         "path": p,
         "role": role,
-        "view_href": workspace_md_view_link(p),
+        "view_href": vh,
     }
 
 
@@ -285,6 +292,10 @@ def build_forge_work_model(
                 milestone_keys.add(mk)
 
     for mk in sorted(milestone_keys):
+        m_ex: dict[str, Any] = {"layer": "product_spark"}
+        bo = (wbs.milestone_outcomes or {}).get(mk, "").strip()
+        if bo:
+            m_ex["business_outcome"] = bo
         add_node(
             WorkNode(
                 id=mk,
@@ -293,7 +304,7 @@ def build_forge_work_model(
                 parent_id=None,
                 provenance=[wbs_prov],
                 synthesized=False,
-                extra={"layer": "product_spark"},
+                extra=m_ex,
             )
         )
 

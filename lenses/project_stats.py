@@ -7,7 +7,7 @@ import subprocess
 import time
 from collections import Counter
 from collections.abc import Iterator
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import math
 from pathlib import Path
 from typing import Any
@@ -61,6 +61,34 @@ def _iter_log_dates_since(cwd: Path, since_days: int = 90) -> Iterator[str]:
         line = line.strip()
         if line:
             yield line
+
+
+def commits_by_day_dict_range(cwd: Path, oldest: date, newest: date) -> dict[str, int]:
+    """Map YYYY-MM-DD -> commit count for commits with author date in [oldest, newest] inclusive."""
+    top = cwd.resolve()
+    if not (top / ".git").exists():
+        return {}
+    if oldest > newest:
+        return {}
+    since = oldest.isoformat()
+    until_excl = (newest + timedelta(days=1)).isoformat()
+    s = _run_git_text(
+        top,
+        "log",
+        f"--since={since}",
+        f"--until={until_excl}",
+        "--pretty=format:%ad",
+        "--date=short",
+        timeout=180.0,
+    )
+    if not s:
+        return {}
+    counts: Counter[str] = Counter()
+    for line in s.splitlines():
+        line = line.strip()
+        if line:
+            counts[line] += 1
+    return dict(counts)
 
 
 def commits_by_day_dict(cwd: Path, days: int = 7) -> dict[str, int]:
@@ -170,6 +198,45 @@ def git_numstat_since(cwd: Path, days: int = 7) -> tuple[int, int]:
         "--pretty=tformat:",
         "--numstat",
         timeout=120.0,
+    )
+    if not s:
+        return 0, 0
+    added = deleted = 0
+    for line in s.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split("\t")
+        if len(parts) < 3:
+            continue
+        a, d = parts[0], parts[1]
+        if a == "-" or d == "-":
+            continue
+        try:
+            added += int(a)
+            deleted += int(d)
+        except ValueError:
+            continue
+    return added, deleted
+
+
+def git_numstat_between(cwd: Path, oldest: date, newest: date) -> tuple[int, int]:
+    """Sum insertions and deletions from numstat for commits in [oldest, newest] inclusive."""
+    top = cwd.resolve()
+    if not (top / ".git").exists():
+        return 0, 0
+    if oldest > newest:
+        return 0, 0
+    since = oldest.isoformat()
+    until_excl = (newest + timedelta(days=1)).isoformat()
+    s = _run_git_text(
+        top,
+        "log",
+        f"--since={since}",
+        f"--until={until_excl}",
+        "--pretty=tformat:",
+        "--numstat",
+        timeout=180.0,
     )
     if not s:
         return 0, 0
@@ -354,6 +421,8 @@ def overview_repo_row_metrics(
     c: dict[str, Any],
     *,
     ext_limit: int = 120,
+    days: int = 7,
+    day_dict: dict[str, int] | None = None,
 ) -> tuple[
     str,
     Path,
@@ -370,8 +439,9 @@ def overview_repo_row_metrics(
     if not c.get("is_git"):
         return (name, path, c, [], None, None, {}, ([], 0))
     commits = git_recent_commits(path, 5)
-    add_d = git_numstat_since(path, 7)
-    day_dict = commits_by_day_dict(path, 7)
+    add_d = git_numstat_since(path, days)
+    if day_dict is None:
+        day_dict = commits_by_day_dict(path, days)
     tracked = git_tracked_paths(path)
     if tracked is None:
         loc = approx_tracked_lines(path)

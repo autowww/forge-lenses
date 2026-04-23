@@ -64,7 +64,7 @@ folders:
 
   - id: 03-content-and-demos
     title: Content and demos
-    max_shots: 10
+    max_shots: 12
     steps:
       - id: feature-showcase
         title: Feature showcase
@@ -84,3 +84,27 @@ folders:
         wait_ms: 2000
         wait_selector: body
         annotation: Forge blog index in Studio.
+      - id: advanced-reporting
+        title: Advanced reporting
+        path: /studio/overview/charts
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Cross-repo charts; Settings → Inspect & advanced in product shell.
+      - id: connector-health
+        title: Connector health
+        path: /studio/governance/connectors
+        wait_ms: 2500
+        wait_selector: body
+        annotation: Admin integration health surface.
+      - id: ux-diagnostics
+        title: UX diagnostics
+        path: /studio/settings/ux-insights
+        wait_ms: 2200
+        wait_selector: body
+        annotation: Session-local telemetry; Settings → Inspect & advanced.
+      - id: methodology-evidence
+        title: Methodology evidence registry
+        path: /studio/knowledge/methodology/evidence
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Knowledge tab sidebar route (navigationConfig documentation).

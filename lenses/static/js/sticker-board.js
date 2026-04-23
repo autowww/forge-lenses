@@ -10,6 +10,7 @@
   var sharedAvailable =
     root.getAttribute("data-shared-available") === "true";
   var thumbMode = root.getAttribute("data-thumb") === "1";
+  var sessionLogin = (root.getAttribute("data-session-login") || "").trim();
 
   if (!api || !boardId) {
     root.textContent = "Missing board configuration (board id or API URL).";
@@ -54,6 +55,7 @@
     delete payload.shared_board_login_required;
     delete payload.board_id;
     delete payload.board_not_found;
+    delete payload.board_acl;
     fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -88,6 +90,43 @@
     return arr;
   }
 
+  function defaultKanbanColumns() {
+    return [
+      { id: "todo", title: "To do" },
+      { id: "doing", title: "Doing" },
+      { id: "done", title: "Done" },
+    ];
+  }
+
+  function deepCopyColumns(cols) {
+    return JSON.parse(JSON.stringify(cols && cols.length ? cols : []));
+  }
+
+  function ensureKanbanStickerPlacement() {
+    if (!state.columns || !state.columns.length) return;
+    var colIds = {};
+    state.columns.forEach(function (c) {
+      colIds[c.id] = true;
+    });
+    var firstCol = state.columns[0].id;
+    state.stickers.forEach(function (s) {
+      if (!s.column_id || !colIds[s.column_id]) {
+        s.column_id = firstCol;
+      }
+    });
+    state.columns.forEach(function (col) {
+      var arr = state.stickers.filter(function (s) {
+        return s.column_id === col.id;
+      });
+      arr.sort(function (a, b) {
+        return (a.order || 0) - (b.order || 0);
+      });
+      arr.forEach(function (st, i) {
+        st.order = i;
+      });
+    });
+  }
+
   function deleteSticker(st) {
     if (!window.confirm("Delete this sticker?")) return;
     state.stickers = state.stickers.filter(function (s) {
@@ -96,6 +135,110 @@
     closeModal();
     scheduleSave();
     render();
+  }
+
+  function parseLoginList(s) {
+    if (!s || !String(s).trim()) return [];
+    return String(s)
+      .split(/[\s,]+/)
+      .map(function (x) {
+        return x.trim().toLowerCase();
+      })
+      .filter(Boolean);
+  }
+
+  function openShareModal() {
+    closeModal();
+    var acl = state.board_acl || {};
+    var back = document.createElement("div");
+    back.className = "lenses-sticker-modal-backdrop";
+    var box = document.createElement("div");
+    box.className = "lenses-sticker-modal";
+    box.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
+    var h = document.createElement("h2");
+    h.className = "h5 text-cyan mt-0";
+    h.textContent = "Board sharing (GitHub usernames)";
+    box.appendChild(h);
+    var help = document.createElement("p");
+    help.className = "forge-support small";
+    help.textContent =
+      "Owner, editors (can change stickers), viewers (read-only). Empty owner clears owner field.";
+    box.appendChild(help);
+    var oLab = document.createElement("label");
+    oLab.className = "form-label small";
+    oLab.textContent = "Owner login";
+    box.appendChild(oLab);
+    var ownerIn = document.createElement("input");
+    ownerIn.type = "text";
+    ownerIn.className = "form-control form-control-sm mb-2";
+    ownerIn.value = acl.owner_login || "";
+    box.appendChild(ownerIn);
+    var eLab = document.createElement("label");
+    eLab.className = "form-label small";
+    eLab.textContent = "Editors (comma-separated)";
+    box.appendChild(eLab);
+    var edIn = document.createElement("input");
+    edIn.type = "text";
+    edIn.className = "form-control form-control-sm mb-2";
+    edIn.value = (acl.editors || []).join(", ");
+    box.appendChild(edIn);
+    var vLab = document.createElement("label");
+    vLab.className = "form-label small";
+    vLab.textContent = "Viewers (comma-separated)";
+    box.appendChild(vLab);
+    var vwIn = document.createElement("input");
+    vwIn.type = "text";
+    vwIn.className = "form-control form-control-sm mb-3";
+    vwIn.value = (acl.viewers || []).join(", ");
+    box.appendChild(vwIn);
+    var row = document.createElement("div");
+    row.className = "d-flex gap-2";
+    var saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "btn btn-sm btn-forge";
+    saveBtn.textContent = "Save sharing";
+    saveBtn.addEventListener("click", function () {
+      var payload = {
+        action: "acl",
+        board_id: boardId,
+        owner_login: ownerIn.value.trim(),
+        editors: parseLoginList(edIn.value),
+        viewers: parseLoginList(vwIn.value),
+      };
+      fetch("/api/sticker-board-registry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (j) {
+          if (j.ok) {
+            closeModal();
+            window.location.reload();
+          } else {
+            window.alert("Save failed: " + (j.error || JSON.stringify(j)));
+          }
+        })
+        .catch(function (e) {
+          window.alert("Save error: " + e);
+        });
+    });
+    row.appendChild(saveBtn);
+    var cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "btn btn-sm btn-outline-secondary";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", closeModal);
+    row.appendChild(cancelBtn);
+    box.appendChild(row);
+    back.appendChild(box);
+    back.addEventListener("click", closeModal);
+    document.body.appendChild(back);
+    ownerIn.focus();
   }
 
   function closeModal() {
@@ -137,6 +280,79 @@
     bodyIn.rows = 6;
     bodyIn.value = st.body || "";
     box.appendChild(bodyIn);
+
+    var otherLab = document.createElement("div");
+    otherLab.className = "form-label small text-secondary mb-1";
+    otherLab.textContent = "Other view (saved layout)";
+    box.appendChild(otherLab);
+    var otherP = document.createElement("p");
+    otherP.className = "forge-support small mb-2";
+    if (state.template === "kanban") {
+      otherP.textContent =
+        "Freeform position: (" +
+        (st.x != null ? st.x : 0) +
+        ", " +
+        (st.y != null ? st.y : 0) +
+        "). This is where the card sits when the board is in Freeform.";
+    } else {
+      var colTitle = "";
+      if (st.column_id && state.saved_kanban_columns) {
+        for (var ci = 0; ci < state.saved_kanban_columns.length; ci++) {
+          if (state.saved_kanban_columns[ci].id === st.column_id) {
+            colTitle = state.saved_kanban_columns[ci].title;
+            break;
+          }
+        }
+      }
+      var ord = st.order != null ? st.order : 0;
+      if (colTitle) {
+        otherP.textContent =
+          "Kanban: column \"" +
+          colTitle +
+          "\", order " +
+          ord +
+          ". Shown again when you switch back to Kanban.";
+      } else if (st.column_id) {
+        otherP.textContent =
+          "Kanban: column id \"" +
+          st.column_id +
+          "\", order " +
+          ord +
+          ".";
+      } else {
+        otherP.textContent =
+          "No Kanban column is stored on this card yet (e.g. new in Freeform). It will get a column when you open Kanban.";
+      }
+    }
+    box.appendChild(otherP);
+    var switchRow = document.createElement("div");
+    switchRow.className = "d-flex flex-wrap gap-2 mb-3";
+    if (state.template === "kanban") {
+      var toFf = document.createElement("button");
+      toFf.type = "button";
+      toFf.className = "btn btn-sm btn-outline-secondary";
+      toFf.textContent = "Open in Freeform view";
+      toFf.addEventListener("click", function () {
+        st.title = titleIn.value.trim() || "Untitled";
+        st.body = bodyIn.value;
+        closeModal();
+        applyTemplate("freeform");
+      });
+      switchRow.appendChild(toFf);
+    } else {
+      var toKb = document.createElement("button");
+      toKb.type = "button";
+      toKb.className = "btn btn-sm btn-outline-secondary";
+      toKb.textContent = "Open in Kanban view";
+      toKb.addEventListener("click", function () {
+        st.title = titleIn.value.trim() || "Untitled";
+        st.body = bodyIn.value;
+        closeModal();
+        applyTemplate("kanban");
+      });
+      switchRow.appendChild(toKb);
+    }
+    box.appendChild(switchRow);
 
     var row = document.createElement("div");
     row.className = "d-flex flex-wrap gap-2 justify-content-between";
@@ -222,6 +438,12 @@
     p.className = "lenses-sticker-card-preview forge-support";
     p.textContent = previewText(st.body);
     card.appendChild(p);
+    if (st.owner_login) {
+      var ow = document.createElement("div");
+      ow.className = "lenses-sticker-owner forge-support small text-secondary mt-1";
+      ow.textContent = "@" + st.owner_login;
+      card.appendChild(ow);
+    }
     attachCardActions(card, st);
     card.addEventListener("dblclick", function (e) {
       if (e.target.closest && e.target.closest(".lenses-sticker-card-actions")) return;
@@ -257,6 +479,9 @@
     if (state.board_storage === "shared") {
       st.scope = scope || "shared";
     }
+    if (sessionLogin) {
+      st.owner_login = sessionLogin.toLowerCase();
+    }
     return st;
   }
 
@@ -269,28 +494,25 @@
   }
 
   function applyTemplate(tmpl) {
-    if (state.stickers.length > 0) {
-      if (
-        !window.confirm(
-          "Replace the board? This removes all stickers and columns."
-        )
-      ) {
-        return;
-      }
-    }
+    if (tmpl !== "kanban" && tmpl !== "freeform") return;
+    if (tmpl === state.template) return;
     state.version = 2;
-    state.stickers = [];
-    state.template = tmpl;
-    if (tmpl === "kanban") {
-      state.columns = [
-        { id: "todo", title: "To do" },
-        { id: "doing", title: "Doing" },
-        { id: "done", title: "Done" },
-      ];
-    } else {
-      state.columns = [];
-    }
     if (!state.board_storage) state.board_storage = "local";
+    if (tmpl === "freeform") {
+      if (state.template === "kanban") {
+        state.saved_kanban_columns = deepCopyColumns(state.columns);
+      }
+      state.columns = [];
+      state.template = "freeform";
+    } else {
+      if (state.saved_kanban_columns && state.saved_kanban_columns.length) {
+        state.columns = deepCopyColumns(state.saved_kanban_columns);
+      } else {
+        state.columns = defaultKanbanColumns();
+      }
+      state.template = "kanban";
+      ensureKanbanStickerPlacement();
+    }
     scheduleSave();
     render();
   }
@@ -467,7 +689,7 @@
     var back = document.createElement("a");
     back.className = "btn btn-sm btn-link px-0 me-2";
     back.href = backHref;
-    back.textContent = "← Stickerboardefo";
+    back.textContent = "← Forge Stickerboards";
     meta.appendChild(back);
     var title = document.createElement("span");
     title.className = "fw-semibold me-2";
@@ -589,6 +811,28 @@
       tb.appendChild(w);
     }
 
+    if (state.board_acl) {
+      var acl = document.createElement("div");
+      acl.className = "w-100 small forge-support mt-1";
+      var o = state.board_acl.owner_login || "—";
+      var eds = (state.board_acl.editors || []).join(", ") || "—";
+      var vws = (state.board_acl.viewers || []).join(", ") || "—";
+      acl.textContent =
+        "Board access — owner: @" +
+        o +
+        " · editors: " +
+        eds +
+        " · viewers: " +
+        vws;
+      tb.appendChild(acl);
+      var shareBtn = document.createElement("button");
+      shareBtn.type = "button";
+      shareBtn.className = "btn btn-sm btn-outline-secondary mt-1";
+      shareBtn.textContent = "Edit sharing (GitHub logins)";
+      shareBtn.addEventListener("click", openShareModal);
+      tb.appendChild(shareBtn);
+    }
+
     statusEl = document.createElement("span");
     statusEl.className = "lenses-sticker-status ms-2";
     tb.appendChild(statusEl);
@@ -622,6 +866,14 @@
     }
     if (!state.stickers) state.stickers = [];
     if (!state.columns) state.columns = [];
+    if (!state.saved_kanban_columns) state.saved_kanban_columns = [];
+    if (
+      state.template === "kanban" &&
+      state.columns.length &&
+      !state.saved_kanban_columns.length
+    ) {
+      state.saved_kanban_columns = deepCopyColumns(state.columns);
+    }
     if (state.template !== "kanban" && state.template !== "freeform") {
       state.template = "freeform";
     }

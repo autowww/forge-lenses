@@ -12,7 +12,7 @@ learning_level: '301'
 
 ## What it is
 
-Optional **power-user** workflows in Forge Studio: getting the most from **embedded views**, staying aligned with **Classic**, and understanding **limitations** of local builds.
+Optional **power-user** help for **Forge Studio**: getting more from **embedded views**, staying aligned with **Classic** (the dashboard at `/`), and knowing **when Studio and Classic differ** so you can pick the right surface without blocking your work.
 
 ## When to use it
 
@@ -49,11 +49,17 @@ alt: Prefer Studio 201 for learning; use Studio 301 when choosing Classic vs Stu
 
 ## Limitations and fallbacks
 
+Not every **Classic** report or route exists in **Studio** yet, and some Studio flows are still **experimental**. When something you need is missing or flaky, prefer **Classic** at `/` for that task rather than forcing an unsupported path.
+
 | Limitation | Fallback |
 |------------|----------|
 | Classic route not in Studio yet | Use **Classic** at `/` for that report |
-| Experimental Studio feature unstable | Same task in **Classic** until your build catches up |
+| Experimental Studio feature unstable | Do the same task in **Classic** until the feature is stable in **your** deployment |
 | Wizard or export step unavailable in Studio | Complete the step in **Classic** or retry after refresh ([Wizard 301](11-wizard-301.md) for advanced Wizard flows) |
+
+### Advanced note — local or custom builds
+
+If you run Lenses from **source**, a **preview** build, or an internal fork, Studio can briefly **lag** Classic on a given feature. That is an **operator/build** concern, not something most readers need to manage. **Fallback:** use **Classic** for the blocked step; if the gap persists, use [Troubleshooting](12-troubleshooting.md) and whoever maintains your server.
 
 ## Steps
 
@@ -61,9 +67,9 @@ alt: Prefer Studio 201 for learning; use Studio 301 when choosing Classic vs Stu
 
 2. **Compare Classic vs Studio** — Use Classic when you need a route or report that Studio has not replicated yet; use Studio for newer flows. Keep one **source of truth** for status (same workspace root, same project selection).
 
-3. **Performance and stability** — Large workspaces: give scans time after restart; avoid flipping workspace roots while Studio tabs are mid-request. If the UI stalls, reload the page after the server is idle.
+3. **Gaps and experimental features** — When a route or control is missing in Studio, or labeled experimental, complete the work in **Classic** or wait for a refresh after your team updates Lenses — see **Limitations and fallbacks** above.
 
-4. **Limitations** — Not every Classic route exists in Studio yet; some features remain experimental. Prefer the surface that matches your task rather than forcing an unsupported path.
+4. **Advanced note — performance and stability** — Large workspaces: give scans time after restart; avoid flipping workspace roots while Studio tabs are mid-request. If the UI stalls, reload the page after the server is idle.
 
 ## How to verify success
 

@@ -92,4 +92,4 @@ After a correct root and restart:
 ## What to do next
 
 - [Workspace setup](03-workspace-setup.md)
-- [Scan and host setup](03-workspace-setup_03-scan-host.md) if the root is right but scans still fail
+- [When projects or scans look wrong](03-workspace-setup_03-scan-host.md) if the root is right but scans still fail

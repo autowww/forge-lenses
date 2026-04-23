@@ -29,7 +29,7 @@ Before you set `LENSES_WORKSPACE_ROOT` or when teammates disagree whether Lenses
 | Layout | Typical `LENSES_WORKSPACE_ROOT` | When it works well |
 |--------|----------------------------------|--------------------|
 | **Sibling repos** | Parent folder listing `forge-lenses/`, `product-a/`, `product-b/` | Most teams; clearest multi-repo scans |
-| **Single product + submodule** | **Host** repository root after startup script | One primary product repo with Lenses as a nested checkout |
+| **Single product + submodule** | **Host** repository root (not `forge-lenses/` inside it) | One primary product repo with Lenses as a nested checkout; optional host startup is documented on [When projects or scans look wrong](03-workspace-setup_03-scan-host.md) |
 
 ### Layout choice (visual)
 
@@ -70,7 +70,7 @@ alt: Sibling layout vs host-repo layout — pick one before choosing the root
 
 **You set** `LENSES_WORKSPACE_ROOT` to the **host root** (`~/work/acme-platform`), not to `forge-lenses/` inside it, when you want cards for `services/*` and `libs/*`. If you only set root to `forge-lenses/`, you will mostly see that subtree — fine for Lenses-only work, wrong for full-program visibility.
 
-**Expected outcome:** Project discovery follows the **host** tree; local caches from [Scan and host setup](03-workspace-setup_03-scan-host.md) stay where your runbook expects.
+**Expected outcome:** Project discovery follows the **host** tree; local caches stay where **your team’s workspace doc** expects — see [When projects or scans look wrong](03-workspace-setup_03-scan-host.md) if you need the **advanced** nested-layout notes.
 
 ## Symptom → likely mistake → fix
 

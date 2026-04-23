@@ -3,6 +3,7 @@
 # Starts Lenses on LENSES_PORT if /studio/ is not reachable; restarts it if the tour hits connection errors.
 #
 # Env: STUDIO_EXPLORE_MODE=full → capture all Studio routes (tours/full-studio-ui/tour.yaml).
+# Screenshot output defaults to ../.workspace-screenshots/<repo>/studio-explore/<run-id>/ (see desktop/studio-explore/runner.mjs).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

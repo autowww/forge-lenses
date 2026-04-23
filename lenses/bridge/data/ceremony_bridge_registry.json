@@ -1,0 +1,177 @@
+{
+  "registry_version": "2026.04-b4",
+  "neutral_intent_ids": ["C1", "C2", "C3", "C4", "C5", "C6"],
+  "delivery_modes": {
+    "human_only": {
+      "label": "Human only",
+      "allow_binding_outputs": true,
+      "binding_requires_human_signoff": true,
+      "allow_agent_synthesis": false,
+      "allow_agent_assist_binding": false
+    },
+    "hybrid": {
+      "label": "Hybrid",
+      "allow_binding_outputs": true,
+      "binding_requires_human_signoff": true,
+      "allow_agent_synthesis": true,
+      "allow_agent_assist_binding": false
+    },
+    "versona_only_non_binding": {
+      "label": "Versona only (non-binding)",
+      "allow_binding_outputs": false,
+      "binding_requires_human_signoff": false,
+      "allow_agent_synthesis": true,
+      "allow_agent_assist_binding": false
+    },
+    "versona_assisted_human_binding": {
+      "label": "Versona-assisted, human binding",
+      "allow_binding_outputs": true,
+      "binding_requires_human_signoff": true,
+      "allow_agent_synthesis": true,
+      "allow_agent_assist_binding": true
+    }
+  },
+  "binding_output_types": [
+    "decision_binding",
+    "directive",
+    "approved_next_steps"
+  ],
+  "output_types_catalog": [
+    "decision_binding",
+    "directive",
+    "approved_next_steps",
+    "review_pack_ref",
+    "assay_update_ref",
+    "follow_up_task_ref",
+    "meeting_summary"
+  ],
+  "methodology_projections": {
+    "forge": {
+      "studio_routes": {
+        "plan": "/plan",
+        "plan_today": "/plan?tab=today",
+        "knowledge_agentic": "/studio/knowledge/agentic"
+      }
+    }
+  },
+  "mappings": [
+    {
+      "id": "map-c2-charge",
+      "intent_id": "C2",
+      "methodology": "forge",
+      "forge_ritual": "Charge",
+      "neutral_use_case": "planning_scope_alignment",
+      "studio_route_hint": "/plan"
+    },
+    {
+      "id": "map-c3-review-pack",
+      "intent_id": "C3",
+      "methodology": "forge",
+      "forge_ritual": "Review Pack",
+      "neutral_use_case": "readiness_review",
+      "studio_route_hint": "/plan?tab=today"
+    },
+    {
+      "id": "map-c5-assay-gate",
+      "intent_id": "C5",
+      "methodology": "forge",
+      "forge_ritual": "Release gate",
+      "neutral_use_case": "assay_release_gate",
+      "studio_route_hint": "/plan?tab=today"
+    },
+    {
+      "id": "map-c6-ember",
+      "intent_id": "C6",
+      "methodology": "forge",
+      "forge_ritual": "Ember Log",
+      "neutral_use_case": "retrospective_directive",
+      "studio_route_hint": "/plan"
+    }
+  ],
+  "decision_binding_rules": [
+    {
+      "id": "rule-b4-standard",
+      "requires_human_signoff": true,
+      "applies_output_types": ["directive", "decision_binding", "approved_next_steps"]
+    },
+    {
+      "id": "rule-b4-release-gate",
+      "requires_human_signoff": true,
+      "applies_output_types": ["directive", "assay_update_ref", "approved_next_steps"]
+    }
+  ],
+  "templates": [
+    {
+      "id": "tpl-scope-charge",
+      "intent_id": "C2",
+      "registry_mapping_id": "map-c2-charge",
+      "forge_title": "Charge — scope and commitment",
+      "recurrence": "recurring",
+      "delivery_modes_allowed": [
+        "human_only",
+        "hybrid",
+        "versona_assisted_human_binding"
+      ],
+      "required_prereads": ["Ingot / scoped commitment list", "WBS excerpt for active sparks"],
+      "required_outputs": ["approved_next_steps", "meeting_summary"],
+      "required_signoff_roles": ["charge_owner"],
+      "optional_roles": ["observer"],
+      "binding_rule_id": "rule-b4-standard",
+      "required_artifact_kinds": ["planning_brief"]
+    },
+    {
+      "id": "tpl-readiness-review",
+      "intent_id": "C3",
+      "registry_mapping_id": "map-c3-review-pack",
+      "forge_title": "Review Pack readiness session",
+      "recurrence": "recurring",
+      "delivery_modes_allowed": [
+        "human_only",
+        "hybrid",
+        "versona_only_non_binding",
+        "versona_assisted_human_binding"
+      ],
+      "required_prereads": ["Open PRs / change requests", "CI status snapshot"],
+      "required_outputs": ["review_pack_ref", "meeting_summary"],
+      "required_signoff_roles": ["review_coordinator"],
+      "optional_roles": ["contributor"],
+      "binding_rule_id": "rule-b4-standard",
+      "required_artifact_kinds": ["evidence_excerpt"]
+    },
+    {
+      "id": "tpl-assay-gate",
+      "intent_id": "C5",
+      "registry_mapping_id": "map-c5-assay-gate",
+      "forge_title": "Assay / release gate ceremony",
+      "recurrence": "one_time",
+      "delivery_modes_allowed": [
+        "human_only",
+        "versona_assisted_human_binding"
+      ],
+      "required_prereads": ["Assay packet draft", "Release train checklist"],
+      "required_outputs": ["assay_update_ref", "approved_next_steps"],
+      "required_signoff_roles": ["release_delegate"],
+      "optional_roles": [],
+      "binding_rule_id": "rule-b4-release-gate",
+      "required_artifact_kinds": ["assay_inputs"]
+    },
+    {
+      "id": "tpl-retro-ember",
+      "intent_id": "C6",
+      "registry_mapping_id": "map-c6-ember",
+      "forge_title": "Ember Log / retrospective",
+      "recurrence": "recurring",
+      "delivery_modes_allowed": [
+        "human_only",
+        "hybrid",
+        "versona_only_non_binding"
+      ],
+      "required_prereads": ["Incident and delivery metrics snapshot"],
+      "required_outputs": ["directive", "meeting_summary"],
+      "required_signoff_roles": ["facilitator"],
+      "optional_roles": ["contributor"],
+      "binding_rule_id": "rule-b4-standard",
+      "required_artifact_kinds": ["retro_notes"]
+    }
+  ]
+}

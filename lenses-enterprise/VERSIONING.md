@@ -31,14 +31,22 @@ The **forge-lenses** repository versions the **server and Classic UI** separatel
 
 **Automation (optional):** with **`.forge/version-release.json`** at the repo root and `bash blueprints/sdlc/methodologies/forge/setup/install-version-release-hook.sh`, commits that touch **`lenses-enterprise/`**, **`lenses/`**, or **`desktop/`** append a bullet under **`[Unreleased]`** from the commit subject, then **auto-increment `PATCH`** in **`lenses-enterprise/package.json`** when you did not edit the **`version`** field yourself in that commit. When **`MAJOR`** or **`MINOR`** increases vs the parent commit (human line change), the hook folds **`[Unreleased]`** into the new version heading (not on PATCH-only bumps). Use **`[skip-changelog]`** in the commit message to skip the hook. See Blueprints **`VERSIONING-AND-RELEASES.md`**.
 
+### Automatic PATCH on Studio build
+
+Each **`npm run build`** and **`npm run build:museum`** runs **`node scripts/bump-studio-patch-version.mjs`** first, which increments **`MAJOR.MINOR.PATCH`** by **one PATCH** in **`package.json`** (only the numeric core: anything after the third number group, such as **`-beta.1`** or **`+metadata`**, is preserved unchanged). The Vite step then bundles that new version. **`npm run watch`** and **`npm run dev`** do **not** bump the version.
+
+To run a production build **without** mutating **`package.json`** (e.g. CI compile check): **`SKIP_STUDIO_VERSION_BUMP=1 npm run build`**.
+
 ## Build metadata (not semver)
 
-Each **`npm run build`** embeds:
+Each **`npm run build`** (and each rebuild under **`npm run watch`**) embeds via the **`virtual:studio-build-meta`** Vite plugin:
 
-- **`VITE_STUDIO_VERSION`** — from **`package.json`** at build time.
-- **`VITE_STUDIO_BUILD_COMMIT`** — `git rev-parse --short HEAD` from **`lenses-enterprise/`**, or **`unknown`** if unavailable.
-- **`VITE_STUDIO_BUILD_TIME`** — ISO-8601 UTC timestamp when Vite produced the bundle.
+- **Release version** — from **`package.json`** at bundle build time after the optional **PATCH** bump described above (so each **`npm run build`** normally advances PATCH once unless **`SKIP_STUDIO_VERSION_BUMP`** is set).
+- **Source commit** — `git rev-parse --short HEAD` from **`lenses-enterprise/`**, or **`unknown`** if unavailable.
+- **Build time** — ISO-8601 UTC timestamp when that bundle was produced.
 
-These strings are for **support and reproducibility**; they do not replace semver.
+These strings are for **support and reproducibility**; they do not replace semver. The virtual module is **invalidated on every Rollup `buildStart`**, so watch-mode rebuilds get a fresh **build time** (and commit when `HEAD` moves). **`npm run watch`** does not bump **`package.json`**, so the bundled semver stays whatever was on disk when you started the watcher; run **`npm run build`** to advance **PATCH** again.
 
-The **Electron** desktop shell (`forge-lenses/desktop/`) shows **`v{version} · {commit}`** on its frameless startup splash by reading **`lenses-enterprise/package.json`** and **`git rev-parse --short HEAD`** at app launch (not the SPA bundle’s build time). After load, the in-app footer still reflects the **Vite**-inlined metadata from when `npm run build` last ran.
+**About → Version** in the UI shows one line: **`{semver} · {commit|no-git} · {ISO UTC time}`** — the leading semver matches **`package.json`** after the pre-build bump (when enabled); commit and UTC time still distinguish bundles built at the same PATCH.
+
+The **Electron** desktop shell (`forge-lenses/desktop/`) reads **`lenses/static/studio/studio-build-meta.json`** (written next to **`index.html`** on each Studio **`npm run build`**) for the frameless startup splash line **`v{semver} · {commit|no-git} · {ISO UTC}`**. If that file is missing (Studio not built yet), it falls back to **`lenses-enterprise/package.json`** plus **`git rev-parse --short HEAD`** and omits the timestamp segment (`—`).

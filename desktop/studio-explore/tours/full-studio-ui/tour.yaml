@@ -1,8 +1,10 @@
-# Full Lenses Studio UI — aligned with TopNavigation + SectionSidebar (navigationConfig.ts).
-# Output directories: <workspace_lens>/<section>/…  plus flow/Shared for routes not on the sidebar.
-# Run twice worth of top tabs: Flow lens and Artifacts lens (cookie workspace_lens).
+# Full Lenses Studio — aligned with lenses-enterprise primary nav:
+# Home, Work, Projects, Knowledge, Publish (+ header utilities).
+# Admin / inspect / automation (Sprint UX7): flow/Shared/Admin-and-inspect and artifacts/Shared/Admin-and-inspect
+# (Advanced reporting, connector health, audit log, toolset, UX diagnostics, AI Setup).
+# Output directories use folder `directory` (workspace_lens + path); nav_section matches TopSectionId where applicable.
 version: 1
-title: Full Studio UI — navigation layout
+title: Full Studio UI — navigation layout + admin surfaces
 
 base_url: http://127.0.0.1:8080
 
@@ -13,27 +15,27 @@ defaults:
     height: 900
 
 folders:
-  # --- Flow lens (top nav: Workspace, Plans, Delivery, Projects, Sites, Blog, Knowledge) ---
-  - id: flow-workspace
-    directory: flow/Workspace
+  # --- Flow lens · Home (top tab Home; sidebar without advanced reporting) ---
+  - id: flow-home
+    directory: flow/Home
     workspace_lens: flow
     nav_section: home
-    title: "Flow · Workspace (sidebar)"
+    title: "Flow · Home"
     max_shots: 12
     steps:
       - id: portfolio-overview
-        title: Portfolio overview
+        title: Home overview
         path: /studio/
         wait_ms: 2800
         wait_selector: body
-        annotation: Top tab Workspace — portfolio overview.
+        annotation: Primary tab Home — portfolio overview.
       - id: today
-        title: What needs attention today
+        title: Today
         path: /studio/plan?tab=today
         wait_ms: 3500
         wait_selector: body
-      - id: boards-from-workspace
-        title: Execution boards
+      - id: boards
+        title: Boards
         path: /studio/board
         wait_ms: 2500
         wait_selector: body
@@ -42,36 +44,27 @@ folders:
         path: /studio/projects
         wait_ms: 2500
         wait_selector: body
-      - id: overview-charts
-        title: Workspace activity charts
-        path: /studio/overview/charts
-        wait_ms: 3500
-        wait_selector: body
-      - id: llm-settings
-        title: LLM preferences
-        path: /studio/settings/llm
-        wait_ms: 2000
-        wait_selector: body
       - id: search
         title: Search
         path: /studio/search
         wait_ms: 2000
         wait_selector: body
       - id: chat
-        title: LLM chat (demo)
+        title: SDLC copilot (chat)
         path: /studio/chat
         wait_ms: 2500
         wait_selector: body
 
-  - id: flow-plans
-    directory: flow/Plans
+  # --- Flow lens · Work (Plan, boards, timeline, WBS, readiness; no /overview/charts in sidebar) ---
+  - id: flow-work
+    directory: flow/Work
     workspace_lens: flow
-    nav_section: plans
-    title: "Flow · Plans (sidebar)"
-    max_shots: 12
+    nav_section: work
+    title: "Flow · Work"
+    max_shots: 16
     steps:
-      - id: plan-overview
-        title: Plan Overview
+      - id: plan-default
+        title: Plan summary
         path: /studio/plan
         wait_ms: 3500
         wait_selector: body
@@ -81,170 +74,133 @@ folders:
         wait_ms: 3500
         wait_selector: body
       - id: story-cockpit
-        title: Story Cockpit
+        title: Story
         path: /studio/plan?tab=story
         wait_ms: 3500
         wait_selector: body
+      - id: source-context
+        title: Sources
+        path: /studio/plan?tab=source
+        wait_ms: 3500
+        wait_selector: body
       - id: wbs
-        title: Work Breakdown
+        title: Work breakdown
         path: /studio/wbs
         wait_ms: 2800
         wait_selector: body
       - id: wbs-view
-        title: Work Breakdown (detail)
+        title: Work breakdown (detail)
         path: /studio/wbs/view
         wait_ms: 2800
+        wait_selector: body
+      - id: timeline
+        title: Timeline
+        path: /studio/timeline
+        wait_ms: 3500
+        wait_selector: body
+      - id: roadmap-section
+        title: Roadmap section preview
+        path: /studio/roadmap-section
+        wait_ms: 3000
         wait_selector: body
       - id: roadmaps-summary-classic
         title: Roadmaps (classic HTML)
         path: /roadmaps/summary
         wait_ms: 3000
         wait_selector: body
-        annotation: Same-origin classic page outside SPA basename; sidebar uses href.
-      - id: timeline
-        title: Timeline
-        path: /studio/timeline
+        annotation: Full-workspace classic page; linked from Work sidebar.
+      - id: methodology-readiness
+        title: Release readiness
+        path: /studio/knowledge/methodology/readiness
         wait_ms: 3500
         wait_selector: body
-      - id: source-context
-        title: Source Context
-        path: /studio/plan?tab=source
+      - id: today-from-delivery
+        title: Today (delivery deep link)
+        path: /studio/plan?tab=today&from=delivery
         wait_ms: 3500
         wait_selector: body
+        annotation: Same Today route with from=delivery query (strip context).
 
-  - id: flow-delivery
-    directory: flow/Delivery
-    workspace_lens: flow
-    nav_section: delivery
-    title: "Flow · Delivery (sidebar)"
-    max_shots: 12
-    steps:
-      - id: today-delivery
-        title: Today
-        path: /studio/plan?tab=today
-        wait_ms: 3500
-        wait_selector: body
-      - id: boards-delivery
-        title: Boards
-        path: /studio/board
-        wait_ms: 2500
-        wait_selector: body
-      - id: timeline-delivery
-        title: Timeline
-        path: /studio/timeline
-        wait_ms: 3500
-        wait_selector: body
-      - id: plan-tree
-        title: Plan and work tree
-        path: /studio/plan
-        wait_ms: 3500
-        wait_selector: body
-      - id: charts-delivery
-        title: Workspace activity charts
-        path: /studio/overview/charts
-        wait_ms: 3500
-        wait_selector: body
-
+  # --- Flow lens · Projects ---
   - id: flow-projects
     directory: flow/Projects
     workspace_lens: flow
     nav_section: projects
-    title: "Flow · Projects (sidebar)"
+    title: "Flow · Projects"
     max_shots: 12
     steps:
       - id: projects-list
-        title: All Projects
+        title: All projects
         path: /studio/projects
         wait_ms: 2500
         wait_selector: body
       - id: project-overview
-        title: Project Overview
+        title: Project dashboard
         path: /studio/projects/forge-lenses
         optional: true
         wait_ms: 3500
         wait_selector: body
       - id: project-strategy
-        title: Architecture & Repo Strategy
+        title: Architecture & repo strategy
         path: /studio/projects/forge-lenses/strategy
         optional: true
         wait_ms: 3500
         wait_selector: body
       - id: project-charts
-        title: Project charts
+        title: Repository charts
         path: /studio/projects/forge-lenses/charts
         optional: true
         wait_ms: 3500
         wait_selector: body
-      - id: toolset
-        title: Automation (toolset)
-        path: /studio/toolset
-        wait_ms: 2500
-        wait_selector: body
       - id: workspace-md
-        title: Technical Evidence
+        title: Workspace evidence / notes
         path: /studio/workspace-md
         wait_ms: 2500
         wait_selector: body
+        annotation: Toolset removed from project strip (UX7); workspace automation under Settings → Inspect.
 
-  - id: flow-sites
-    directory: flow/Sites
+  # --- Flow lens · Knowledge ---
+  - id: flow-knowledge
+    directory: flow/Knowledge
     workspace_lens: flow
-    nav_section: sites
-    title: "Flow · Sites (sidebar)"
+    nav_section: knowledge
+    title: "Flow · Knowledge"
     max_shots: 12
     steps:
-      - id: websites
-        title: All sites
-        path: /studio/websites
-        wait_ms: 2500
-        wait_selector: body
-      - id: browse-first-site
-        title: Browse and preview (first site name)
-        path: /studio/websites/browse/forgesdlc
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-      - id: browse-alt-site
-        title: Browse alternate site
-        path: /studio/websites/browse/blueprints-website
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-      - id: tutorials-sites
+      - id: tutorials
         title: Tutorials
         path: /studio/tutorials
         wait_ms: 2500
         wait_selector: body
-
-  - id: flow-blog
-    directory: flow/Blog
-    workspace_lens: flow
-    nav_section: blog
-    title: "Flow · Blog (sidebar)"
-    max_shots: 8
-    steps:
-      - id: blog-index
-        title: All posts
-        path: /studio/blog
+      - id: lenses-reference
+        title: Lenses reference (embed)
+        path: /studio/view/docs
+        wait_ms: 3500
+        wait_selector: body
+      - id: lenses-reference-index
+        title: Lenses reference index.html
+        path: /studio/view/docs/index.html
+        wait_ms: 3500
+        wait_selector: body
+      - id: workspace-md-knowledge
+        title: Workspace notes
+        path: /studio/workspace-md
         wait_ms: 2500
         wait_selector: body
-
-  - id: flow-knowledge
-    directory: flow/Knowledge
-    workspace_lens: flow
-    nav_section: documentation
-    title: "Flow · Knowledge (sidebar)"
-    max_shots: 12
-    steps:
-      - id: search-knowledge
-        title: Search
-        path: /studio/search
-        wait_ms: 2000
+      - id: methodology-evidence
+        title: Evidence registry
+        path: /studio/knowledge/methodology/evidence
+        wait_ms: 3500
         wait_selector: body
-      - id: chat-knowledge
-        title: LLM chat (demo)
-        path: /studio/chat
-        wait_ms: 2500
+      - id: methodology-decisions
+        title: Decision registry
+        path: /studio/knowledge/methodology/decisions
+        wait_ms: 3500
+        wait_selector: body
+      - id: agentic-bridge
+        title: Agentic bridge
+        path: /studio/knowledge/agentic-bridge
+        wait_ms: 3500
         wait_selector: body
       - id: blueprints-wizard
         title: Blueprints Wizard (experimental)
@@ -252,42 +208,93 @@ folders:
         optional: true
         wait_ms: 3000
         wait_selector: body
-      - id: lenses-reference
-        title: Lenses reference docs (embed)
-        path: /studio/view/docs
-        wait_ms: 3500
-        wait_selector: body
-      - id: lenses-reference-index
-        title: Lenses reference — index.html
-        path: /studio/view/docs/index.html
-        wait_ms: 3500
-        wait_selector: body
-      - id: tutorials-knowledge
-        title: Tutorials
-        path: /studio/tutorials
-        wait_ms: 2500
-        wait_selector: body
-      - id: workspace-md-view-flow
-        title: Work logs — view route
+      - id: workspace-md-view
+        title: Workspace notes — view route
         path: /studio/workspace-md/view
         wait_ms: 2500
         wait_selector: body
-      - id: workspace-md-knowledge
-        title: Work logs and evidence
-        path: /studio/workspace-md
+
+  # --- Flow lens · Publish ---
+  - id: flow-publish
+    directory: flow/Publish
+    workspace_lens: flow
+    nav_section: publish
+    title: "Flow · Publish"
+    max_shots: 12
+    steps:
+      - id: websites
+        title: Websites
+        path: /studio/websites
+        wait_ms: 2500
+        wait_selector: body
+      - id: browse-forgesdlc
+        title: Browse site (forgesdlc)
+        path: /studio/websites/browse/forgesdlc
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: browse-blueprints
+        title: Browse site (blueprints-website)
+        path: /studio/websites/browse/blueprints-website
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: blog-index
+        title: Blog
+        path: /studio/blog
         wait_ms: 2500
         wait_selector: body
 
-  # --- Artifacts lens (top nav: … Roadmaps, Boards, …) ---
-  - id: artifacts-workspace
-    directory: artifacts/Workspace
+  # --- Flow lens · Admin & inspect (gear menu; not primary tabs) ---
+  - id: flow-admin-inspect
+    directory: flow/Shared/Admin-and-inspect
+    workspace_lens: flow
+    title: "Flow · Admin & inspect (UX7)"
+    max_shots: 12
+    steps:
+      - id: advanced-reporting
+        title: Advanced reporting
+        path: /studio/overview/charts
+        wait_ms: 3500
+        wait_selector: body
+        annotation: Cross-repo charts; breadcrumb Admin & inspect; removed from Home/Work sidebars.
+      - id: governance-connectors
+        title: Connector health
+        path: /studio/governance/connectors
+        wait_ms: 2500
+        wait_selector: body
+      - id: governance-audit
+        title: Audit log
+        path: /studio/governance/audit
+        wait_ms: 2500
+        wait_selector: body
+      - id: toolset
+        title: Tools & automation (toolset)
+        path: /studio/toolset
+        wait_ms: 2500
+        wait_selector: body
+      - id: ux-diagnostics
+        title: UX diagnostics
+        path: /studio/settings/ux-insights
+        wait_ms: 2200
+        wait_selector: body
+        annotation: Session-local telemetry; Settings → Inspect & advanced.
+      - id: llm-settings
+        title: AI Setup
+        path: /studio/settings/llm
+        wait_ms: 2000
+        wait_selector: body
+
+  # --- Artifacts lens · Home ---
+  - id: artifacts-home
+    directory: artifacts/Home
     workspace_lens: artifacts
     nav_section: home
-    title: "Artifacts · Workspace (sidebar)"
+    title: "Artifacts · Home"
     max_shots: 12
     steps:
       - id: portfolio-overview-art
-        title: Portfolio overview
+        title: Home overview
         path: /studio/
         wait_ms: 2800
         wait_selector: body
@@ -297,7 +304,7 @@ folders:
         wait_ms: 3500
         wait_selector: body
       - id: timeline-art-home
-        title: Roadmaps timeline
+        title: Timeline
         path: /studio/timeline
         wait_ms: 3500
         wait_selector: body
@@ -306,31 +313,27 @@ folders:
         path: /studio/board
         wait_ms: 2500
         wait_selector: body
-      - id: llm-art-home
-        title: LLM preferences
-        path: /studio/settings/llm
-        wait_ms: 2000
-        wait_selector: body
       - id: search-art-home
         title: Search
         path: /studio/search
         wait_ms: 2000
         wait_selector: body
       - id: chat-art-home
-        title: LLM chat (demo)
+        title: SDLC copilot (chat)
         path: /studio/chat
         wait_ms: 2500
         wait_selector: body
 
-  - id: artifacts-plans
-    directory: artifacts/Plans
+  # --- Artifacts lens · Work ---
+  - id: artifacts-work
+    directory: artifacts/Work
     workspace_lens: artifacts
-    nav_section: plans
-    title: "Artifacts · Plans (sidebar)"
-    max_shots: 12
+    nav_section: work
+    title: "Artifacts · Work"
+    max_shots: 16
     steps:
       - id: all-plans
-        title: All Plans
+        title: Plan
         path: /studio/plan
         wait_ms: 3500
         wait_selector: body
@@ -340,177 +343,166 @@ folders:
         wait_ms: 3500
         wait_selector: body
       - id: story-art
-        title: Story Cockpit
+        title: Story
         path: /studio/plan?tab=story
         wait_ms: 3500
         wait_selector: body
+      - id: source-art
+        title: Sources
+        path: /studio/plan?tab=source
+        wait_ms: 3500
+        wait_selector: body
       - id: wbs-art
-        title: Work Breakdown
+        title: Work breakdown
         path: /studio/wbs
         wait_ms: 2800
         wait_selector: body
       - id: wbs-view-art
-        title: Work Breakdown (detail)
+        title: Work breakdown (detail)
         path: /studio/wbs/view
         wait_ms: 2800
         wait_selector: body
-      - id: today-art-plans
+      - id: today-art
         title: Today
         path: /studio/plan?tab=today
         wait_ms: 3500
         wait_selector: body
-      - id: source-art
-        title: Source Context
-        path: /studio/plan?tab=source
-        wait_ms: 3500
-        wait_selector: body
-
-  - id: artifacts-roadmaps
-    directory: artifacts/Roadmaps
-    workspace_lens: artifacts
-    nav_section: roadmaps
-    title: "Artifacts · Roadmaps (sidebar)"
-    max_shots: 12
-    steps:
       - id: all-roadmaps
-        title: All Roadmaps
+        title: Roadmaps (timeline)
         path: /studio/timeline
         wait_ms: 3500
         wait_selector: body
       - id: roadmaps-summary-classic-art
-        title: Summary (classic HTML)
+        title: Roadmaps (classic HTML)
         path: /roadmaps/summary
         wait_ms: 3000
         wait_selector: body
       - id: roadmap-section
-        title: Section Preview
+        title: Section preview
         path: /studio/roadmap-section
         wait_ms: 3000
         wait_selector: body
-
-  - id: artifacts-projects
-    directory: artifacts/Projects
-    workspace_lens: artifacts
-    nav_section: projects
-    title: "Artifacts · Projects (sidebar)"
-    max_shots: 12
-    steps:
-      - id: projects-list-art
-        title: All Projects
-        path: /studio/projects
-        wait_ms: 2500
-        wait_selector: body
-      - id: project-dashboard
-        title: Project Dashboard
-        path: /studio/projects/forge-lenses
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-      - id: project-strategy-art
-        title: Architecture & Repo Strategy
-        path: /studio/projects/forge-lenses/strategy
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-      - id: project-charts-art
-        title: Project charts
-        path: /studio/projects/forge-lenses/charts
-        optional: true
-        wait_ms: 3500
-        wait_selector: body
-      - id: toolset-art
-        title: Automation (toolset)
-        path: /studio/toolset
-        wait_ms: 2500
-        wait_selector: body
-      - id: workspace-md-art
-        title: Technical Evidence
-        path: /studio/workspace-md
-        wait_ms: 2500
-        wait_selector: body
-
-  - id: artifacts-boards
-    directory: artifacts/Boards
-    workspace_lens: artifacts
-    nav_section: boards
-    title: "Artifacts · Boards (sidebar)"
-    max_shots: 12
-    steps:
       - id: all-boards
         title: All boards
         path: /studio/board
         wait_ms: 2500
         wait_selector: body
       - id: today-boards
-        title: Today
-        path: /studio/plan?tab=today
-        wait_ms: 3500
-        wait_selector: body
-      - id: charts-boards
-        title: Workspace charts
-        path: /studio/overview/charts
+        title: Today (from boards)
+        path: /studio/plan?tab=today&from=boards
         wait_ms: 3500
         wait_selector: body
 
-  - id: artifacts-sites
-    directory: artifacts/Sites
+  # --- Artifacts lens · Projects ---
+  - id: artifacts-projects
+    directory: artifacts/Projects
     workspace_lens: artifacts
-    nav_section: sites
-    title: "Artifacts · Sites (sidebar)"
+    nav_section: projects
+    title: "Artifacts · Projects"
+    max_shots: 12
+    steps:
+      - id: projects-list-art
+        title: All projects
+        path: /studio/projects
+        wait_ms: 2500
+        wait_selector: body
+      - id: project-dashboard
+        title: Project dashboard
+        path: /studio/projects/forge-lenses
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: project-strategy-art
+        title: Architecture & repo strategy
+        path: /studio/projects/forge-lenses/strategy
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: project-charts-art
+        title: Repository charts
+        path: /studio/projects/forge-lenses/charts
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: workspace-md-art
+        title: Workspace evidence / notes
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
+
+  # --- Artifacts lens · Publish ---
+  - id: artifacts-publish
+    directory: artifacts/Publish
+    workspace_lens: artifacts
+    nav_section: publish
+    title: "Artifacts · Publish"
     max_shots: 12
     steps:
       - id: websites-art
-        title: All sites
+        title: Websites
         path: /studio/websites
         wait_ms: 2500
         wait_selector: body
       - id: browse-art-a
-        title: Browse and preview (forgesdlc)
+        title: Browse (forgesdlc)
         path: /studio/websites/browse/forgesdlc
         optional: true
         wait_ms: 3500
         wait_selector: body
       - id: browse-art-b
-        title: Browse and preview (blueprints-website)
+        title: Browse (blueprints-website)
         path: /studio/websites/browse/blueprints-website
         optional: true
         wait_ms: 3500
         wait_selector: body
-      - id: tutorials-art-sites
-        title: Tutorials
-        path: /studio/tutorials
-        wait_ms: 2500
-        wait_selector: body
-
-  - id: artifacts-blog
-    directory: artifacts/Blog
-    workspace_lens: artifacts
-    nav_section: blog
-    title: "Artifacts · Blog (sidebar)"
-    max_shots: 8
-    steps:
       - id: blog-index-art
-        title: All posts
+        title: Blog
         path: /studio/blog
         wait_ms: 2500
         wait_selector: body
 
+  # --- Artifacts lens · Knowledge ---
   - id: artifacts-knowledge
     directory: artifacts/Knowledge
     workspace_lens: artifacts
-    nav_section: documentation
-    title: "Artifacts · Knowledge (sidebar)"
+    nav_section: knowledge
+    title: "Artifacts · Knowledge"
     max_shots: 12
     steps:
-      - id: search-art-know
-        title: Search
-        path: /studio/search
-        wait_ms: 2000
-        wait_selector: body
-      - id: chat-art-know
-        title: LLM chat (demo)
-        path: /studio/chat
+      - id: tutorials-art-know
+        title: Tutorials
+        path: /studio/tutorials
         wait_ms: 2500
+        wait_selector: body
+      - id: docs-art-know
+        title: Lenses reference (embed)
+        path: /studio/view/docs
+        wait_ms: 3500
+        wait_selector: body
+      - id: docs-index-art-know
+        title: Lenses reference index.html
+        path: /studio/view/docs/index.html
+        wait_ms: 3500
+        wait_selector: body
+      - id: workspace-md-art-know
+        title: Workspace notes
+        path: /studio/workspace-md
+        wait_ms: 2500
+        wait_selector: body
+      - id: methodology-evidence-art
+        title: Evidence registry
+        path: /studio/knowledge/methodology/evidence
+        wait_ms: 3500
+        wait_selector: body
+      - id: methodology-decisions-art
+        title: Decision registry
+        path: /studio/knowledge/methodology/decisions
+        wait_ms: 3500
+        wait_selector: body
+      - id: agentic-bridge-art
+        title: Agentic bridge
+        path: /studio/knowledge/agentic-bridge
+        wait_ms: 3500
         wait_selector: body
       - id: wizard-art-know
         title: Blueprints Wizard (experimental)
@@ -518,41 +510,59 @@ folders:
         optional: true
         wait_ms: 3000
         wait_selector: body
-      - id: docs-art-know
-        title: Lenses reference docs (embed)
-        path: /studio/view/docs
-        wait_ms: 3500
-        wait_selector: body
-      - id: docs-index-art-know
-        title: Lenses reference — index.html
-        path: /studio/view/docs/index.html
-        wait_ms: 3500
-        wait_selector: body
-      - id: tutorials-art-know
-        title: Tutorials
-        path: /studio/tutorials
-        wait_ms: 2500
-        wait_selector: body
-      - id: workspace-md-view
-        title: Work logs — view route
+      - id: workspace-md-view-art
+        title: Workspace notes — view route
         path: /studio/workspace-md/view
         wait_ms: 2500
         wait_selector: body
-      - id: workspace-md-art-know
-        title: Work logs and evidence
-        path: /studio/workspace-md
+
+  # --- Artifacts lens · Admin & inspect (same routes; lens cookie differs) ---
+  - id: artifacts-admin-inspect
+    directory: artifacts/Shared/Admin-and-inspect
+    workspace_lens: artifacts
+    title: "Artifacts · Admin & inspect (UX7)"
+    max_shots: 12
+    steps:
+      - id: advanced-reporting-art
+        title: Advanced reporting
+        path: /studio/overview/charts
+        wait_ms: 3500
+        wait_selector: body
+      - id: governance-connectors-art
+        title: Connector health
+        path: /studio/governance/connectors
         wait_ms: 2500
         wait_selector: body
+      - id: governance-audit-art
+        title: Audit log
+        path: /studio/governance/audit
+        wait_ms: 2500
+        wait_selector: body
+      - id: toolset-art
+        title: Tools & automation (toolset)
+        path: /studio/toolset
+        wait_ms: 2500
+        wait_selector: body
+      - id: ux-diagnostics-art
+        title: UX diagnostics
+        path: /studio/settings/ux-insights
+        wait_ms: 2200
+        wait_selector: body
+      - id: llm-settings-art
+        title: AI Setup
+        path: /studio/settings/llm
+        wait_ms: 2000
+        wait_selector: body
 
-  # --- Registered SPA routes not duplicated above (single capture; Flow lens cookie) ---
+  # --- Misc SPA routes (Flow lens); avoid duplicating steps captured above ---
   - id: flow-shared-extra-routes
     directory: flow/Shared/Extra-routes
     workspace_lens: flow
-    title: "Extra Studio routes (App.tsx; not all on sidebar)"
+    title: "Extra Studio routes (App.tsx)"
     max_shots: 12
     steps:
       - id: feature-showcase
-        title: Feature showcase demo
+        title: Feature showcase (lab)
         path: /studio/feature-showcase
         wait_ms: 2500
         wait_selector: body
@@ -563,7 +573,7 @@ folders:
         wait_ms: 2000
         wait_selector: body
       - id: toolset-run-sample
-        title: Toolset run page (sample script)
+        title: Toolset run (sample script)
         path: /studio/toolset/sync-kitchensink-and-rebuild.sh
         optional: true
         wait_ms: 2500
@@ -586,4 +596,20 @@ folders:
         optional: true
         wait_ms: 2500
         wait_selector: body
-        annotation: Optional; empty or error state unless session exists.
+        annotation: Optional; empty or error unless session exists.
+      - id: overview-flow-artifacts-help
+        title: Home — Flow vs Artifacts help (deep link)
+        path: /studio/?studioHelp=lens
+        wait_ms: 3200
+        wait_selector: body
+      - id: methodology-graph-record-sample
+        title: Methodology graph record (sample id)
+        path: /studio/knowledge/methodology/record/ogs%3Ademo%3Ab2%3Apsp
+        optional: true
+        wait_ms: 3500
+        wait_selector: body
+      - id: local-site-preview-empty
+        title: Local site preview (empty path)
+        path: /studio/view/local-site/
+        wait_ms: 2200
+        wait_selector: body

@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "comment": "Sprint 6 demo — findings, vulns, secrets, SBOM, provenance, controls, exceptions, policies, rollups.",
+  "policy_context": {
+    "release_version": "1.4.0-rc.3",
+    "project": "forgesdlc"
+  },
+  "ingestions": [
+    {
+      "provider": "codeql",
+      "project": "forgesdlc",
+      "payload": {
+        "id": "codeql-88",
+        "severity": "high",
+        "state": "open",
+        "title": "SQL injection pattern in auth handler",
+        "rule": { "id": "java/sql-injection", "severity": "error" },
+        "location": { "path": "src/main/java/AuthHandler.java" },
+        "html_url": "https://github.com/example/forgesdlc/security/code-scanning/88",
+        "created_at": "2026-04-09T10:00:00Z"
+      }
+    },
+    {
+      "provider": "gitleaks",
+      "project": "forgesdlc",
+      "payload": {
+        "RuleID": "generic-api-key",
+        "Match": "redacted-match-1",
+        "File": "legacy/config.yml",
+        "severity": "high",
+        "state": "open",
+        "StartLine": 42,
+        "Date": "2026-04-08T12:00:00Z"
+      }
+    },
+    {
+      "provider": "dependabot",
+      "project": "forgesdlc",
+      "payload": {
+        "number": 901,
+        "state": "open",
+        "severity": "critical",
+        "created_at": "2026-04-07T08:00:00Z",
+        "security_advisory": {
+          "cve_id": "CVE-2026-9999",
+          "ghsa_id": "GHSA-xxxx",
+          "severity": "critical",
+          "summary": "Remote code in upstream parser"
+        },
+        "dependency": { "package": { "ecosystem": "npm", "name": "parser-lib" } },
+        "html_url": "https://github.com/example/forgesdlc/security/dependabot/901"
+      }
+    },
+    {
+      "provider": "trivy_vuln",
+      "project": "forgesdlc",
+      "artifact": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "payload": {
+        "VulnerabilityID": "CVE-2026-8888",
+        "Severity": "high",
+        "Title": "OpenSSL buffer issue in base image"
+      }
+    },
+    {
+      "provider": "syft",
+      "project": "forgesdlc",
+      "sbom_id": "sbom-forgesdlc-1.4.0-rc.3",
+      "payload": {
+        "name": "forgesdlc-app",
+        "version": "1.4.0-rc.3",
+        "type": "application",
+        "purl": "pkg:golang/example/forgesdlc@1.4.0-rc.3"
+      }
+    },
+    {
+      "provider": "cosign",
+      "project": "forgesdlc",
+      "artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "payload": {
+        "digest": "sha256:abc123",
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "integratedTime": "2026-04-11T07:00:00Z",
+        "issuer": "sigstore",
+        "valid": true
+      }
+    }
+  ],
+  "security_findings": [
+    {
+      "finding_id": "SAST-AUTH-01",
+      "project": "forgesdlc",
+      "provider": "sonarqube",
+      "category": "sast",
+      "severity": "critical",
+      "state": "open",
+      "title": "Hardcoded cipher mode",
+      "rule_id": "java:crypto-bad",
+      "file_path": "src/main/java/CryptoUtil.java",
+      "story_ids": ["S-1842"],
+      "initiative_id": "init-oauth-hardening",
+      "release_versions": ["1.4.0-rc.3"],
+      "url": "https://sonar.example/issue/SAST-AUTH-01",
+      "detected_at": "2026-04-10T15:00:00Z"
+    }
+  ],
+  "dependency_risks": [
+    {
+      "risk_id": "dep-transitive-1",
+      "project": "forgesdlc",
+      "package_name": "legacy-json",
+      "severity": "medium",
+      "direct": false,
+      "url": "https://deps.example/legacy-json"
+    }
+  ],
+  "controls": [
+    {
+      "control_id": "SOC2-CC6.1",
+      "name": "Logical access — production deploy",
+      "framework": "SOC2",
+      "implementation_status": "implemented",
+      "applies_to_releases": ["1.4.0-rc.3"],
+      "risk_mitigation_points": 12,
+      "evidence_urls": ["https://wiki.example/controls/CC6.1"],
+      "story_ids": ["S-1842"]
+    }
+  ],
+  "exceptions": [
+    {
+      "id": "EXC-2026-04",
+      "title": "Time-boxed acceptance for legacy config secret",
+      "status": "active",
+      "owner": "security@example.com",
+      "expires_at": "2026-06-30T23:59:59Z",
+      "reason": "Rotation scheduled; tracked in SEC-441",
+      "finding_ids": [],
+      "exposure_ids": ["redacted-match-1"],
+      "story_ids": ["S-1842"],
+      "audit_trail": [
+        {
+          "at": "2026-04-08T14:00:00Z",
+          "actor": "ciso",
+          "action": "submitted",
+          "note": "Risk accepted pending vault migration"
+        },
+        {
+          "at": "2026-04-08T16:00:00Z",
+          "actor": "sec-approver",
+          "action": "approved",
+          "note": "Expires 2026-06-30"
+        }
+      ]
+    }
+  ],
+  "policy_decisions": [
+    {
+      "id": "pol-dec-1",
+      "decided_at": "2026-04-08T16:05:00Z",
+      "decision": "allow_with_exception",
+      "exception_id": "EXC-2026-04",
+      "actor": "sec-approver",
+      "summary": "Exception EXC-2026-04 recorded for gitleaks match"
+    }
+  ],
+  "security_policies": [
+    {
+      "id": "pol-no-critical-prod",
+      "name": "No open critical findings for production",
+      "type": "max_open_critical_without_exception",
+      "max": 0,
+      "applies_to_environments": ["production"],
+      "blocks_release_train": true
+    },
+    {
+      "id": "pol-risk-cap",
+      "name": "Aggregate risk score cap",
+      "type": "max_risk_score",
+      "max_score": 45,
+      "applies_to_environments": ["staging", "production"],
+      "blocks_release_train": true
+    },
+    {
+      "id": "pol-sbom",
+      "name": "SBOM components present",
+      "type": "sbom_components_minimum",
+      "min_count": 1,
+      "applies_to_environments": [],
+      "blocks_release_train": false
+    },
+    {
+      "id": "pol-provenance",
+      "name": "Signed provenance for image",
+      "type": "provenance_attestation_present",
+      "min_count": 1,
+      "require_valid": true,
+      "applies_to_environments": [],
+      "blocks_release_train": false
+    },
+    {
+      "id": "pol-secrets",
+      "name": "No high/critical secret hits without exception",
+      "type": "no_open_high_secrets",
+      "applies_to_environments": ["production"],
+      "blocks_release_train": false
+    }
+  ],
+  "environment_posture": [
+    {
+      "environment_id": "production",
+      "open_findings": 2,
+      "last_scan_at": "2026-04-11T06:00:00Z",
+      "scan_tool": "trivy+codeql"
+    },
+    {
+      "environment_id": "staging",
+      "open_findings": 1,
+      "last_scan_at": "2026-04-10T20:00:00Z",
+      "scan_tool": "trivy"
+    }
+  ]
+}

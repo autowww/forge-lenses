@@ -6,9 +6,9 @@ Run from lenses repo root:
     python3 generator/build-lenses-docs.py
 
 Optional reference-page PNG previews (``docs/index.md`` linked ``*.html`` only):
-    pip install html2image
+    pip install playwright && playwright install chromium
     LENSES_BUILD_DOC_PREVIEWS=1 python3 generator/build-lenses-docs.py --previews
-    # Requires Chromium/Chrome. Uses a local HTTP server on 127.0.0.1:8090–8200.
+    # Uses a local HTTP server on 127.0.0.1:8090–8200.
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ _REPO_STR = str(REPO_ROOT)
 if _REPO_STR not in sys.path:
     sys.path.insert(0, _REPO_STR)
 DOCS_SRC = REPO_ROOT / "docs"
-WEBSITE_USER = REPO_ROOT / "docs" / "website"
+HANDBOOK_PUBLIC = REPO_ROOT / "docs" / "handbook-public"
 WEBSITE_DOCS = REPO_ROOT / "lenses" / "website"
 OUTPUT_DIR = REPO_ROOT / "lenses-docs"
 KS_ROOT = REPO_ROOT / "kitchensink"
@@ -69,21 +69,23 @@ def _page_dict_from_md(md: Path, root: Path) -> dict:
 
 
 def _load_pages() -> list[dict]:
-    """Handbook sources: ``docs/**/*.md`` except ``docs/website/``, then ``docs/website/**/*.md`` (user-facing, flat slugs), then ``lenses/website/*.md`` (maintainer reference). Matches blueprints-website staging for ``docs/website``."""
+    """Handbook sources: ``docs/**/*.md`` except ``docs/handbook-public/`` and ``docs/maintainer/``, then ``docs/handbook-public/*.md`` (public user handbook), then ``lenses/website/*.md`` (maintainer reference). Matches blueprints-website staging for ``docs/handbook-public``."""
     pages: list[dict] = []
     if DOCS_SRC.is_dir():
         for md in sorted(DOCS_SRC.rglob("*.md")):
             if any(x in md.parts for x in (".git", "node_modules")):
                 continue
+            if "maintainer" in md.parts:
+                continue
             try:
-                md.relative_to(WEBSITE_USER)
+                md.relative_to(HANDBOOK_PUBLIC)
             except ValueError:
                 pages.append(_page_dict_from_md(md, DOCS_SRC))
             else:
                 continue
-    if WEBSITE_USER.is_dir():
-        for md in sorted(WEBSITE_USER.rglob("*.md")):
-            pages.append(_page_dict_from_md(md, WEBSITE_USER))
+    if HANDBOOK_PUBLIC.is_dir():
+        for md in sorted(HANDBOOK_PUBLIC.rglob("*.md")):
+            pages.append(_page_dict_from_md(md, HANDBOOK_PUBLIC))
     if WEBSITE_DOCS.is_dir():
         for md in sorted(WEBSITE_DOCS.glob("*.md")):
             pages.append(_page_dict_from_md(md, WEBSITE_DOCS))
@@ -224,7 +226,7 @@ def main() -> None:
     parser.add_argument(
         "--previews",
         action="store_true",
-        help="Capture PNG previews for reference pages linked from docs/index.md (needs html2image + Chrome).",
+        help="Capture PNG previews for reference pages linked from docs/index.md (needs playwright + chromium install).",
     )
     args = parser.parse_args()
 

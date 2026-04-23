@@ -1,0 +1,18 @@
+{
+  "schema_version": "situ8-taxonomy-logic-fragment-v1-test",
+  "fragments": [
+    {
+      "target_node": {
+        "taxonomy_id": "issue/mental_health",
+        "node_axis": "issue",
+        "suggested_description": "Mental health node.",
+        "sibling_contrast": [
+          {
+            "sibling_id": "issue/does_not_exist",
+            "line": "Contrast line."
+          }
+        ]
+      }
+    }
+  ]
+}

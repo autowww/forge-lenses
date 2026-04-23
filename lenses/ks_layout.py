@@ -214,6 +214,7 @@ def lenses_showcase_page(
         browser_title=browser_title,
         brand_name="lenses",
         brand_subtitle="Workspace",
+        brand_href="/",
         page_title=page_title,
         breadcrumb_html=breadcrumb_html,
         sidebar_html=sidebar_html,

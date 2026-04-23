@@ -67,23 +67,34 @@ class SessionManager:
         if isinstance(data, dict):
             for k, v in data.items():
                 if isinstance(k, str) and isinstance(v, dict) and isinstance(v.get("login"), str):
-                    self._sessions[k] = {"login": v["login"], "at": float(v.get("at", 0))}
+                    row: dict[str, Any] = {"login": v["login"], "at": float(v.get("at", 0))}
+                    ap = v.get("auth_provider")
+                    if isinstance(ap, str) and ap.strip():
+                        row["auth_provider"] = ap.strip()
+                    self._sessions[k] = row
 
     def _save_unlocked(self) -> None:
         self._dir.mkdir(parents=True, exist_ok=True)
         tmp = self._path.with_suffix(".json.tmp")
-        payload = {
-            sid: {"login": s["login"], "at": s["at"]}
-            for sid, s in self._sessions.items()
-        }
+        payload: dict[str, dict[str, Any]] = {}
+        for sid, s in self._sessions.items():
+            row = {"login": s["login"], "at": s["at"]}
+            ap = s.get("auth_provider")
+            if isinstance(ap, str) and ap.strip():
+                row["auth_provider"] = ap.strip()
+            payload[sid] = row
         tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         tmp.replace(self._path)
 
-    def create_session(self, login: str) -> str:
+    def create_session(self, login: str, *, auth_provider: str = "github") -> str:
         sid = secrets.token_urlsafe(32)
         now = time.time()
         with self._lock:
-            self._sessions[sid] = {"login": login, "at": now}
+            self._sessions[sid] = {
+                "login": login,
+                "at": now,
+                "auth_provider": (auth_provider or "github").strip() or "github",
+            }
             # prune old
             cutoff = now - SESSION_MAX_AGE_SEC
             dead = [k for k, v in self._sessions.items() if v.get("at", 0) < cutoff]
@@ -104,6 +115,18 @@ class SessionManager:
                 self._save_unlocked()
                 return None
             return str(s.get("login", "")) or None
+
+    def session_auth_provider(self, session_id: str | None) -> str | None:
+        if not session_id:
+            return None
+        with self._lock:
+            s = self._sessions.get(session_id)
+            if not s:
+                return None
+            if time.time() - float(s.get("at", 0)) > SESSION_MAX_AGE_SEC:
+                return None
+            ap = s.get("auth_provider")
+            return str(ap).strip() if isinstance(ap, str) and ap.strip() else "github"
 
     def clear_session(self, session_id: str | None) -> None:
         if not session_id:

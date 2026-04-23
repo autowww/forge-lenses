@@ -22,7 +22,17 @@ from lenses.tutorial_index import (
     tutorial_link_label_from_pages,
 )
 from lenses.toolset_actions import resolve_toolset_script
+from lenses.feature_showcase_classic import feature_showcase_body_html
 from lenses.ks_layout import board_thumb_capture_extra_css, lenses_showcase_page
+from lenses.overview_forge import build_overview_forge_rollup
+from lenses.plan_workflow_ui import FORGE_PLAN_SCRIPT
+from lenses.safe_forge_paths import roadmap_timeline_view_link, workspace_md_view_link
+from lenses.timeline_workflow_ui import FORGE_TIMELINE_SCRIPT
+from lenses.wbs_management import (
+    build_wbs_project_rows,
+    resolve_wbs_project_base,
+    wbs_md_exists,
+)
 from lenses.repo_strategy import (
     DEFAULT_MAINTENANCE_BULLETS,
     git_submodule_status_text,
@@ -35,9 +45,18 @@ from lenses.repo_strategy import (
     svg_submodule_layout_svg,
     workspace_child_names,
 )
-from lenses.roadmap_charts import KS_ROADMAP_TEMPLATE, ks_diagram_img, roadmap_gantt_html, roadmap_summary_html
+from lenses.roadmap_charts import (
+    KS_ROADMAP_TEMPLATE,
+    horizon_badges_html,
+    ks_diagram_img,
+    roadmap_date_shift_html,
+    roadmap_gantt_html,
+    roadmap_summary_html,
+    svg_epic_progress_bars,
+)
 from lenses.roadmap_outline import (
     extract_chart_metrics,
+    extract_date_shift_model,
     extract_gantt_model,
     find_section,
     parse_roadmap_markdown,
@@ -63,6 +82,26 @@ from lenses.project_stats import (
 
 def esc(s: str) -> str:
     return html.escape(s, quote=True)
+
+
+def _repo_hints_wbs_then_roadmaps(
+    wbs_rows: list[dict[str, Any]],
+    rms: list[dict[str, Any]],
+) -> list[str]:
+    """Distinct repo_hint values: preserve WBS iteration order, then add roadmap-only repos."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for row in wbs_rows:
+        h = str(row.get("repo_hint", "")).strip()
+        if h and h not in seen:
+            seen.add(h)
+            out.append(h)
+    for row in rms:
+        h = str(row.get("repo_hint", "")).strip()
+        if h and h not in seen:
+            seen.add(h)
+            out.append(h)
+    return out
 
 
 def _project_standards_compliance_html(
@@ -249,11 +288,23 @@ def _lenses_vertical_hero_styles() -> str:
     return """<style>
 .lenses-sites-stack { display: flex; flex-direction: column; gap: 0; }
 .lenses-site-hero-section {
-  border-left: 4px solid var(--bs-cyan, #06b6d4);
-  background: linear-gradient(105deg, rgba(6, 182, 212, 0.07) 0%, transparent 45%);
+  border-left: 3px solid rgba(6, 182, 212, 0.35);
+  background: linear-gradient(105deg, rgba(6, 182, 212, 0.03) 0%, transparent 50%);
   border-radius: 10px;
   padding: 1.25rem 1.35rem;
   margin-bottom: 1.5rem;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+.lenses-site-card.lenses-site-hero-section {
+  border-left-width: 3px;
+  border-left-color: rgba(6, 182, 212, 0.32);
+  background: linear-gradient(105deg, rgba(6, 182, 212, 0.025) 0%, transparent 58%);
+}
+.lenses-site-card.lenses-site-hero-section:hover,
+.lenses-site-card.lenses-site-hero-section:focus-within {
+  border-left-color: var(--bs-cyan, #06b6d4);
+  background: linear-gradient(105deg, rgba(6, 182, 212, 0.07) 0%, transparent 52%);
+  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.12);
 }
 .lenses-site-hero-section .lenses-hero-kicker {
   font-size: 0.72rem;
@@ -263,8 +314,106 @@ def _lenses_vertical_hero_styles() -> str:
   font-weight: 600;
 }
 .lenses-site-hero-section h2 { font-size: 1.35rem; margin: 0.35rem 0 0.25rem; }
+.lenses-site-card .lenses-site-title {
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0.35rem 0 0.4rem;
+  line-height: 1.15;
+}
+.lenses-site-status-chips .badge { font-weight: 500; max-width: 100%; }
+.lenses-site-branch-chip {
+  max-width: min(100%, 18rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lenses-site-summary {
+  font-size: 0.88rem;
+  color: var(--forge-text-4, #94a3b8);
+  margin: 0 0 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lenses-site-cta-col .btn-forge { font-weight: 600; }
+.lenses-site-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem 1rem;
+  margin-top: 1.05rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+@media (min-width: 576px) {
+  .lenses-site-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 992px) {
+  .lenses-site-meta-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.lenses-site-meta-k {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--forge-text-4, #64748b);
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.lenses-site-meta-v {
+  font-size: 0.82rem;
+  color: var(--bs-body-color, var(--forge-text, #e2e8f0));
+  word-break: break-word;
+  min-width: 0;
+}
+.lenses-site-meta-v code { font-size: 0.78rem; }
+.lenses-site-meta-muted { color: var(--forge-text-4, #64748b); font-size: 0.8rem; }
+.lenses-site-meta-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lenses-index-health { display: flex; flex-direction: column; gap: 0.25rem; }
+.lenses-index-progress { height: 4px; background: rgba(148, 163, 184, 0.2); }
+.lenses-index-progress .progress-bar { min-width: 0; }
+.lenses-index-health-label { line-height: 1.2; }
 .lenses-site-stat-strip { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.85rem 0 0.25rem; align-items: center; }
 .lenses-site-stat-strip .badge { font-weight: 500; }
+.lenses-site-card .lenses-site-details { margin-top: 0.65rem; }
+.lenses-site-card .lenses-site-details summary {
+  cursor: pointer;
+  color: var(--bs-cyan, #06b6d4);
+  font-weight: 500;
+}
+.lenses-site-card .lenses-site-details summary:focus-visible {
+  outline: 2px solid var(--bs-cyan, #06b6d4);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.lenses-site-pages-block { margin-top: 1rem; }
+.lenses-site-pages-block > .lenses-pages-heading {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--forge-text-4, #64748b);
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+.lenses-key-pages-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.5rem 0.85rem;
+  margin-top: 0.2rem;
+}
+.lenses-key-pages-preview .lenses-key-page-link {
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.lenses-key-pages-preview .lenses-key-page-path {
+  font-size: 0.68rem;
+  opacity: 0.9;
+}
 .lenses-key-pages-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
@@ -280,6 +429,7 @@ def _lenses_vertical_hero_styles() -> str:
   color: var(--bs-cyan, #06b6d4);
   text-decoration: none;
 }
+.lenses-key-page-path { font-size: 0.72rem; }
 .lenses-site-hero-section.lenses-project-portal-section {
   min-height: 12rem;
   padding-top: 1.5rem;
@@ -373,6 +523,137 @@ def local_site_href(site: str, rel_path: str) -> str:
     segs = [urllib.parse.quote(s, safe="") for s in rel_path.split("/") if s]
     tail = "/".join(segs) if segs else urllib.parse.quote("index.html", safe="")
     return f"/local-site/{urllib.parse.quote(site, safe='')}/{tail}"
+
+
+def view_lenses_docs_href(rel_path: str = "") -> str:
+    """Dashboard URL that keeps Lenses chrome while showing ``/docs/…`` in an iframe."""
+    rel = (rel_path or "").strip().replace("\\", "/").lstrip("/")
+    if not rel:
+        return "/view/docs"
+    segs = [urllib.parse.quote(s, safe="") for s in rel.split("/") if s]
+    return "/view/docs/" + "/".join(segs)
+
+
+def view_local_site_href(site: str, rel_path: str) -> str:
+    """Dashboard URL that keeps Lenses chrome while showing ``/local-site/…`` in an iframe."""
+    return "/view" + local_site_href(site, rel_path)
+
+
+def embed_in_app_doc_url(url: str) -> str:
+    """Rewrite same-origin ``/docs`` and ``/local-site`` paths to ``/view/…`` shell routes."""
+    u = (url or "").strip()
+    if not u:
+        return u
+    parsed = urllib.parse.urlparse(u)
+    path = parsed.path
+    new_path: str | None = None
+    if path == "/docs" or path.startswith("/docs/"):
+        tail = path[len("/docs") :].lstrip("/")
+        new_path = "/view/docs" + ("/" + tail if tail else "")
+    elif path.startswith("/local-site/"):
+        new_path = "/view" + path
+    if new_path is None:
+        return u
+    return urllib.parse.urlunparse(
+        (parsed.scheme, parsed.netloc, new_path, parsed.params, parsed.query, parsed.fragment)
+    )
+
+
+def page_view_embed(
+    state: dict[str, Any],
+    *,
+    iframe_src: str,
+    raw_open_href: str,
+    page_title: str,
+    breadcrumb_parts: list[tuple[str, str]],
+    lenses_repo_root: Path,
+    handbook_url: str,
+    forge_url: str,
+    missing_message: str | None = None,
+) -> str:
+    """Full dashboard page with iframe to static handbook, or in-shell message when missing."""
+    if missing_message:
+        body_inner = (
+            f'<div class="alert alert-warning border-secondary" role="status">'
+            f"<p class=\"mb-2\">{esc(missing_message)}</p>"
+            '<p class="mb-0 forge-support small">'
+            '<a href="/">Overview</a> · '
+            f'<a href="{esc(view_lenses_docs_href())}">Lenses reference</a> · '
+            '<a href="/tutorials">Tutorials</a>'
+            "</p></div>"
+        )
+    else:
+        _embed_sandbox = (
+            "allow-scripts allow-same-origin allow-forms "
+            "allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
+        )
+        initial_src_js = json.dumps(iframe_src)
+        body_inner = f"""
+<style>
+.lenses-view-embed-root {{ display: flex; flex-direction: column; min-height: calc(100vh - 10rem); }}
+.lenses-view-embed-toolbar {{
+  flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  margin-bottom: 0.75rem;
+}}
+.lenses-view-embed-frame-wrap {{
+  flex: 1 1 auto; min-width: 0; min-height: 480px; border: 1px solid var(--forge-border, #1e293b);
+  border-radius: 8px; overflow: hidden; background: #020617;
+}}
+.lenses-view-embed-frame-wrap iframe {{
+  width: 100%; height: 100%; min-height: 480px; border: 0; display: block;
+}}
+</style>
+<div class="lenses-view-embed-root">
+  <div class="lenses-view-embed-toolbar forge-support">
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="lenses-embed-iframe-back"
+      title="Go back one step inside the embedded page" aria-label="Back inside embedded preview">← In preview</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="lenses-embed-iframe-reset"
+      title="Reload the starting URL for this view" aria-label="Reset embedded preview">Reset preview</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="lenses-embed-iframe-reload"
+      title="Reload the current embedded page" aria-label="Reload embedded preview">Reload</button>
+    <a href="/" class="btn btn-sm btn-outline-secondary">Overview</a>
+    <a href="{esc(view_lenses_docs_href())}" class="btn btn-sm btn-outline-secondary">Lenses reference</a>
+    <a href="{esc(raw_open_href)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-info">Open without shell</a>
+  </div>
+  <div class="lenses-view-embed-frame-wrap">
+    <iframe id="lenses-view-embed-frame" title="{esc(page_title)}" src="{esc(iframe_src)}"
+      sandbox="{esc(_embed_sandbox)}"></iframe>
+  </div>
+</div>
+<script>
+(function () {{
+  var frame = document.getElementById("lenses-view-embed-frame");
+  var initialSrc = {initial_src_js};
+  if (!frame) return;
+  function back() {{
+    try {{ frame.contentWindow.history.back(); }} catch (e) {{}}
+  }}
+  function reset() {{ frame.src = initialSrc; }}
+  function reload() {{
+    try {{ frame.contentWindow.location.reload(); }} catch (e) {{ frame.src = frame.src; }}
+  }}
+  var b1 = document.getElementById("lenses-embed-iframe-back");
+  var b2 = document.getElementById("lenses-embed-iframe-reset");
+  var b3 = document.getElementById("lenses-embed-iframe-reload");
+  if (b1) b1.addEventListener("click", back);
+  if (b2) b2.addEventListener("click", reset);
+  if (b3) b3.addEventListener("click", reload);
+}})();
+</script>
+"""
+    bc = lenses_breadcrumb_html(*breadcrumb_parts)
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title=f"{page_title} — lenses",
+        nav_active="overview",
+        page_title=page_title,
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
+    )
 
 
 def _handbook_display_label(book: HandbookRef, pages: Any, is_site: bool) -> str:
@@ -835,13 +1116,12 @@ def _overview_repo_section_html(
         )
     if name in website_names:
         link_parts.append(
-            f'<a href="{esc(local_site_href(name, ""))}">Preview</a>'
+            f'<a href="{esc(view_local_site_href(name, ""))}">Preview</a>'
         )
     if handbook_quick_links:
         for hb_label, hb_rel in handbook_quick_links:
             link_parts.append(
-                f'<a href="{esc(local_site_href(name, hb_rel))}" '
-                f'target="_blank" rel="noopener">{esc(hb_label)}</a>'
+                f'<a href="{esc(view_local_site_href(name, hb_rel))}">{esc(hb_label)}</a>'
             )
     links_html = (
         f'<p class="lenses-overview-quick-links forge-support small mb-2">'
@@ -990,41 +1270,128 @@ def _overview_metrics_strip_html(metrics: dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def lenses_sidebar_html(nav_active: str, handbook_url: str, forge_url: str) -> str:
-    items = [
+def lenses_sidebar_html(
+    nav_active: str,
+    handbook_url: str,
+    forge_url: str,
+    workspace_projects: list[str],
+    switcher_selected: str,
+    *,
+    roadmap_scope_repo: str | None = None,
+    search_scope_repo: str | None = None,
+) -> str:
+    """Left rail: collapsible tiers (kitchensink ``.nav-tier-*``), one section open at a time."""
+    switcher = project_switcher_html(workspace_projects, switcher_selected, bootstrap=True)
+    workspace_items = [
         ("overview", "/", "Overview"),
         ("projects", "/projects", "Projects"),
         ("tutorials", "/tutorials", "Tutorials"),
-        ("toolset", "/toolset", "Toolset"),
-        ("websites", "/websites", "Websites"),
+        ("feature_showcase", "/feature-showcase", "Showcase"),
+        ("toolset", "/toolset", "Automation"),
+        ("websites", "/websites", "Sites"),
+        ("search", "/search", "Search"),
         ("board", "/board", "Sticker board"),
-        ("wbs", "/wbs", "WBS"),
-        ("plan", "/plan", "Forge plan"),
     ]
-    lines = [
-        '<p class="nav-section-label">Workspace</p>',
-        '<div class="nav-rail">',
+    _rm_q = (
+        f"?{urllib.parse.urlencode({'repo': roadmap_scope_repo})}"
+        if roadmap_scope_repo
+        else ""
+    )
+    roadmap_items = [
+        ("wbs", "/wbs", "Work Breakdown"),
+        ("plan", f"/plan{_rm_q}", "Plan"),
+        ("timeline", f"/timeline{_rm_q}", "Timeline"),
     ]
-    for key, href, label in items:
+    ws_keys = frozenset(
+        {
+            "overview",
+            "projects",
+            "tutorials",
+            "feature_showcase",
+            "toolset",
+            "websites",
+            "search",
+            "board",
+        }
+    )
+    rm_keys = frozenset({"wbs", "plan", "timeline"})
+
+    def _tier_open(keys: frozenset[str]) -> str:
+        return ' open' if nav_active in keys else ""
+
+    search_form_cls = "lenses-sidebar-search"
+    if nav_active == "search":
+        search_form_cls += " lenses-sidebar-search--active"
+    _search_icon = (
+        '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">'
+        '<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>'
+        "</svg>"
+    )
+    _scope = (search_scope_repo if search_scope_repo is not None else roadmap_scope_repo)
+    _scope = str(_scope).strip() if _scope else ""
+    _hidden_repo = (
+        f'<input type="hidden" name="repo" value="{esc(_scope)}" />'
+        if _scope
+        else ""
+    )
+    search_block = (
+        f'<form class="{search_form_cls}" method="get" action="/search" role="search" aria-label="Search workspace">'
+        f"{_hidden_repo}"
+        '<label class="visually-hidden" for="lenses-sidebar-search-q">Search workspace</label>'
+        '<input type="search" id="lenses-sidebar-search-q" name="q" class="form-control form-control-sm" '
+        'placeholder="Search workspace…" autocomplete="off" />'
+        f'<button type="submit" class="lenses-sidebar-search-submit" title="Search">{_search_icon}</button>'
+        "</form>"
+    )
+
+    # Search is the prominent field above; omit duplicate "Search" nav link (see /search for full UI).
+    workspace_items_no_dup = [x for x in workspace_items if x[0] != "search"]
+
+    lines = [search_block, switcher, '<div class="nav-tier-accordion">']
+
+    lines.append(
+        f'<details class="nav-tier-wrap"{_tier_open(ws_keys)} name="lenses-sidebar-tier">'
+    )
+    lines.append('<summary class="nav-tier-summary">Workspace</summary>')
+    lines.append('<div class="nav-rail nav-rail--tier">')
+    for key, href, label in workspace_items_no_dup:
         cls = " active" if nav_active == key else ""
         lines.append(
             f'<a class="doc-sidebar-link{cls}" href="{esc(href)}">{esc(label)}</a>'
         )
-    lines.append("</div>")
-    lines.append('<p class="nav-section-label">Reference</p>')
-    lines.append('<div class="nav-rail">')
+    lines.append("</div></details>")
+
     lines.append(
-        '<a class="doc-sidebar-link" href="/docs/index.html">Lenses docs</a>'
+        f'<details class="nav-tier-wrap"{_tier_open(rm_keys)} name="lenses-sidebar-tier">'
     )
-    lines.append("</div>")
-    lines.append('<p class="nav-section-label">Published</p>')
-    lines.append('<div class="nav-rail">')
+    lines.append('<summary class="nav-tier-summary">Roadmap management</summary>')
+    lines.append('<div class="nav-rail nav-rail--tier">')
+    for key, href, label in roadmap_items:
+        cls = " active" if nav_active == key else ""
+        lines.append(
+            f'<a class="doc-sidebar-link{cls}" href="{esc(href)}">{esc(label)}</a>'
+        )
+    lines.append("</div></details>")
+
+    lines.append('<details class="nav-tier-wrap" name="lenses-sidebar-tier">')
+    lines.append('<summary class="nav-tier-summary">Reference</summary>')
+    lines.append('<div class="nav-rail nav-rail--tier">')
+    lines.append(
+        f'<a class="doc-sidebar-link" href="{esc(view_lenses_docs_href("index.html"))}">Lenses docs</a>'
+    )
+    lines.append("</div></details>")
+
+    lines.append('<details class="nav-tier-wrap" name="lenses-sidebar-tier">')
+    lines.append('<summary class="nav-tier-summary">Published</summary>')
+    lines.append('<div class="nav-rail nav-rail--tier">')
     lines.append(
         f'<a class="doc-sidebar-link" href="{esc(handbook_url)}" target="_blank" rel="noopener">Handbook</a>'
     )
     lines.append(
         f'<a class="doc-sidebar-link" href="{esc(forge_url)}" target="_blank" rel="noopener">Forge</a>'
     )
+    lines.append("</div></details>")
+
     lines.append("</div>")
     return "\n".join(lines)
 
@@ -1049,29 +1416,149 @@ def lenses_footer_html() -> str:
     )
 
 
+LENSES_PROJECT_SWITCHER_CSS = """<style>
+.lenses-project-switcher-wrap { margin-bottom: 0.75rem; }
+.lenses-project-switcher-wrap--topbar { margin-bottom: 0; align-self: center; }
+.lenses-project-switcher-label {
+  display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--forge-text-4, #94a3b8); margin-bottom: 0.25rem;
+}
+.lenses-project-switcher {
+  width: 100%; max-width: 100%; font-size: 0.8rem;
+}
+.lenses-topbar .lenses-project-switcher-wrap--topbar {
+  flex: 1 1 12rem; min-width: 10rem; max-width: 20rem;
+}
+</style>"""
+
+
+def workspace_project_names_sorted(state: dict[str, Any] | None) -> list[str]:
+    """Sorted top-level workspace child names (same set as repo_strategy.workspace_child_names)."""
+    if not state:
+        return []
+    return sorted(workspace_child_names(state))
+
+
+def switcher_selected_href(current_project: str | None, nav_active: str) -> str:
+    """Which `<select>` option is selected: `/`, `/projects`, a project path, or neutral (\"\")."""
+    if current_project:
+        return f"/projects/{urllib.parse.quote(current_project, safe='')}"
+    if nav_active == "overview":
+        return "/"
+    if nav_active == "projects":
+        return "/projects"
+    return ""
+
+
+def workspace_project_for_repo(
+    repo: str, workspace_projects: list[str]
+) -> str | None:
+    """If ``repo`` is a top-level workspace project name, return it for switcher and sidebar scope."""
+    r = (repo or "").strip()
+    if not r:
+        return None
+    return r if r in workspace_projects else None
+
+
+def project_switcher_html(
+    workspace_projects: list[str],
+    selected_href: str,
+    *,
+    compact_topbar: bool = False,
+    bootstrap: bool = True,
+) -> str:
+    """Accessible `<select>` to jump to Overview, All projects, or a repository dashboard."""
+    wrap_cls = (
+        "lenses-project-switcher-wrap lenses-project-switcher-wrap--topbar"
+        if compact_topbar
+        else "lenses-project-switcher-wrap"
+    )
+    sel_cls = (
+        "form-select form-select-sm lenses-project-switcher"
+        if bootstrap
+        else "lenses-project-switcher"
+    )
+
+    def opt(val: str, label: str) -> str:
+        sel = " selected" if selected_href == val else ""
+        return f'<option value="{esc(val)}"{sel}>{esc(label)}</option>'
+
+    lines: list[str] = [
+        opt("", "— Workspace —"),
+        opt("/", "Overview"),
+        opt("/projects", "All projects"),
+    ]
+    if workspace_projects:
+        lines.append('<optgroup label="Repositories">')
+        for name in workspace_projects:
+            href = f"/projects/{urllib.parse.quote(name, safe='')}"
+            sel = " selected" if selected_href == href else ""
+            lines.append(f'<option value="{esc(href)}"{sel}>{esc(name)}</option>')
+        lines.append("</optgroup>")
+
+    inner = "\n".join(lines)
+    return (
+        f'<div class="{wrap_cls}">'
+        '<label for="lenses-project-switcher" class="lenses-project-switcher-label">Workspace</label>'
+        f'<select id="lenses-project-switcher" class="{sel_cls}" '
+        'aria-label="Workspace or project" '
+        'onchange="if(this.value) window.location.href=this.value">'
+        f"{inner}"
+        "</select></div>"
+    )
+
+
 def nav_bar(
     active: str,
     handbook_url: str,
     forge_url: str,
+    workspace_projects: list[str],
+    switcher_selected: str,
+    *,
+    bootstrap: bool = False,
+    roadmap_scope_repo: str | None = None,
 ) -> str:
-    items = [
+    workspace_items = [
         ("overview", "/", "Overview"),
         ("projects", "/projects", "Projects"),
         ("tutorials", "/tutorials", "Tutorials"),
-        ("toolset", "/toolset", "Toolset"),
-        ("websites", "/websites", "Websites"),
+        ("feature_showcase", "/feature-showcase", "Showcase"),
+        ("toolset", "/toolset", "Automation"),
+        ("websites", "/websites", "Sites"),
+        ("search", "/search", "Search"),
         ("board", "/board", "Sticker board"),
-        ("wbs", "/wbs", "WBS"),
-        ("plan", "/plan", "Forge plan"),
+    ]
+    _rm_q = (
+        f"?{urllib.parse.urlencode({'repo': roadmap_scope_repo})}"
+        if roadmap_scope_repo
+        else ""
+    )
+    roadmap_items = [
+        ("wbs", "/wbs", "Work Breakdown"),
+        ("plan", f"/plan{_rm_q}", "Plan"),
+        ("timeline", f"/timeline{_rm_q}", "Timeline"),
     ]
     links = []
-    for key, href, label in items:
+    for key, href, label in workspace_items:
         cls = " active" if active == key else ""
         links.append(
             f'<a class="lenses-nav-link{cls}" href="{esc(href)}">{esc(label)}</a>'
         )
+    roadmap_parts = [
+        '<span class="lenses-nav-roadmap-label">Roadmap</span>',
+    ]
+    for key, href, label in roadmap_items:
+        cls = " active" if active == key else ""
+        roadmap_parts.append(
+            f'<a class="lenses-nav-link{cls}" href="{esc(href)}">{esc(label)}</a>'
+        )
     links.append(
-        f'<a class="lenses-nav-link lenses-nav-docs" href="/docs/index.html">Lenses docs</a>'
+        '<div class="lenses-nav-roadmap-group" role="group" aria-label="Roadmap management">'
+        + "\n    ".join(roadmap_parts)
+        + "</div>"
+    )
+    links.append(
+        f'<a class="lenses-nav-link lenses-nav-docs" href="{esc(view_lenses_docs_href("index.html"))}">Lenses docs</a>'
     )
     links.append(
         f'<a class="lenses-nav-link lenses-nav-external" href="{esc(handbook_url)}" target="_blank" rel="noopener">Handbook</a>'
@@ -1080,15 +1567,34 @@ def nav_bar(
         f'<a class="lenses-nav-link lenses-nav-external" href="{esc(forge_url)}" target="_blank" rel="noopener">Forge</a>'
     )
     inner = "\n    ".join(links)
+    switcher = project_switcher_html(
+        workspace_projects, switcher_selected, compact_topbar=True, bootstrap=bootstrap
+    )
     return f"""<header class="lenses-topbar">
-  <div class="lenses-brand"><a href="/">lenses</a></div>
+  <div class="lenses-brand">
+    <a class="lenses-brand-lockup" href="/" title="Home" aria-label="Home">
+      <span class="lenses-brand-icon" aria-hidden="true">F</span>
+      <span class="lenses-brand-text">lenses</span>
+    </a>
+  </div>
+  {switcher}
   <nav class="lenses-nav" aria-label="Main">
     {inner}
   </nav>
 </header>"""
 
 
-def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge_url: str) -> str:
+def layout_page(
+    title: str,
+    nav_active: str,
+    body: str,
+    handbook_url: str,
+    forge_url: str,
+    workspace_projects: list[str] | None = None,
+    switcher_selected: str = "",
+    *,
+    roadmap_scope_repo: str | None = None,
+) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1124,11 +1630,37 @@ def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge
       top: 0;
       z-index: 100;
     }}
-    .lenses-brand a {{
+    .lenses-brand {{
+      flex: 0 0 auto;
+      align-self: center;
+    }}
+    .lenses-brand-lockup {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
       font-weight: 700;
       color: var(--accent);
       text-decoration: none;
       letter-spacing: 0.02em;
+    }}
+    .lenses-brand-lockup:hover {{
+      color: #22d3ee;
+    }}
+    .lenses-brand-icon {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #f59e0b, rgba(245, 158, 11, 0.65));
+      color: #0a0e17;
+      font-size: 0.82rem;
+      font-weight: 900;
+      flex-shrink: 0;
+    }}
+    .lenses-brand-text {{
+      font-weight: 700;
     }}
     .lenses-nav {{
       display: flex;
@@ -1147,6 +1679,22 @@ def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge
     .lenses-nav-link.active {{ color: var(--accent); font-weight: 600; }}
     .lenses-nav-docs {{ color: #f59e0b; }}
     .lenses-nav-external {{ opacity: 0.9; }}
+    .lenses-nav-roadmap-group {{
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.5rem;
+      align-items: center;
+      padding-left: 0.55rem;
+      margin-left: 0.15rem;
+      border-left: 1px solid var(--border);
+    }}
+    .lenses-nav-roadmap-label {{
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      white-space: nowrap;
+    }}
     main {{
       width: 100%;
       margin: 0;
@@ -1206,10 +1754,22 @@ def layout_page(title: str, nav_active: str, body: str, handbook_url: str, forge
     .lenses-overview-repo-desc-full {{ white-space: pre-wrap; word-break: break-word; line-height: 1.45; }}
     .lenses-overview-repo-lede {{ line-height: 1.5; }}
     .text-cyan {{ color: var(--accent); }}
+    .lenses-project-switcher-wrap {{ margin-bottom: 0.75rem; }}
+    .lenses-project-switcher-wrap--topbar {{
+      flex: 1 1 12rem; min-width: 10rem; max-width: 20rem; align-self: center; margin-bottom: 0;
+    }}
+    .lenses-project-switcher-label {{
+      display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted); margin-bottom: 0.25rem;
+    }}
+    .lenses-project-switcher {{
+      width: 100%; max-width: 18rem; padding: 0.35rem 0.5rem; border-radius: 4px;
+      border: 1px solid var(--border); background: #111827; color: var(--text); font-size: 0.85rem;
+    }}
   </style>
 </head>
 <body>
-{nav_bar(nav_active, handbook_url, forge_url)}
+{nav_bar(nav_active, handbook_url, forge_url, workspace_projects if workspace_projects is not None else [], switcher_selected, bootstrap=False, roadmap_scope_repo=roadmap_scope_repo)}
 <main>
 {body}
 </main>
@@ -1229,8 +1789,23 @@ def _wrap_dashboard(
     forge_url: str,
     body_extra_class: str = "",
     dashboard_extra_css: str = "",
+    workspace_projects: list[str] | None = None,
+    current_project: str | None = None,
+    roadmap_scope_repo: str | None = None,
+    search_scope_repo: str | None = None,
 ) -> str:
-    sidebar = lenses_sidebar_html(nav_active, handbook_url, forge_url)
+    wp = workspace_projects if workspace_projects is not None else []
+    sel = switcher_selected_href(current_project, nav_active)
+    extra_merged = LENSES_PROJECT_SWITCHER_CSS + (dashboard_extra_css or "")
+    sidebar = lenses_sidebar_html(
+        nav_active,
+        handbook_url,
+        forge_url,
+        wp,
+        sel,
+        roadmap_scope_repo=roadmap_scope_repo,
+        search_scope_repo=search_scope_repo,
+    )
     footer = lenses_footer_html()
     ks = lenses_showcase_page(
         lenses_repo_root,
@@ -1241,12 +1816,21 @@ def _wrap_dashboard(
         body_html=body_inner,
         footer_html=footer,
         body_extra_class=body_extra_class,
-        dashboard_extra_css=dashboard_extra_css,
+        dashboard_extra_css=extra_merged,
     )
     if ks is not None:
         return ks
     body = f"{breadcrumb_html}\n{body_inner}\n{footer}"
-    return layout_page(browser_title, nav_active, body, handbook_url, forge_url)
+    return layout_page(
+        browser_title,
+        nav_active,
+        body,
+        handbook_url,
+        forge_url,
+        wp,
+        sel,
+        roadmap_scope_repo=roadmap_scope_repo,
+    )
 
 
 def _contributors_table_html(lenses_repo_root: Path, rows: list[tuple[str, str]]) -> str:
@@ -1269,6 +1853,142 @@ def _contributors_table_html(lenses_repo_root: Path, rows: list[tuple[str, str]]
     return (
         '<table class="table table-sm"><thead><tr><th>Commits</th><th>Author</th></tr></thead>'
         f"<tbody>{tr}</tbody></table>"
+    )
+
+
+def _overview_forge_pulse_section(rollup: dict[str, Any]) -> str:
+    """Forge execution summary for the home page (multi-repo rollup)."""
+    if not rollup.get("ok"):
+        return ""
+    n_wbs = int(rollup.get("wbs_count") or 0)
+    if n_wbs <= 0:
+        return (
+            '<section class="lenses-overview-forge-pulse mb-4 lenses-overview-aside-block p-3">'
+            '<h2 class="h5 text-cyan mb-2">Forge pulse</h2>'
+            '<p class="forge-support small mb-0">No <code>WBS.md</code> under '
+            '<code>docs/requirements/</code>. Add requirements or open '
+            '<a href="/plan">Plan</a>.</p></section>'
+        )
+
+    totals = rollup.get("totals") or {}
+    t_active = int(totals.get("active_sparks") or 0)
+    t_blocked = int(totals.get("blocked_sparks") or 0)
+    t_gaps = int(totals.get("spark_rows_with_gaps") or 0)
+
+    hz = rollup.get("horizon_totals") or {}
+    hz_html = ""
+    if isinstance(hz, dict) and hz:
+        hz_html = horizon_badges_html({str(k): int(v) for k, v in hz.items() if int(v) > 0})
+
+    active = rollup.get("active_sparks") or []
+    blocked = rollup.get("blocked_sparks") or []
+    gaps = rollup.get("gaps") or []
+    upcoming = rollup.get("upcoming_milestones") or []
+    progress = rollup.get("progress_samples") or []
+
+    def _li_spark(row: dict[str, Any]) -> str:
+        sid = esc(str(row.get("spark_id") or ""))
+        title = esc(str(row.get("title") or sid))
+        href = esc(str(row.get("plan_href") or "/plan"))
+        repo = esc(str(row.get("repo_hint") or ""))
+        st = str(row.get("status") or "").strip()
+        st_s = f' <span class="text-muted">({esc(st)})</span>' if st else ""
+        return (
+            f'<li class="mb-1"><a href="{href}"><code>{sid}</code></a> {title}{st_s}'
+            f'<span class="text-muted small"> · {repo}</span></li>'
+        )
+
+    def _li_blocked(row: dict[str, Any]) -> str:
+        sid = esc(str(row.get("spark_id") or ""))
+        title = esc(str(row.get("title") or sid))
+        href = esc(str(row.get("plan_href") or "/plan"))
+        blk = esc(str(row.get("blocker") or "")[:160])
+        repo = esc(str(row.get("repo_hint") or ""))
+        return (
+            f'<li class="mb-1"><a href="{href}"><code>{sid}</code></a> {title}'
+            f'<br /><span class="small text-warning">{blk}</span>'
+            f'<span class="text-muted small"> · {repo}</span></li>'
+        )
+
+    def _li_gap(row: dict[str, Any]) -> str:
+        sid = esc(str(row.get("spark_id") or ""))
+        href = esc(str(row.get("plan_href") or "/plan"))
+        g = esc(str(row.get("gap") or ""))
+        return (
+            f'<li class="mb-1"><a href="{href}"><code>{sid}</code></a> — {g}</li>'
+        )
+
+    active_items = "".join(_li_spark(x) for x in active if isinstance(x, dict))
+    blocked_items = "".join(_li_blocked(x) for x in blocked if isinstance(x, dict))
+    gap_items = "".join(_li_gap(x) for x in gaps if isinstance(x, dict))
+
+    if not active_items:
+        active_items = '<li class="forge-support">No active sparks (or no Charge).</li>'
+    if not blocked_items:
+        blocked_items = '<li class="forge-support">No blocked sparks.</li>'
+    if not gap_items:
+        gap_items = '<li class="forge-support">No evidence or decision gaps flagged.</li>'
+
+    upcoming_str = ", ".join(esc(str(x)) for x in upcoming[:8]) if upcoming else ""
+    up_body = (
+        upcoming_str
+        if upcoming_str
+        else '<span class="forge-support">No milestone schedule parsed.</span>'
+    )
+
+    prog_bits: list[str] = []
+    for p in progress[:6]:
+        if not isinstance(p, dict):
+            continue
+        lab = esc(str(p.get("label") or ""))
+        try:
+            pct_f = float(p.get("pct") or 0)
+        except (TypeError, ValueError):
+            pct_f = 0.0
+        rh = esc(str(p.get("repo_hint") or ""))
+        prog_bits.append(f'<li class="small mb-0">{lab} — {pct_f:.0f}% <span class="text-muted">({rh})</span></li>')
+    prog_html = "<ul class=\"list-unstyled mb-0\">" + "".join(prog_bits) + "</ul>" if prog_bits else (
+        '<p class="forge-support small mb-0">No epic % data in roadmaps.</p>'
+    )
+
+    summary_line = (
+        f"<strong>{t_active}</strong> active spark(s), <strong>{t_blocked}</strong> blocked, "
+        f"<strong>{t_gaps}</strong> spark row(s) with readiness gaps."
+    )
+
+    return (
+        '<section class="lenses-overview-forge-pulse mb-4 lenses-overview-aside-block p-3">'
+        '<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">'
+        '<h2 class="h5 text-cyan mb-0">Forge pulse</h2>'
+        '<a class="small" href="/plan">Open Plan</a> · <a class="small" href="/timeline">Timeline</a>'
+        "</div>"
+        f'<p class="forge-support small mb-3">{summary_line}</p>'
+        f"{hz_html}"
+        f'<div class="row g-3 mt-1">'
+        '<div class="col-lg-4">'
+        '<h3 class="h6 text-cyan">Active sparks</h3>'
+        f'<ul class="list-unstyled small mb-0">{active_items}</ul>'
+        "</div>"
+        '<div class="col-lg-4">'
+        '<h3 class="h6 text-cyan">Blocked</h3>'
+        f'<ul class="list-unstyled small mb-0">{blocked_items}</ul>'
+        "</div>"
+        '<div class="col-lg-4">'
+        '<h3 class="h6 text-cyan">Evidence / decision gaps</h3>'
+        f'<ul class="list-unstyled small mb-0">{gap_items}</ul>'
+        "</div>"
+        "</div>"
+        '<div class="row g-3 mt-3">'
+        '<div class="col-lg-6">'
+        '<h3 class="h6 text-cyan">Upcoming work windows (roadmap)</h3>'
+        f'<p class="small mb-0">{up_body}</p>'
+        "</div>"
+        '<div class="col-lg-6">'
+        '<h3 class="h6 text-cyan">Lightweight progress</h3>'
+        f"{prog_html}"
+        "</div>"
+        "</div>"
+        "</section>"
     )
 
 
@@ -1319,6 +2039,9 @@ def page_overview(
         ]
     workspace_root_str = str(state.get("workspace_root", ""))
     resolved_str = str(state.get("resolved_at", ""))
+    workspace_root = Path(workspace_root_str) if workspace_root_str else Path(".")
+    rollup = build_overview_forge_rollup(workspace_root, state)
+    forge_pulse = _overview_forge_pulse_section(rollup)
 
     dated: list[tuple[datetime, dict[str, Any]]] = []
     for c in children:
@@ -1385,7 +2108,7 @@ def page_overview(
                 clarification=clarification,
                 primary_cta_href="/projects",
                 primary_cta_label="Browse projects",
-                secondary_cta_href="/docs/index.html",
+                secondary_cta_href=view_lenses_docs_href("index.html"),
                 secondary_cta_label="Lenses docs",
                 secondary_links=[("Tutorials", "/tutorials")],
                 support_points=support_points,
@@ -1402,7 +2125,7 @@ def page_overview(
             f'<p class="forge-support small mb-2">{esc(clarification)}</p>'
             '<p class="forge-support small mb-0">'
             '<a href="/projects">Browse projects</a> · '
-            '<a href="/docs/index.html">Lenses docs</a> · '
+            f'<a href="{esc(view_lenses_docs_href("index.html"))}">Lenses docs</a> · '
             '<a href="/tutorials">Tutorials</a>'
             "</p>"
             "</div>"
@@ -1541,16 +2264,11 @@ def page_overview(
     kpi_row = (
         '<div class="lenses-overview-kpi-grid mb-4">'
         + kpi_tile("/projects", "Top-level folders", esc(str(n_children)), "Open Projects →")
-        + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Websites →")
-        + kpi_tile("/wbs", "WBS files", esc(str(n_wbs)), "WBS →")
-        + kpi_tile("/plan", "Forge plan", esc(str(n_roadmaps)), "Forge plan →")
-        + kpi_tile("/toolset", "Root scripts", esc(str(n_scripts)), "Toolset →")
-        + kpi_tile(
-            "/projects",
-            "Approx. lines (sum)",
-            esc(f"~{total_loc_sum:,}"),
-            "Newlines, capped per repo →",
-        )
+        + kpi_tile("/websites", "Firebase sites", esc(str(n_sites)), "Sites →")
+        + kpi_tile("/wbs", "Work breakdown files", esc(str(n_wbs)), "Work Breakdown →")
+        + kpi_tile("/plan", "Plan", esc(str(n_roadmaps)), "Open Plan →")
+        + kpi_tile("/timeline", "Timeline", esc(str(n_roadmaps)), "Milestone windows →")
+        + kpi_tile("/toolset", "Root scripts", esc(str(n_scripts)), "Automation →")
         + "</div>"
     )
 
@@ -1592,6 +2310,14 @@ def page_overview(
         "</div></section>"
     )
 
+    analytics_block_wrapped = (
+        '<details class="lenses-overview-analytics-details mb-4">'
+        '<summary class="h6 text-cyan user-select-none" style="cursor:pointer">'
+        "Workspace analytics (commits, lines of code, file types)</summary>"
+        f'<div class="pt-3 mt-2 border-top border-secondary">{analytics_block}</div>'
+        "</details>"
+    )
+
     score_rows: list[tuple[str, int]] = []
     for c in sorted_children:
         sc = c.get("standards_compliance")
@@ -1618,7 +2344,7 @@ def page_overview(
         '<div class="col-lg-7 mb-4 mb-lg-0">'
         '<h2 class="h5 text-cyan mb-3">Repositories</h2>'
         + ("".join(repo_blocks) if repo_blocks else '<p class="forge-support">No folders found.</p>')
-        + analytics_block
+        + analytics_block_wrapped
         + standards_block
         + "</div>"
     )
@@ -1684,6 +2410,7 @@ def page_overview(
     body_inner = (
         '<div class="lenses-overview lenses-dash">'
         f'<div class="lenses-overview-hero-wrap mb-2">{hero_html}</div>'
+        f"{forge_pulse}"
         f"{kpi_row}"
         f'<div class="row g-4 lenses-overview-main align-items-start">{main_col}{news_col}</div>'
         f"{metrics_strip}"
@@ -1704,6 +2431,8 @@ def page_overview(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -1803,6 +2532,8 @@ def page_projects(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -1841,7 +2572,7 @@ def page_tutorials(
         proj_href = f"/projects/{urllib.parse.quote(cn, safe='')}"
         for b in books:
             label = _handbook_display_label(b, pages, is_site)
-            href = local_site_href(cn, b.local_site_rel)
+            href = view_local_site_href(cn, b.local_site_rel)
             open_label = (
                 "Open engineer handbook"
                 if b.kind == "tutorials"
@@ -1853,8 +2584,7 @@ def page_tutorials(
                 f'<p class="forge-support small mb-2"><span class="text-body-secondary">'
                 f'{esc(b.label_default)}</span> — {esc(label)}</p>'
                 '<div class="d-flex flex-wrap gap-2">'
-                f'<a class="btn btn-sm btn-forge" href="{esc(href)}" '
-                f'target="_blank" rel="noopener">{esc(open_label)}</a>'
+                f'<a class="btn btn-sm btn-forge" href="{esc(href)}">{esc(open_label)}</a>'
                 f'<a class="btn btn-sm btn-outline-secondary" href="{esc(proj_href)}">'
                 "Project dashboard</a>"
                 "</div></section>"
@@ -1869,7 +2599,8 @@ def page_tutorials(
             "Run <code>./build-fa-tutorials.sh</code> or your site generator (e.g. forgesdlc "
             "<code>python3 generator/build-site.py</code>), then refresh this page.</p>"
             '<p class="forge-support small mb-0">See also '
-            '<a href="/docs/index.html">Lenses docs</a> for setup and the HTTP API reference.</p>'
+            f'<a href="{esc(view_lenses_docs_href("index.html"))}">Lenses docs</a> '
+            "for setup and the HTTP API reference.</p>"
         )
     else:
         body_stack = (
@@ -1890,6 +2621,8 @@ def page_tutorials(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -1940,7 +2673,13 @@ def page_project_detail(
         for w in (state.get("wbs") or [])
         if isinstance(w, dict) and str(w.get("repo_hint", "")) == project_name
     ]
+    roadmap_entries = [
+        r
+        for r in (state.get("roadmaps") or [])
+        if isinstance(r, dict) and str(r.get("repo_hint", "")) == project_name
+    ]
     has_wbs = bool(wbs_entries)
+    has_roadmap = bool(roadmap_entries)
     sid = re.sub(r"[^a-z0-9_-]+", "-", project_name.lower()).strip("-") or "project"
 
     stats: dict[str, Any] = {}
@@ -1979,6 +2718,12 @@ def page_project_detail(
             f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
             f"WBS ×{nw}</span>"
         )
+    if has_roadmap:
+        nr = len(roadmap_entries)
+        badges.append(
+            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
+            f"Roadmap ×{nr}</span>"
+        )
 
     kicker = "Git repository" if is_git else "Workspace folder"
     path_line = (
@@ -1994,10 +2739,8 @@ def page_project_detail(
     wk_pages = wk_tb.get("pages") if wk_tb else None
     handbooks = list_child_handbooks(repo_path)
     browse_href = ""
-    preview_root = ""
     if is_site:
         browse_href = f"/websites/browse?site={urllib.parse.quote(project_name, safe='')}"
-        preview_root = local_site_href(project_name, "index.html")
 
     docs_index_exists = False
     if repo_path.is_dir():
@@ -2019,10 +2762,9 @@ def page_project_detail(
         doc_bits = []
         for b in handbooks:
             lbl = _handbook_display_label(b, wk_pages, is_site)
-            href = local_site_href(project_name, b.local_site_rel)
+            href = view_local_site_href(project_name, b.local_site_rel)
             doc_bits.append(
-                f'{esc(b.label_default)}: <a href="{esc(href)}" target="_blank" rel="noopener">'
-                f"{esc(lbl)}</a>"
+                f'{esc(b.label_default)}: <a href="{esc(href)}">{esc(lbl)}</a>'
             )
         doc_tutorial = " · ".join(doc_bits)
     else:
@@ -2033,10 +2775,10 @@ def page_project_detail(
         )
     doc_extra = ""
     if docs_index_exists:
-        dh = local_site_href(project_name, "docs/index.html")
+        dh = view_local_site_href(project_name, "docs/index.html")
         doc_extra = (
             f'<p class="mb-0 mt-1 forge-support">Docs site: '
-            f'<a href="{esc(dh)}" target="_blank" rel="noopener">docs/index.html</a></p>'
+            f'<a href="{esc(dh)}">docs/index.html</a></p>'
         )
     doc_inner = f'<div class="forge-support small">{doc_tutorial}</div>{doc_extra}'
 
@@ -2044,7 +2786,7 @@ def page_project_detail(
         web_inner = (
             f'<p class="mb-0 forge-support small">Firebase Hosting child. '
             f'<a href="{esc(browse_href)}">Preview in lenses</a> · '
-            f'<a href="{esc(preview_root)}" target="_blank" rel="noopener">'
+            f'<a href="{esc(view_local_site_href(project_name, "index.html"))}">'
             f"Open local site root</a></p>"
         )
     else:
@@ -2054,16 +2796,53 @@ def page_project_detail(
         )
 
     nwbs = len(wbs_entries)
+    plan_rows: list[str] = []
     if has_wbs:
-        plan_inner = (
-            f'<p class="mb-0 forge-support small">{nwbs} requirement file(s) — '
+        plan_rows.append(
+            f'<p class="mb-1 forge-support small">{nwbs} requirement file(s) — '
             f'<a href="/wbs">View WBS</a></p>'
         )
     else:
-        plan_inner = (
-            '<p class="mb-0 forge-support small text-body-secondary">'
+        plan_rows.append(
+            '<p class="mb-1 forge-support small text-body-secondary">'
             "No WBS rooted here</p>"
         )
+    if has_roadmap:
+        rm_link_bits: list[str] = []
+        first_wbs_path = ""
+        if wbs_entries:
+            first_wbs_path = str(wbs_entries[0].get("rel_path", "")).strip()
+        for r in roadmap_entries:
+            rp = str(r.get("rel_path", "")).strip()
+            if not rp:
+                continue
+            q = (
+                f"wbs_p={urllib.parse.quote(first_wbs_path, safe='')}"
+                f"&repo={urllib.parse.quote(project_name, safe='')}"
+                f"&roadmap_p={urllib.parse.quote(rp, safe='')}"
+            )
+            if not first_wbs_path:
+                q = (
+                    f"repo={urllib.parse.quote(project_name, safe='')}"
+                    f"&roadmap_p={urllib.parse.quote(rp, safe='')}"
+                )
+            plan_href = f"/plan?{q}"
+            tl_href = f"/timeline?{q}"
+            rm_link_bits.append(
+                f'<a href="{esc(plan_href)}">Plan</a> / <a href="{esc(tl_href)}">Timeline</a> '
+                f'(<code class="small">{esc(rp)}</code>)'
+            )
+        nrm = len(rm_link_bits)
+        plan_rows.append(
+            f'<p class="mb-0 forge-support small">{nrm} roadmap file(s): '
+            f'{" · ".join(rm_link_bits)}</p>'
+        )
+    else:
+        plan_rows.append(
+            '<p class="mb-0 forge-support small text-body-secondary">'
+            "No <code>ROADMAP.md</code> under this project’s <code>docs/</code> tree</p>"
+        )
+    plan_inner = "".join(plan_rows)
 
     if board_n:
         sticker_lead = f"{board_n} board(s) · "
@@ -2075,23 +2854,22 @@ def page_project_detail(
     )
 
     docs_site_href = (
-        local_site_href(project_name, "docs/index.html") if docs_index_exists else ""
+        view_local_site_href(project_name, "docs/index.html") if docs_index_exists else ""
     )
     hero_quick_parts: list[str] = []
     for b in handbooks:
         hb_lbl = _handbook_display_label(b, wk_pages, is_site)
-        hb_href = local_site_href(project_name, b.local_site_rel)
+        hb_href = view_local_site_href(project_name, b.local_site_rel)
         hero_quick_parts.append(
-            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(hb_href)}" '
-            f'target="_blank" rel="noopener">{esc(hb_lbl)}</a>'
+            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(hb_href)}">{esc(hb_lbl)}</a>'
         )
     if is_site:
         hero_quick_parts.append(
             f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
         )
         hero_quick_parts.append(
-            f'<a class="btn btn-sm btn-outline-info" href="{esc(preview_root)}" '
-            f'target="_blank" rel="noopener">Open local site</a>'
+            f'<a class="btn btn-sm btn-outline-info" href="{esc(view_local_site_href(project_name, "index.html"))}">'
+            f"Open local site</a>"
         )
     if external_url:
         hero_quick_parts.append(
@@ -2100,8 +2878,7 @@ def page_project_detail(
         )
     if docs_site_href:
         hero_quick_parts.append(
-            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(docs_site_href)}" '
-            f'target="_blank" rel="noopener">Docs site</a>'
+            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(docs_site_href)}">Docs site</a>'
         )
     hero_quick_html = ""
     if hero_quick_parts:
@@ -2211,8 +2988,8 @@ def page_project_detail(
             f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
         )
         grp_ship.append(
-            f'<a class="btn btn-sm btn-outline-info" href="{esc(preview_root)}" '
-            f'target="_blank" rel="noopener">Open local site root</a>'
+            f'<a class="btn btn-sm btn-outline-info" href="{esc(view_local_site_href(project_name, "index.html"))}">'
+            f"Open local site root</a>"
         )
         grp_ship.append(
             '<a class="btn btn-sm btn-outline-secondary" href="/websites">Firebase sites list</a>'
@@ -2221,10 +2998,9 @@ def page_project_detail(
     grp_learn: list[str] = []
     for b in handbooks:
         hb_lbl = _handbook_display_label(b, wk_pages, is_site)
-        hb_href = local_site_href(project_name, b.local_site_rel)
+        hb_href = view_local_site_href(project_name, b.local_site_rel)
         grp_learn.append(
-            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(hb_href)}" '
-            f'target="_blank" rel="noopener">{esc(hb_lbl)}</a>'
+            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(hb_href)}">{esc(hb_lbl)}</a>'
         )
     if has_wbs:
         grp_learn.append('<a class="btn btn-sm btn-outline-secondary" href="/wbs">WBS</a>')
@@ -2420,6 +3196,9 @@ def page_project_detail(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=project_name,
+        roadmap_scope_repo=project_name,
     )
 
 
@@ -2626,6 +3405,9 @@ def page_project_repo_strategy(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=project_name,
+        roadmap_scope_repo=project_name,
     )
 
 
@@ -2675,16 +3457,215 @@ def page_toolset(
 {grid}
 <h2 class="h5 text-cyan mt-4">Cursor / IDE</h2>
 {cur_html}"""
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("/toolset", "Toolset"))
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("/toolset", "Automation"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="Toolset — lenses",
+        browser_title="Automation — lenses",
         nav_active="toolset",
-        page_title="Toolset",
+        page_title="Automation",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
+    )
+
+
+def page_search(
+    state: dict[str, Any],
+    _registry: dict[str, Any],
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+    *,
+    query: str,
+    hits: list[dict[str, Any]],
+    total: int = 0,
+    limit: int = 25,
+    offset: int = 0,
+    scope_repo: str | None = None,
+    reindex_notice: str | None = None,
+) -> str:
+    rows: list[str] = []
+    for h in hits:
+        u = str(h.get("url", ""))
+        u_href = embed_in_app_doc_url(u)
+        title = str(h.get("title", "") or u)
+        snip = str(h.get("snippet", ""))
+        src = str(h.get("source", ""))
+        rc = h.get("ref_count")
+        ref_line = ""
+        if rc is not None and int(rc) > 0:
+            ref_line = (
+                f'<div class="small text-secondary mt-1">Inbound links: {int(rc)}</div>'
+            )
+        rows.append(
+            f'<li class="mb-3"><a href="{esc(u_href)}"><strong>{esc(title)}</strong></a>'
+            f'<div class="small text-secondary mt-1">{esc(src)}</div>'
+            f"{ref_line}"
+            f'<div class="small mt-1">{esc(snip)}</div></li>'
+        )
+
+    def _search_qs(extra: dict[str, str | int]) -> str:
+        p: dict[str, str] = {}
+        qv = query.strip()
+        if qv:
+            p["q"] = qv
+        if scope_repo:
+            p["repo"] = str(scope_repo).strip()
+        p["limit"] = str(int(limit))
+        for k, v in extra.items():
+            p[str(k)] = str(v)
+        return urllib.parse.urlencode(p)
+
+    rd_parts: dict[str, str] = {}
+    if query.strip():
+        rd_parts["q"] = query.strip()
+    if scope_repo:
+        rd_parts["repo"] = str(scope_repo).strip()
+    rd_tail = urllib.parse.urlencode(rd_parts) if rd_parts else ""
+    redirect_target = f"/search?{rd_tail}" if rd_tail else "/search"
+    idx_href = (
+        "/api/search/reindex?redirect="
+        + urllib.parse.quote(redirect_target, safe="/?:=&")
+    )
+    idx_btn = (
+        '<p class="mb-3">'
+        f'<a class="btn btn-sm btn-forge" href="{esc(idx_href)}">'
+        "Build search index</a> "
+        '<span class="forge-support small">(indexes each repo’s static output — <code>website/</code>, '
+        "<code>public/</code>, or <code>dist/</code>, or <code>firebase.json</code> "
+        "<code>hosting.public</code> — plus <code>/docs/</code>)</span>"
+        "</p>"
+    )
+    notice_html = ""
+    if reindex_notice == "started":
+        notice_html = (
+            '<div class="alert alert-info py-2 mb-3" role="status">'
+            "Indexing started in the background. Wait a few seconds, then run your search again."
+            "</div>"
+        )
+    elif reindex_notice == "busy":
+        notice_html = (
+            '<div class="alert alert-warning py-2 mb-3" role="status">'
+            "A reindex is already running. Try again in a moment."
+            "</div>"
+        )
+    elif reindex_notice == "forbidden":
+        notice_html = (
+            '<div class="alert alert-danger py-2 mb-3" role="status">'
+            "Reindex is only available from this machine (loopback), or set "
+            "<code>LENSES_ALLOW_ACTIONS=1</code> when binding beyond localhost."
+            "</div>"
+        )
+    if not query.strip():
+        results = (
+            '<p class="forge-support">Enter keywords below, or build the index first.</p>'
+            f"{idx_btn}"
+        )
+    elif rows:
+        results = '<ol class="list-unstyled">' + "".join(rows) + "</ol>"
+    else:
+        results = (
+            '<p class="forge-support mb-2">No matching pages in the index.</p>'
+            f"{idx_btn}"
+            '<p class="forge-support small mb-0">If you have never indexed, use the button above. '
+            "Otherwise try different keywords.</p>"
+        )
+
+    q_esc = esc(query)
+    scope_esc = esc(str(scope_repo).strip()) if scope_repo else ""
+    hidden_repo = (
+        f'<input type="hidden" name="repo" value="{scope_esc}" />'
+        if scope_repo
+        else ""
+    )
+    scope_chip = ""
+    if scope_repo:
+        clear_params: dict[str, str] = {"limit": str(int(limit)), "offset": "0"}
+        if query.strip():
+            clear_params["q"] = query.strip()
+        clear_href = "/search?" + urllib.parse.urlencode(clear_params)
+        scope_chip = (
+            f'<p class="small mb-2">Scoped to workspace child <strong>{scope_esc}</strong> '
+            f'(<a href="{esc(clear_href)}">clear</a>).</p>'
+        )
+
+    pagination_html = ""
+    if query.strip() and total > 0:
+        end = min(offset + len(hits), total)
+        prev_link = ""
+        if offset > 0:
+            prev_off = max(0, offset - limit)
+            prev_link = (
+                f'<a class="btn btn-sm btn-outline-secondary me-2" '
+                f'href="/search?{_search_qs({"offset": prev_off})}">Previous</a>'
+            )
+        next_link = ""
+        if offset + limit < total:
+            next_link = (
+                f'<a class="btn btn-sm btn-outline-secondary" '
+                f'href="/search?{_search_qs({"offset": offset + limit})}">Next</a>'
+            )
+        if prev_link or next_link:
+            pagination_html = (
+                f'<div class="d-flex flex-wrap align-items-center gap-2 mb-3" role="navigation" '
+                f'aria-label="Search results pages">'
+                f'<span class="small text-secondary me-auto">'
+                f"{offset + 1}–{end} of {total}</span>{prev_link}{next_link}</div>"
+            )
+
+    body_inner = f"""<form method="get" action="/search" class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+  {hidden_repo}
+  <input type="hidden" name="limit" value="{int(limit)}" />
+  <label for="lenses-search-q" class="visually-hidden">Search query</label>
+  <input type="search" id="lenses-search-q" name="q" value="{q_esc}" class="form-control" style="max-width:28rem" placeholder="Keywords…" />
+  <button type="submit" class="btn btn-sm btn-forge">Search</button>
+</form>
+<p class="forge-support small mb-2">Full-text search over local static HTML in each workspace repo, built lenses docs under <code>/docs/</code>, and optional ingested text. Results rank by relevance (title and headings weigh more than body) and inbound link count.</p>
+{scope_chip}
+{notice_html}
+<h2 class="h6 text-cyan">Results</h2>
+{pagination_html}
+{results}"""
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("/search", "Search"))
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title="Search — lenses",
+        nav_active="search",
+        page_title="Search",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
+        search_scope_repo=scope_repo,
+    )
+
+
+def page_feature_showcase(
+    state: dict[str, Any],
+    _registry: dict[str, Any],
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+) -> str:
+    """Classic split scrollytelling feature showcase (same story as Studio ``/studio/feature-showcase``)."""
+    body_inner = feature_showcase_body_html()
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("/feature-showcase", "Showcase"))
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title="Showcase — lenses",
+        nav_active="feature_showcase",
+        page_title="Feature showcase",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -2700,17 +3681,19 @@ def page_toolset_run(
     wr_esc = esc(str(workspace_root.resolve()))
     if script_path is None:
         body_inner = f"""<p class="forge-support">Unknown or invalid script <code>{esc(script_name)}</code>. Only <code>*.sh</code> files at the workspace root can be run.</p>
-<p><a href="/toolset">← Toolset</a></p>"""
-        bc = lenses_breadcrumb_html(("/", "Overview"), ("/toolset", "Toolset"), ("", script_name))
+<p><a href="/toolset">← Automation</a></p>"""
+        bc = lenses_breadcrumb_html(("/", "Overview"), ("/toolset", "Automation"), ("", script_name))
         return _wrap_dashboard(
             lenses_repo_root,
-            browser_title="Toolset — lenses",
+            browser_title="Automation — lenses",
             nav_active="toolset",
-            page_title="Toolset",
+            page_title="Automation",
             breadcrumb_html=bc,
             body_inner=body_inner,
             handbook_url=handbook_url,
             forge_url=forge_url,
+            workspace_projects=workspace_project_names_sorted(_state),
+            current_project=None,
         )
 
     detail = shell_script_comment_detail(script_path)
@@ -2726,7 +3709,7 @@ def page_toolset_run(
 {desc_block}
 <div class="d-flex flex-wrap gap-2 mb-2">
   <button type="button" class="btn btn-sm btn-forge" id="lenses-toolset-run-btn">Run script…</button>
-  <a class="btn btn-sm btn-outline-secondary" href="/toolset">← All toolset scripts</a>
+  <a class="btn btn-sm btn-outline-secondary" href="/toolset">← All automation scripts</a>
 </div>
 <pre class="lenses-toolset-console mb-0" id="lenses-toolset-console" aria-live="polite"></pre>
 <script>
@@ -2759,18 +3742,20 @@ def page_toolset_run(
 """
     bc = lenses_breadcrumb_html(
         ("/", "Overview"),
-        ("/toolset", "Toolset"),
+        ("/toolset", "Automation"),
         ("", script_name),
     )
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title=f"{script_name} — Toolset — lenses",
+        browser_title=f"{script_name} — Automation — lenses",
         nav_active="toolset",
         page_title=script_name,
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(_state),
+        current_project=None,
     )
 
 
@@ -2784,29 +3769,31 @@ def page_sticker_board_hub(
 ) -> str:
     ws = esc(str(state.get("workspace_root", "")))
     sa = "true" if shared_board_available else "false"
-    reg = esc("/docs/registry-configuration.html")
+    reg = esc(view_lenses_docs_href("registry-configuration.html"))
     pf = esc(project_filter.strip())
     body_inner = f"""<details class="forge-support small mb-3"><summary class="text-cyan" style="cursor:pointer">Storage &amp; sync</summary>
 <p class="mt-2 mb-0">Boards are listed from <code>.lenses-local/sticker-board-registry.json</code>; data under
 <code>.lenses-local/sticker-boards/&lt;id&gt;.json</code>. Shared boards also use
 <code>.lenses-repo/&lt;login&gt;/sticker-boards/&lt;id&gt;.json</code> plus a local overlay for private stickers.
 Workspace: <code>{ws}</code>. <strong>Last write wins</strong> across tabs. POST is loopback-only unless
-<code>LENSES_ALLOW_GIT_ACTIONS=1</code>. Optional PNG thumbnails (after save) need <code>html2image</code> + Chromium and
+<code>LENSES_ALLOW_GIT_ACTIONS=1</code>. Optional PNG thumbnails (after save) need <code>playwright</code> + Chromium install and
 <code>LENSES_BOARD_PREVIEWS</code> not set to <code>0</code>. Shared mode needs a resolved GitHub login — see
 <a href="{reg}">registry</a>.</p></details>
 <div id="lenses-sticker-board-hub" class="lenses-sticker-hub-root" data-registry-api="/api/sticker-board-registry"
   data-project-filter="{pf}" data-shared-available="{sa}"></div>
 <script src="/__lenses/js/sticker-board-hub.js" defer></script>"""
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Stickerboardefo"))
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Forge Stickerboards"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="Stickerboardefo — lenses",
+        browser_title="Forge Stickerboards — lenses",
         nav_active="board",
-        page_title="Stickerboardefo",
+        page_title="Forge Stickerboards",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -2820,14 +3807,17 @@ def page_sticker_board_editor(
     board_label: str,
     *,
     thumb_capture: bool = False,
+    session_login: str | None = None,
 ) -> str:
     ws = esc(str(state.get("workspace_root", "")))
     sa = "true" if shared_board_available else "false"
-    reg = esc("/docs/registry-configuration.html")
+    reg = esc(view_lenses_docs_href("registry-configuration.html"))
     bid = esc(board_id)
     blab = esc(board_label or "Board")
     api = esc(f"/api/sticker-board?board_id={urllib.parse.quote(board_id, safe='')}")
     thumb_attr = ' data-thumb="1"' if thumb_capture else ""
+    sess = esc((session_login or "").strip())
+    sess_attr = f' data-session-login="{sess}"'
     if thumb_capture:
         intro = ""
     else:
@@ -2835,17 +3825,17 @@ def page_sticker_board_editor(
 Local vs shared storage is per board; shared stickers need a resolved GitHub login — see <a href="{reg}">registry</a>.</p>
 """
     body_inner = f"""{intro}<div id="lenses-sticker-board" class="lenses-sticker-root" data-api="{api}" data-board-id="{bid}"
-  data-board-label="{blab}" data-back-href="/board" data-shared-available="{sa}"{thumb_attr}></div>
+  data-board-label="{blab}" data-back-href="/board" data-shared-available="{sa}"{sess_attr}{thumb_attr}></div>
 <script src="/__lenses/js/sticker-board.js" defer></script>"""
     bc = lenses_breadcrumb_html(
-        ("/board", "Stickerboardefo"),
+        ("/board", "Forge Stickerboards"),
         ("", board_label or "Board"),
     )
     body_cls = "lenses-board-thumb-capture" if thumb_capture else ""
     dash_css = board_thumb_capture_extra_css() if thumb_capture else ""
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title=f"{board_label or 'Board'} — Stickerboardefo — lenses",
+        browser_title=f"{board_label or 'Board'} — Forge Stickerboards — lenses",
         nav_active="board",
         page_title=board_label or "Board",
         breadcrumb_html=bc,
@@ -2854,6 +3844,8 @@ Local vs shared storage is per board; shared stickers need a resolved GitHub log
         forge_url=forge_url,
         body_extra_class=body_cls,
         dashboard_extra_css=dash_css,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -2866,9 +3858,8 @@ def _website_top_level_html_path(path: str) -> bool:
     return pl.endswith(".html") or pl.endswith(".htm")
 
 
-def _website_key_pages_grid(
-    pages: list[Any], *, max_links: int = 8
-) -> list[dict[str, str]]:
+def _website_top_level_page_rows(pages: list[Any]) -> list[dict[str, str]]:
+    """Top-level .html paths under hosting public (non-index first, then index)."""
     rows = [
         p
         for p in pages
@@ -2886,15 +3877,380 @@ def _website_key_pages_grid(
         if str(p.get("path", "")).lower().strip() == "index.html"
     ]
     ordered = non_idx + idx_rows
-    out: list[dict[str, str]] = []
-    for p in ordered[:max_links]:
-        out.append(
-            {
-                "path": str(p.get("path", "")),
-                "label": str(p.get("label", p.get("path", ""))),
-            }
+    return [
+        {
+            "path": str(p.get("path", "")),
+            "label": str(p.get("label", p.get("path", ""))),
+        }
+        for p in ordered
+    ]
+
+
+def _website_key_pages_grid(
+    pages: list[Any], *, max_links: int = 8
+) -> list[dict[str, str]]:
+    return _website_top_level_page_rows(pages)[:max_links]
+
+
+def _website_key_page_cell_html(site_name: str, kp: dict[str, str]) -> str:
+    rel = kp["path"]
+    lab = html.unescape(kp["label"])
+    ph = view_local_site_href(site_name, rel)
+    return (
+        f'<div><a class="text-decoration-none lenses-key-page-link" href="{esc(ph)}">{esc(lab)}</a>'
+        f'<span class="d-block forge-support lenses-key-page-path">{esc(rel)}</span></div>'
+    )
+
+
+def _website_index_health_html(html_indexed: int, html_total: int) -> str:
+    if html_total <= 0 and html_indexed <= 0:
+        return '<span class="lenses-site-meta-muted">—</span>'
+    if html_total <= 0:
+        return f'<span class="lenses-site-meta-muted">{html_indexed} in index</span>'
+    pct = min(100, max(0, int(round(100.0 * html_indexed / html_total))))
+    if html_indexed < html_total:
+        label = f"{html_indexed} / {html_total}"
+    else:
+        label = f"{html_total} indexed"
+    return (
+        f'<div class="lenses-index-health">'
+        f'<div class="progress lenses-index-progress" role="progressbar" '
+        f'aria-valuenow="{pct}" aria-valuemin="0" aria-valuemax="100" '
+        f'aria-label="Index coverage">'
+        f'<div class="progress-bar bg-info" style="width: {pct}%"></div></div>'
+        f'<span class="lenses-site-meta-muted lenses-index-health-label">{esc(label)}</span>'
+        f"</div>"
+    )
+
+
+def _firebase_site_status_chips_html(*, is_git: bool, gi: dict[str, Any]) -> str:
+    """Dirty/clean + branch (max ~4 chips total; branch truncated with full title)."""
+    chips: list[str] = []
+    if is_git:
+        dirty = gi.get("dirty")
+        chips.append(
+            '<span class="badge rounded-pill text-bg-warning">Dirty</span>'
+            if dirty
+            else '<span class="badge rounded-pill text-bg-success">Clean</span>'
         )
-    return out
+        br = str(gi.get("branch", "")).strip()
+        if br:
+            br_disp = br if len(br) <= 28 else br[:25].rstrip() + "…"
+            chips.append(
+                f'<span class="badge rounded-pill text-bg-secondary lenses-site-branch-chip" '
+                f'title="{esc(br)}">{esc(br_disp)}</span>'
+            )
+    if not chips:
+        return ""
+    return (
+        f'<div class="lenses-site-status-chips d-flex flex-wrap align-items-center gap-2 mb-2" '
+        f'role="group" aria-label="Repository status">{"".join(chips)}</div>'
+    )
+
+
+def _firebase_site_commit_cell_html(*, is_git: bool, gi: dict[str, Any]) -> str:
+    if not is_git:
+        return '<span class="lenses-site-meta-muted">—</span>'
+    subj_full = str(gi.get("commit_subject", ""))
+    subj_show = subj_full
+    if len(subj_show) > 56:
+        subj_show = subj_show[:53].rstrip() + "…"
+    rel_t = _portal_last_update_label(gi)
+    subj_title = f' title="{esc(subj_full)}"' if subj_full else ""
+    parts: list[str] = [
+        f'<span class="lenses-site-meta-muted">{esc(rel_t)}</span>'
+    ]
+    if subj_show:
+        parts.append(
+            f'<span class="lenses-site-meta-v lenses-site-meta-truncate"{subj_title}>'
+            f"{esc(subj_show)}</span>"
+        )
+    return f'<div class="d-flex flex-column gap-1 min-w-0">{"".join(parts)}</div>'
+
+
+def _firebase_site_meta_grid_html(
+    *,
+    output_cell: str,
+    index_cell: str,
+    commit_cell: str,
+    idx_mtime: str,
+) -> str:
+    mtime_raw = (idx_mtime or "").strip()
+    mtime_title = f' title="{esc(mtime_raw)}"' if len(mtime_raw) > 28 else ""
+    mtime_display = esc(mtime_raw) if mtime_raw and mtime_raw != "—" else "—"
+    return (
+        f'<div class="lenses-site-meta-grid" role="group" aria-label="Site metadata">'
+        f'<div><div class="lenses-site-meta-k">Output</div>'
+        f'<div class="lenses-site-meta-v">{output_cell}</div></div>'
+        f'<div><div class="lenses-site-meta-k">Index</div>'
+        f'<div class="lenses-site-meta-v">{index_cell}</div></div>'
+        f'<div><div class="lenses-site-meta-k">Last commit</div>'
+        f'<div class="lenses-site-meta-v">{commit_cell}</div></div>'
+        f'<div><div class="lenses-site-meta-k">Index mtime</div>'
+        f'<div class="lenses-site-meta-v lenses-site-meta-truncate"{mtime_title}>'
+        f"{mtime_display}</div></div>"
+        f"</div>"
+    )
+
+
+def _firebase_site_pages_section_html(*, name: str, page_rows: list[dict[str, str]]) -> str:
+    preview_n = 3
+    preview_rows = page_rows[:preview_n]
+    rest_rows = page_rows[preview_n:]
+    preview_cells = "".join(_website_key_page_cell_html(name, kp) for kp in preview_rows)
+    preview_block = (
+        f'<div class="lenses-key-pages-preview">{preview_cells}</div>'
+        if preview_cells
+        else ""
+    )
+    rest_grid = (
+        '<div class="lenses-key-pages-grid">'
+        + "".join(_website_key_page_cell_html(name, kp) for kp in rest_rows)
+        + "</div>"
+    )
+    n_pages = len(page_rows)
+    expand_block = ""
+    if rest_rows:
+        expand_block = (
+            f'<details class="forge-support small lenses-site-details lenses-site-pages-expand">'
+            f"<summary>View all {n_pages} top-level pages</summary>"
+            f'<div class="mt-2">{rest_grid}</div></details>'
+        )
+    if not page_rows:
+        pages_body = (
+            '<p class="forge-support small mb-0">No top-level HTML pages in index yet — run the site '
+            "generator, or open <strong>Preview in lenses</strong> for the full tree.</p>"
+        )
+    else:
+        pages_body = preview_block + expand_block
+    return (
+        f'<div class="lenses-site-pages-block">'
+        f'<div class="lenses-pages-heading">Top-level pages</div>{pages_body}</div>'
+    )
+
+
+def _firebase_site_repo_details_html(
+    *,
+    readme_detail: str,
+    html_total: int,
+    html_indexed: int,
+    idx_mtime: str,
+    pub: str,
+    fb_site: str,
+    rev_html: str,
+    subj_full: str,
+    br: str,
+) -> str:
+    details_readme = ""
+    if readme_detail:
+        details_readme = f'<p class="forge-support small mb-2">{esc(readme_detail)}</p>'
+    detail_lines = [
+        f'<p class="small forge-support mb-1"><strong>Branch</strong> · {esc(br) if br else "—"}</p>',
+        f'<p class="small forge-support mb-1"><strong>HTML files</strong> · {html_total}</p>',
+        f'<p class="small forge-support mb-1"><strong>Indexed</strong> · {html_indexed}</p>',
+        f'<p class="small forge-support mb-1"><strong>index.html mtime</strong> · {esc(idx_mtime)}</p>',
+        f'<p class="small forge-support mb-1"><strong>Hosting public</strong> · <code>{esc(pub)}</code></p>',
+    ]
+    if fb_site:
+        detail_lines.append(
+            f'<p class="small forge-support mb-1"><strong>Firebase site</strong> · '
+            f"<code>{esc(fb_site)}</code></p>"
+        )
+    if rev_html:
+        subj_esc = esc(subj_full) if subj_full else ""
+        detail_lines.append(
+            f'<p class="small forge-support mb-2"><strong>Revision</strong> · {rev_html}'
+            + (f" · {subj_esc}" if subj_esc else "")
+            + "</p>"
+        )
+    repo_details_body = details_readme + "".join(detail_lines)
+    return (
+        f'<details class="forge-support small lenses-site-details mb-1">'
+        f'<summary>Repository &amp; build details</summary>'
+        f'<div class="mt-2 pt-1 border-top border-secondary border-opacity-25">'
+        f"{repo_details_body}</div></details>"
+    )
+
+
+def _firebase_site_cta_column_html(
+    *,
+    browse_href: str,
+    preview_root: str,
+    ext_btn: str,
+    proj_href: str,
+    copy_row: str,
+) -> str:
+    more_inner = (
+        f'<a class="btn btn-sm btn-outline-secondary mb-2 d-inline-block" href="{esc(proj_href)}">'
+        f"Project dashboard</a>"
+        f"{copy_row}"
+    )
+    more_actions = (
+        f'<details class="forge-support small lenses-site-details">'
+        f'<summary>More actions</summary><div class="mt-2">{more_inner}</div></details>'
+    )
+    return (
+        f'<div class="d-flex flex-column gap-2 lenses-site-cta-col">'
+        f'<a class="btn btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
+        f'<a class="btn btn-sm btn-outline-secondary" href="{esc(preview_root)}">Open local root</a>'
+        f"{ext_btn}"
+        f"{more_actions}"
+        f"</div>"
+    )
+
+
+def _firebase_site_header_row_html(
+    *,
+    sid: str,
+    kicker: str,
+    name: str,
+    summary_html: str,
+    status_chips_html: str,
+    cta_block: str,
+) -> str:
+    return (
+        f'<div class="row g-3 align-items-start mb-1">'
+        f'<div class="col-12 col-lg-7">'
+        f"{status_chips_html}"
+        f'<p class="lenses-hero-kicker mb-0">{esc(kicker)}</p>'
+        f'<h2 class="text-cyan lenses-site-title" id="lenses-site-title-{esc(sid)}">{esc(name)}</h2>'
+        f"{summary_html}"
+        f"</div>"
+        f'<div class="col-12 col-lg-5">{cta_block}</div>'
+        f"</div>"
+    )
+
+
+def _firebase_site_card_html(
+    *,
+    name: str,
+    sid: str,
+    search_blob: str,
+    kicker: str,
+    child: dict[str, Any] | None,
+    gi: dict[str, Any],
+    fb_site: str,
+    pub: str,
+    html_total: int,
+    html_indexed: int,
+    idx_mtime: str,
+    pages: list[Any],
+    sugg: dict[str, Any],
+    readme_short: str,
+    readme_detail: str,
+    project_urls: dict[str, Any],
+) -> str:
+    is_git = bool(child and child.get("is_git"))
+    status_chips_html = _firebase_site_status_chips_html(is_git=is_git, gi=gi)
+
+    br = str(gi.get("branch", "")) if is_git else ""
+
+    out_bits: list[str] = [f"<code>{esc(pub)}</code>"]
+    if fb_site:
+        out_bits.append(f'<span class="lenses-site-meta-muted"> · {esc(fb_site)}</span>')
+    output_cell = "".join(out_bits)
+
+    index_cell = _website_index_health_html(html_indexed, html_total)
+    commit_cell = _firebase_site_commit_cell_html(is_git=is_git, gi=gi)
+
+    summary_line = _portal_first_sentence(readme_short, max_len=140)
+    summary_html = ""
+    if summary_line:
+        summary_html = (
+            f'<p class="lenses-site-summary forge-support mb-0" title="{esc(readme_short)}">'
+            f"{esc(summary_line)}</p>"
+        )
+
+    preview_root = view_local_site_href(name, "index.html")
+    browse_href = f"/websites/browse?site={urllib.parse.quote(name, safe='')}"
+    proj_href = f"/projects/{urllib.parse.quote(name, safe='')}"
+    ext_url = str(project_urls.get(name, "")).strip()
+
+    page_rows = _website_top_level_page_rows(pages)
+
+    copy_btns: list[str] = []
+    for key in ("build", "deploy"):
+        cmd = str(sugg.get(key, "")).strip()
+        if cmd:
+            copy_btns.append(
+                f'<button type="button" class="btn btn-sm btn-outline-secondary lenses-copy-cmd" '
+                f'data-cmd="{esc(cmd)}">Copy {esc(key)}</button>'
+            )
+    copy_row = (
+        '<div class="d-flex flex-wrap gap-1 mt-2">' + "".join(copy_btns) + "</div>"
+        if copy_btns
+        else ""
+    )
+
+    ext_btn = ""
+    if ext_url:
+        ext_btn = (
+            f'<a class="btn btn-sm btn-outline-warning" href="{esc(ext_url)}" '
+            f'target="_blank" rel="noopener">Published site</a>'
+        )
+
+    origin = str(gi.get("origin_url", "")) if is_git else ""
+    head_full = str(gi.get("head_full", "")) if is_git else ""
+    head_short = str(gi.get("head_short", "")) if is_git else ""
+    subj_full = str(gi.get("commit_subject", "")) if is_git else ""
+    c_url = commit_url_for_remote(origin, head_full) if head_full else ""
+    rev_html = (
+        f'<a href="{esc(c_url)}" target="_blank" rel="noopener">{esc(head_short)}</a>'
+        if c_url and head_short
+        else esc(head_short)
+        if head_short
+        else ""
+    )
+
+    repo_details = _firebase_site_repo_details_html(
+        readme_detail=readme_detail,
+        html_total=html_total,
+        html_indexed=html_indexed,
+        idx_mtime=idx_mtime,
+        pub=pub,
+        fb_site=fb_site,
+        rev_html=rev_html,
+        subj_full=subj_full,
+        br=br,
+    )
+
+    cta_block = _firebase_site_cta_column_html(
+        browse_href=browse_href,
+        preview_root=preview_root,
+        ext_btn=ext_btn,
+        proj_href=proj_href,
+        copy_row=copy_row,
+    )
+
+    header_row = _firebase_site_header_row_html(
+        sid=sid,
+        kicker=kicker,
+        name=name,
+        summary_html=summary_html,
+        status_chips_html=status_chips_html,
+        cta_block=cta_block,
+    )
+
+    meta_grid = _firebase_site_meta_grid_html(
+        output_cell=output_cell,
+        index_cell=index_cell,
+        commit_cell=commit_cell,
+        idx_mtime=idx_mtime,
+    )
+
+    pages_section = _firebase_site_pages_section_html(name=name, page_rows=page_rows)
+
+    return (
+        f'<section class="lenses-site-card lenses-site-hero-section forge-card" '
+        f'id="lenses-site-{esc(sid)}" aria-labelledby="lenses-site-title-{esc(sid)}" '
+        f'data-lenses-search="{esc(search_blob)}">'
+        f"{header_row}"
+        f"{meta_grid}"
+        f"{pages_section}"
+        f'<div class="lenses-run-slot mt-2" data-lenses-run-site="{esc(name)}"></div>'
+        f"{repo_details}"
+        f"</section>"
+    )
 
 
 def page_websites(
@@ -2926,8 +4282,9 @@ def page_websites(
         if not isinstance(sugg, dict):
             sugg = {}
         repo_path = Path(str((child or {}).get("path", ""))) if child else Path()
-        readme_raw = _readme_excerpt(repo_path, max_len=280) if repo_path.is_dir() else ""
-        search_parts = [name, label, fb_site, pub, readme_raw]
+        readme_short = _readme_excerpt(repo_path, max_len=280) if repo_path.is_dir() else ""
+        readme_detail = _readme_excerpt(repo_path, max_len=1200) if repo_path.is_dir() else ""
+        search_parts = [name, label, fb_site, pub, readme_short, readme_detail]
         for p in pages[:80]:
             if isinstance(p, dict):
                 search_parts.extend(
@@ -2935,146 +4292,28 @@ def page_websites(
                 )
         search_blob = " ".join(x for x in search_parts if x).lower()
         sid = re.sub(r"[^a-z0-9_-]+", "-", name.lower()).strip("-") or "site"
-
-        badges: list[str] = []
-        if child and child.get("is_git"):
-            dirty = gi.get("dirty")
-            badges.append(
-                '<span class="badge rounded-pill text-bg-warning">Dirty</span>'
-                if dirty
-                else '<span class="badge rounded-pill text-bg-success">Clean</span>'
-            )
-            br = str(gi.get("branch", ""))
-            if br:
-                badges.append(
-                    f'<span class="badge rounded-pill text-bg-secondary">{esc(br)}</span>'
-                )
-
         kicker = label if label else "Firebase hosting site"
-        pub_line = (
-            f'<p class="forge-support small mb-0">Build output: <code>{esc(pub)}</code>'
-            f"{f' · Firebase <code>{esc(fb_site)}</code>' if fb_site else ''}</p>"
-        )
-        readme_block = ""
-        if readme_raw:
-            readme_block = (
-                f'<p class="forge-support small mb-0 mt-2">{esc(readme_raw)}</p>'
-            )
-
-        stat_bits: list[str] = [
-            f'<span class="badge rounded-pill text-bg-dark border border-secondary">{html_total} HTML files</span>'
-        ]
-        if html_indexed and html_total and html_indexed < html_total:
-            stat_bits.append(
-                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
-                f"{html_indexed} / {html_total} indexed</span>"
-            )
-        elif html_indexed:
-            stat_bits.append(
-                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
-                f"{html_indexed} pages in index</span>"
-            )
-        stat_bits.append(
-            f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
-            f"index mtime {esc(idx_mtime)}</span>"
-        )
-        stat_bits.append(
-            f'<span class="badge rounded-pill text-bg-dark border border-secondary">public <code>{esc(pub)}</code></span>'
-        )
-        if fb_site:
-            stat_bits.append(
-                f'<span class="badge rounded-pill text-bg-dark border border-secondary">'
-                f"site <code>{esc(fb_site)}</code></span>"
-            )
-
-        git_line = ""
-        if child and child.get("is_git"):
-            origin = str(gi.get("origin_url", ""))
-            head_full = str(gi.get("head_full", ""))
-            head_short = str(gi.get("head_short", ""))
-            subj = str(gi.get("commit_subject", ""))
-            if len(subj) > 140:
-                subj = subj[:137].rstrip() + "…"
-            c_url = commit_url_for_remote(origin, head_full) if head_full else ""
-            rev_html = (
-                f'<a href="{esc(c_url)}" target="_blank" rel="noopener">{esc(head_short)}</a>'
-                if c_url and head_short
-                else esc(head_short)
-                if head_short
-                else ""
-            )
-            parts = [x for x in (rev_html, esc(subj) if subj else "") if x]
-            if parts:
-                git_line = (
-                    '<p class="forge-support small mb-0 mt-2"><strong>Last commit</strong> '
-                    + " · ".join(parts)
-                    + "</p>"
-                )
-
-        preview_root = local_site_href(name, "index.html")
-        browse_href = f"/websites/browse?site={urllib.parse.quote(name, safe='')}"
-        proj_href = f"/projects/{urllib.parse.quote(name, safe='')}"
-        ext_url = str(project_urls.get(name, "")).strip()
-
-        key_pages = _website_key_pages_grid(pages)
-        grid_cells: list[str] = []
-        for kp in key_pages:
-            rel = kp["path"]
-            lab = kp["label"]
-            ph = local_site_href(name, rel)
-            grid_cells.append(
-                f'<div><a class="text-decoration-none lenses-key-page-link" href="{esc(ph)}" '
-                f'target="_blank" rel="noopener">{esc(lab)}</a>'
-                f'<span class="d-block forge-support" style="font-size:0.72rem">{esc(rel)}</span></div>'
-            )
-        key_grid_html = (
-            '<div class="lenses-key-pages-grid">' + "".join(grid_cells) + "</div>"
-            if grid_cells
-            else '<p class="forge-support small mb-0">No top-level HTML pages in index yet — run the site generator, or open <strong>Preview in lenses</strong> for the full tree.</p>'
-        )
-
-        copy_btns = []
-        for key in ("build", "deploy"):
-            cmd = str(sugg.get(key, "")).strip()
-            if cmd:
-                copy_btns.append(
-                    f'<button type="button" class="btn btn-sm btn-outline-secondary lenses-copy-cmd" '
-                    f'data-cmd="{esc(cmd)}">Copy {esc(key)}</button>'
-                )
-        copy_row = (
-            '<div class="d-flex flex-wrap gap-1 mt-2">' + "".join(copy_btns) + "</div>"
-            if copy_btns
-            else ""
-        )
-        ext_btn = ""
-        if ext_url:
-            ext_btn = (
-                f'<a class="btn btn-sm btn-outline-warning" href="{esc(ext_url)}" '
-                f'target="_blank" rel="noopener">Published site</a> '
-            )
-
+        gi_d = gi if isinstance(gi, dict) else {}
+        pu_d = project_urls if isinstance(project_urls, dict) else {}
         sections.append(
-            f'<section class="lenses-site-card lenses-site-hero-section forge-card" '
-            f'id="lenses-site-{esc(sid)}" aria-labelledby="lenses-site-title-{esc(sid)}" '
-            f'data-lenses-search="{esc(search_blob)}">'
-            f'<div class="d-flex flex-wrap justify-content-between gap-2 align-items-start mb-1">'
-            f'<div>{"".join(badges)}</div></div>'
-            f'<p class="lenses-hero-kicker mb-0">{esc(kicker)}</p>'
-            f'<h2 class="text-cyan" id="lenses-site-title-{esc(sid)}">{esc(name)}</h2>'
-            f"{pub_line}{readme_block}"
-            f'<div class="lenses-site-stat-strip">{"".join(stat_bits)}</div>'
-            f"{git_line}"
-            f'<h3 class="h6 text-cyan mt-3 mb-2">Top-level pages</h3>'
-            f"{key_grid_html}"
-            f'<div class="d-flex flex-wrap gap-2 mt-3">'
-            f'<a class="btn btn-sm btn-forge" href="{esc(browse_href)}">Preview in lenses</a>'
-            f'<a class="btn btn-sm btn-outline-info" href="{esc(preview_root)}" target="_blank" rel="noopener">Open local root</a>'
-            f"{ext_btn}"
-            f'<a class="btn btn-sm btn-outline-secondary" href="{esc(proj_href)}">Project dashboard</a>'
-            f"</div>"
-            f'<div class="lenses-run-slot mt-2" data-lenses-run-site="{esc(name)}"></div>'
-            f"{copy_row}"
-            f"</section>"
+            _firebase_site_card_html(
+                name=name,
+                sid=sid,
+                search_blob=search_blob,
+                kicker=kicker,
+                child=child,
+                gi=gi_d,
+                fb_site=fb_site,
+                pub=pub,
+                html_total=html_total,
+                html_indexed=html_indexed,
+                idx_mtime=idx_mtime,
+                pages=pages,
+                sugg=sugg,
+                readme_short=readme_short,
+                readme_detail=readme_detail,
+                project_urls=pu_d,
+            )
         )
 
     stack = (
@@ -3086,14 +4325,14 @@ def page_websites(
 {_lenses_vertical_hero_styles()}
 <p class="forge-support">Built static output is served at <code>/local-site/&lt;repo&gt;/…</code> on this same host (default <strong>127.0.0.1</strong>), so you can use <strong>Preview in lenses</strong> and keep the top navigation visible.</p>
 <div class="forge-card p-3 mb-4">
-  <div class="row g-2 align-items-end">
+  <div class="row g-2 align-items-start">
     <div class="col-md-6">
       <label class="form-label small text-cyan mb-1" for="lenses-global-q">Search sites &amp; pages</label>
       <input type="search" id="lenses-global-q" class="form-control form-control-sm" placeholder="Filter by name, path, title…" autocomplete="off" />
     </div>
-    <div class="col-md-6">
-      <div id="lenses-auth-panel" class="small forge-support">Checking session…</div>
-      <div class="mt-2 d-none" id="lenses-auth-form">
+    <div class="col-md-6 d-flex flex-column gap-2">
+      <div id="lenses-auth-panel" class="small forge-support mb-0">Checking session…</div>
+      <div class="d-none" id="lenses-auth-form">
         <input type="password" id="lenses-gh-token" class="form-control form-control-sm mb-1" placeholder="GitHub PAT (fine-grained or classic)" autocomplete="off" />
         <button type="button" class="btn btn-sm btn-forge" id="lenses-auth-submit">Sign in with PAT</button>
         <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="lenses-auth-logout">Sign out</button>
@@ -3214,16 +4453,18 @@ def page_websites(
 }})();
 </script>
 """
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("/websites", "Websites"))
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("/websites", "Sites"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="Websites — lenses",
+        browser_title="Sites — lenses",
         nav_active="websites",
-        page_title="Websites",
+        page_title="Sites",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -3238,16 +4479,18 @@ def page_websites_browse(
     w = _website_by_name(state, site_name)
     if w is None:
         body_inner = "<p>Unknown site.</p>"
-        bc = lenses_breadcrumb_html(("/", "Overview"), ("/websites", "Websites"))
+        bc = lenses_breadcrumb_html(("/", "Overview"), ("/websites", "Sites"))
         return _wrap_dashboard(
             lenses_repo_root,
             browser_title="Browse — lenses",
             nav_active="websites",
-            page_title="Websites",
+            page_title="Sites",
             breadcrumb_html=bc,
             body_inner=body_inner,
             handbook_url=handbook_url,
             forge_url=forge_url,
+            workspace_projects=workspace_project_names_sorted(state),
+            current_project=None,
         )
     labels = registry.get("website_labels") or {}
     label = str(labels.get(site_name, "") or "")
@@ -3328,7 +4571,7 @@ def page_websites_browse(
 """
     bc = lenses_breadcrumb_html(
         ("/", "Overview"),
-        ("/websites", "Websites"),
+        ("/websites", "Sites"),
         ("", f"Preview · {site_name}"),
     )
     return _wrap_dashboard(
@@ -3340,6 +4583,8 @@ def page_websites_browse(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -3353,75 +4598,203 @@ def page_wbs(
     handbook_url: str,
     forge_url: str,
     lenses_repo_root: Path,
+    workspace_root: Path,
+    registry: dict[str, Any],
 ) -> str:
-    rows = []
-    for w in state.get("wbs") or []:
-        rp = str(w.get("rel_path", ""))
-        kind = esc(str(w.get("kind", "")))
-        hint = esc(str(w.get("repo_hint", "")))
-        link = wbs_view_link(rp)
-        rows.append(
-            f"<tr><td><code>{esc(rp)}</code></td><td>{kind}</td><td>{hint}</td>"
-            f'<td><a href="{esc(link)}">View</a></td></tr>'
+    proj_rows = build_wbs_project_rows(state)
+    table_rows: list[str] = []
+    for pr in proj_rows:
+        base = resolve_wbs_project_base(workspace_root, registry, pr.key)
+        has_md = wbs_md_exists(base) if base is not None else False
+        wbs_cells: list[str] = []
+        if pr.wbs_entries:
+            for w in pr.wbs_entries:
+                rp = str(w.get("rel_path", ""))
+                link = wbs_view_link(rp)
+                wbs_cells.append(
+                    f'<div><code class="small">{esc(rp)}</code> '
+                    f'<a href="{esc(link)}">View</a></div>'
+                )
+        else:
+            wbs_cells.append('<span class="text-muted">—</span>')
+        wbs_col = "".join(wbs_cells) if wbs_cells else '<span class="text-muted">—</span>'
+
+        if pr.key == "__workspace__":
+            proj_link = f'<strong>{esc(pr.label)}</strong>'
+        else:
+            ph = f"/projects/{urllib.parse.quote(pr.key, safe='')}"
+            proj_link = f'<a href="{esc(ph)}"><strong>{esc(pr.label)}</strong></a>'
+        proj_cell = (
+            f'<td>{proj_link}'
+            f'<div class="small text-muted lenses-wbs-branch mt-1" data-project-key="{esc(pr.key)}">'
+            "…</div></td>"
         )
+
+        if has_md:
+            action_cell = '<td><span class="text-muted">WBS.md present</span></td>'
+        else:
+            action_cell = (
+                '<td><div class="wbs-create-panel" data-project-key="'
+                + esc(pr.key)
+                + '">'
+                '<div class="small text-muted lenses-wbs-tags-loading mb-1">Loading release tags…</div>'
+                '<div class="d-none lenses-wbs-create-tools d-flex flex-wrap gap-2 align-items-end">'
+                '<div><label class="small text-muted mb-0 d-block">Release</label>'
+                '<select class="form-select form-select-sm lenses-wbs-tag-select" '
+                'style="min-width:10rem" aria-label="Existing release tag">'
+                '<option value="">— optional —</option></select></div>'
+                '<div><label class="small text-muted mb-0 d-block">New tag</label>'
+                '<input type="text" class="form-control form-control-sm lenses-wbs-new-tag" '
+                'style="min-width:9rem" placeholder="e.g. v1.0.0" autocomplete="off" /></div>'
+                '<div><button type="button" class="btn btn-sm btn-primary lenses-wbs-create-btn">'
+                "Create WBS.md</button></div></div>"
+                '<p class="small text-danger mb-0 mt-1 lenses-wbs-create-err d-none"></p>'
+                "</div></td>"
+            )
+
+        table_rows.append(
+            f"<tr>{proj_cell}<td>{wbs_col}</td>{action_cell}</tr>"
+        )
+
     table = (
-        '<table class="table table-sm"><thead><tr><th>Path</th><th>Kind</th><th>Top folder</th><th></th></tr></thead><tbody>'
+        '<table class="table table-sm table-hover align-middle">'
+        "<thead><tr><th>Project</th><th>WBS files</th><th>Actions</th></tr></thead><tbody>"
         + (
-            "\n".join(rows)
-            if rows
-            else '<tr><td colspan="4">No WBS.md / WBS.csv found.</td></tr>'
+            "\n".join(table_rows)
+            if table_rows
+            else '<tr><td colspan="3">No workspace projects found.</td></tr>'
         )
         + "</tbody></table>"
     )
+    wbs_script = """
+<script>
+(function() {
+  fetch("/api/wbs-management").then(function(r) { return r.json(); }).then(function(data) {
+    var map = {};
+    (data.projects || []).forEach(function(p) { map[p.key] = p; });
+    document.querySelectorAll(".lenses-wbs-branch").forEach(function(el) {
+      var key = el.getAttribute("data-project-key");
+      var proj = map[key];
+      if (!proj) {
+        el.textContent = "";
+        return;
+      }
+      var br = proj.branch ? "Branch: " + proj.branch : "";
+      var git = proj.is_git ? br : "Not a git repo";
+      el.textContent = git;
+    });
+    document.querySelectorAll(".wbs-create-panel").forEach(function(panel) {
+      var key = panel.getAttribute("data-project-key");
+      var proj = map[key];
+      var sel = panel.querySelector(".lenses-wbs-tag-select");
+      var load = panel.querySelector(".lenses-wbs-tags-loading");
+      var tools = panel.querySelector(".lenses-wbs-create-tools");
+      if (!proj || !sel) return;
+      (proj.tags || []).forEach(function(t) {
+        var o = document.createElement("option");
+        o.value = t;
+        o.textContent = t;
+        sel.appendChild(o);
+      });
+      if (load) load.classList.add("d-none");
+      if (tools) tools.classList.remove("d-none");
+      var btn = panel.querySelector(".lenses-wbs-create-btn");
+      var err = panel.querySelector(".lenses-wbs-create-err");
+      var newInp = panel.querySelector(".lenses-wbs-new-tag");
+      if (!btn) return;
+      btn.addEventListener("click", function() {
+        var baseline = (sel.value || "").trim();
+        var newTag = newInp ? (newInp.value || "").trim() : "";
+        btn.disabled = true;
+        if (err) err.classList.add("d-none");
+        fetch("/api/wbs/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ project: key, baseline_tag: baseline, new_tag: newTag })
+        }).then(function(r) { return r.json().then(function(j) { return { status: r.status, j: j }; }); })
+        .then(function(x) {
+          btn.disabled = false;
+          if (x.j && x.j.ok && x.j.rel_path) {
+            window.location.href = "/wbs/view?p=" + encodeURIComponent(x.j.rel_path);
+            return;
+          }
+          if (err) {
+            var msg = (x.j && x.j.error) ? String(x.j.error) : "Failed";
+            if (x.j && x.j.detail) msg += " — " + String(x.j.detail);
+            if (x.j && x.j.tag_stderr) msg += " " + String(x.j.tag_stderr);
+            err.textContent = msg;
+            err.classList.remove("d-none");
+          }
+        }).catch(function() {
+          btn.disabled = false;
+          if (err) {
+            err.textContent = "Request failed";
+            err.classList.remove("d-none");
+          }
+        });
+      });
+    });
+  }).catch(function() {
+    document.querySelectorAll(".lenses-wbs-tags-loading").forEach(function(el) {
+      el.textContent = "Could not load release tags. Refresh the page or check the server log.";
+    });
+  });
+})();
+</script>
+"""
     body_inner = (
-        '<p class="forge-support">Blueprint-style work breakdown files under '
-        '<code>docs/requirements/</code>.</p>'
+        '<p class="forge-support">All workspace projects. Blueprint-style work breakdown files live under '
+        '<code>docs/requirements/</code>. '
+        "Use <strong>Release</strong> to record an existing tag in the new file; "
+        "<strong>New tag</strong> creates an annotated git tag at the current commit (git repos only).</p>"
         + table
+        + wbs_script
     )
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("/wbs", "WBS"))
+    bc = lenses_breadcrumb_html(("/", "Overview"), ("/wbs", "Work Breakdown"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="WBS — lenses",
+        browser_title="Work Breakdown — lenses",
         nav_active="wbs",
-        page_title="WBS",
+        page_title="Work Breakdown",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
 def page_wbs_view(
     rel_path: str,
     content: str,
-    mime_hint: str,
     handbook_url: str,
     forge_url: str,
     lenses_repo_root: Path,
+    state: dict[str, Any] | None = None,
 ) -> str:
-    if mime_hint == "csv":
-        body_inner = f'<pre class="small" style="overflow:auto">{esc(content)}</pre>'
-    else:
-        body_inner = f'<pre class="small" style="overflow:auto;white-space:pre-wrap">{esc(content)}</pre>'
+    body_inner = f'<pre class="small" style="overflow:auto;white-space:pre-wrap">{esc(content)}</pre>'
     body_inner = (
         f'<p class="forge-support"><code>{esc(rel_path)}</code></p>'
-        f'<p><a href="/wbs">← Back to WBS list</a></p>'
+        f'<p><a href="/wbs">← Back to Work Breakdown list</a></p>'
         + body_inner
     )
     bc = lenses_breadcrumb_html(
         ("/", "Overview"),
-        ("/wbs", "WBS"),
-        ("", "WBS file"),
+        ("/wbs", "Work Breakdown"),
+        ("", "Work Breakdown file"),
     )
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="WBS view — lenses",
+        browser_title="Work Breakdown view — lenses",
         nav_active="wbs",
-        page_title="WBS file",
+        page_title="Work Breakdown file",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -3431,16 +4804,17 @@ def page_workspace_md_view(
     handbook_url: str,
     forge_url: str,
     lenses_repo_root: Path,
+    state: dict[str, Any] | None = None,
 ) -> str:
     body_inner = f'<pre class="small" style="overflow:auto;white-space:pre-wrap">{esc(content)}</pre>'
     body_inner = (
         f'<p class="forge-support"><code>{esc(rel_path)}</code></p>'
-        f'<p><a href="/plan">← Back to Forge plan</a></p>'
+        f'<p><a href="/plan">← Back to Plan</a></p>'
         + body_inner
     )
     bc = lenses_breadcrumb_html(
         ("/", "Overview"),
-        ("/plan", "Forge plan"),
+        ("/plan", "Plan"),
         ("", "Source file"),
     )
     return _wrap_dashboard(
@@ -3452,23 +4826,74 @@ def page_workspace_md_view(
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
 def roadmap_summary_fragment(md_text: str) -> str:
     metrics = extract_chart_metrics(md_text)
     gantt = extract_gantt_model(md_text)
-    return roadmap_summary_html(metrics, gantt)
+    date_shift = extract_date_shift_model(md_text)
+    return roadmap_summary_html(metrics, gantt, date_shift)
+
+
+def roadmap_date_editor_fragment(
+    lenses_repo_root: Path,
+    rel_path: str,
+    md_text: str,
+    include_script: bool = True,
+) -> str:
+    """Editable Initial/Target date table (kitchensink); optional ``/__ks/js/roadmap-dates.js`` tag."""
+    from lenses.ks_layout import _ensure_ks_import_path
+
+    _ensure_ks_import_path(lenses_repo_root)
+    try:
+        from roadmap_date_editor import (  # type: ignore[import-untyped]
+            render_roadmap_date_editor,
+            roadmap_date_editor_script_url,
+        )
+    except ImportError:
+        return (
+            '<p class="forge-support">Date editor unavailable '
+            "(kitchensink <code>roadmap_date_editor</code> not importable).</p>"
+        )
+    dsm = extract_date_shift_model(md_text)
+    rows_raw = dsm.get("rows") if isinstance(dsm, dict) else []
+    rows: list[dict[str, Any]] = []
+    if isinstance(rows_raw, list):
+        for r in rows_raw:
+            if isinstance(r, dict):
+                rows.append(r)
+    html_out = render_roadmap_date_editor(
+        rel_path=rel_path,
+        rows=rows,
+        api_url="/api/roadmap-dates",
+    )
+    if include_script:
+        su = roadmap_date_editor_script_url()
+        html_out += (
+            f'<script src="{esc(su)}" async data-forge-roadmap-dates-js="1"></script>'
+        )
+    return html_out
 
 
 def page_roadmap_timeline_document(md_text: str, rel_path: str) -> str:
     """Full-page scrollable Gantt for iframe / direct open."""
     model = extract_gantt_model(md_text)
+    ds_model = extract_date_shift_model(md_text)
     inner = roadmap_gantt_html(model, heading=True)
-    if not inner:
+    ds_html = roadmap_date_shift_html(ds_model, heading=True)
+    if inner and ds_html:
+        inner = f'<div class="lenses-roadmap-timeline-stack">{inner}{ds_html}</div>'
+    elif ds_html and not inner:
+        inner = ds_html
+    elif not inner and not ds_html:
         inner = (
-            '<p class="forge-support">No milestone / epic horizon data to draw a timeline. '
-            "Use milestone tables and epics with <code>M1.x</code> in the Horizon column.</p>"
+            '<p class="forge-support">No milestone / epic horizon data and no Initial/Target '
+            "dates to draw a timeline. Use milestone tables with <code>M1.x</code> in the "
+            "Horizon column and/or optional ISO date columns per "
+            "<code>ROADMAP.template.md</code>.</p>"
         )
     title = esc(rel_path)
     head = _roadmap_preview_head_inner()
@@ -3529,21 +4954,227 @@ def page_roadmap_preview_document(
     )
 
 
+def page_timeline(
+    state: dict[str, Any],
+    handbook_url: str,
+    forge_url: str,
+    lenses_repo_root: Path,
+    query: dict[str, list[str]],
+) -> str:
+    """Full-width milestone / epic timeline with Plan-compatible selectors."""
+    wbs_rows = [w for w in (state.get("wbs") or []) if isinstance(w, dict)]
+    rms = [r for r in (state.get("roadmaps") or []) if isinstance(r, dict)]
+    valid_wbs = {str(w.get("rel_path", "")) for w in wbs_rows if str(w.get("rel_path", "")).strip()}
+    valid_rm = {str(r.get("rel_path", "")) for r in rms if str(r.get("rel_path", "")).strip()}
+
+    repo_q = (query.get("repo") or [""])[0].strip()
+    wbs_q = (query.get("wbs_p") or [""])[0].strip()
+    rm_q = (query.get("roadmap_p") or [""])[0].strip()
+
+    if wbs_q not in valid_wbs and wbs_rows:
+        wbs_q = str(wbs_rows[0].get("rel_path", "")).strip()
+    if wbs_q:
+        for w in wbs_rows:
+            if str(w.get("rel_path", "")).strip() == wbs_q:
+                repo_q = str(w.get("repo_hint", "")).strip()
+                break
+    if not repo_q and wbs_rows:
+        repo_q = str(wbs_rows[0].get("repo_hint", "")).strip()
+        wbs_q = str(wbs_rows[0].get("rel_path", "")).strip()
+    if not repo_q and rms:
+        repo_q = str(rms[0].get("repo_hint", "")).strip()
+
+    rms_for_repo = [
+        str(r.get("rel_path", "")).strip()
+        for r in rms
+        if str(r.get("repo_hint", "")).strip() == repo_q
+    ]
+    if rm_q not in valid_rm or (rms_for_repo and rm_q not in rms_for_repo):
+        rm_q = rms_for_repo[0] if rms_for_repo else ""
+
+    workspace_root = Path(str(state.get("workspace_root") or "."))
+    wp = workspace_project_names_sorted(state)
+    scope = workspace_project_for_repo(repo_q, wp)
+    scope_hint = (
+        '<p class="small text-muted mb-2 lenses-roadmap-scope-hint">'
+        "Each requirements file and roadmap is tagged to one <strong>repository</strong>. "
+        "Choose <strong>Repository</strong> first; the other two lists only show paths for that repo "
+        "(leave Repository unset to list every path).</p>"
+    )
+
+    repo_opts: list[str] = ['<option value="">— Repository —</option>']
+    for h in _repo_hints_wbs_then_roadmaps(wbs_rows, rms):
+        sel = " selected" if h == repo_q else ""
+        repo_opts.append(f'<option value="{esc(h)}"{sel}>{esc(h)}</option>')
+    wbs_opts: list[str] = ['<option value="" data-repo="">— WBS file —</option>']
+    for w in wbs_rows:
+        rp = str(w.get("rel_path", "")).strip()
+        if not rp:
+            continue
+        h = str(w.get("repo_hint", "")).strip()
+        sel = " selected" if rp == wbs_q else ""
+        wbs_opts.append(
+            f'<option value="{esc(rp)}" data-repo="{esc(h)}"{sel}>{esc(rp)}</option>'
+        )
+    rm_opts: list[str] = [
+        '<option value="" data-repo="">— Roadmap (optional) —</option>'
+    ]
+    for r in rms:
+        rp = str(r.get("rel_path", "")).strip()
+        if not rp:
+            continue
+        h = str(r.get("repo_hint", "")).strip()
+        sel = " selected" if rp == rm_q else ""
+        rm_opts.append(
+            f'<option value="{esc(rp)}" data-repo="{esc(h)}"{sel}>{esc(rp)}</option>'
+        )
+
+    gantt_block = (
+        '<p class="forge-support">Select a repository and a roadmap that contains milestone schedule '
+        "and epic horizon tables.</p>"
+    )
+    metrics_row = ""
+    src_link = ""
+    if rm_q:
+        rpth = workspace_root / rm_q.replace("\\", "/").strip("/")
+        if rpth.is_file():
+            md = rpth.read_text(encoding="utf-8", errors="replace")
+            gm = extract_gantt_model(md)
+            gh = roadmap_gantt_html(gm, heading=True)
+            dsm = extract_date_shift_model(md)
+            dsh = roadmap_date_shift_html(dsm, heading=True)
+            if gh or dsh:
+                gantt_block = (
+                    f'<div class="lenses-timeline-gantt w-100">{gh or ""}{dsh or ""}</div>'
+                )
+            else:
+                gantt_block = (
+                    '<p class="forge-support">No Gantt slice or Initial/Target dates found. Use '
+                    "milestone tables plus epics with <code>M#.#</code> in the Horizon column, "
+                    "and/or optional ISO date columns per <code>ROADMAP.template.md</code>.</p>"
+                )
+            met = extract_chart_metrics(md)
+            hz_html = horizon_badges_html(met.get("horizon_counts") or {})
+            epic_pairs: list[tuple[str, float]] = []
+            for item in met.get("epic_bars") or []:
+                if isinstance(item, (list, tuple)) and len(item) >= 2:
+                    try:
+                        epic_pairs.append((str(item[0]), float(item[1])))
+                    except (TypeError, ValueError):
+                        continue
+            prog = svg_epic_progress_bars(epic_pairs, width=720) if epic_pairs else ""
+            if hz_html or prog:
+                metrics_row = (
+                    '<div class="lenses-timeline-metrics row g-3 mt-3">'
+                    f'<div class="col-12">{hz_html}</div>'
+                    f'<div class="col-12">{prog}</div>'
+                    "</div>"
+                )
+            vh = roadmap_timeline_view_link(rm_q)
+            src_link = f'<a href="{esc(vh)}">Roadmap source</a>'
+
+    q_plan = (
+        f"wbs_p={urllib.parse.quote(wbs_q, safe='')}&repo={urllib.parse.quote(repo_q, safe='')}"
+    )
+    if rm_q:
+        q_plan += f"&roadmap_p={urllib.parse.quote(rm_q, safe='')}"
+    plan_link = f"/plan?{q_plan}"
+    standalone = (
+        f"/roadmaps/timeline?p={urllib.parse.quote(rm_q, safe='')}" if rm_q else ""
+    )
+
+    controls = (
+        '<div class="row g-2 mb-3 align-items-end">'
+        '<div class="col-md-3">'
+        '<label for="lenses-timeline-repo" class="form-label small text-muted mb-1">Repository</label>'
+        f'<select id="lenses-timeline-repo" class="form-select form-select-sm">{"".join(repo_opts)}</select>'
+        "</div>"
+        '<div class="col-md-5">'
+        '<label for="lenses-timeline-wbs" class="form-label small text-muted mb-1">Requirements / WBS</label>'
+        f'<select id="lenses-timeline-wbs" class="form-select form-select-sm">{"".join(wbs_opts)}</select>'
+        "</div>"
+        '<div class="col-md-4">'
+        '<label for="lenses-timeline-roadmap" class="form-label small text-muted mb-1">Roadmap</label>'
+        f'<select id="lenses-timeline-roadmap" class="form-select form-select-sm">{"".join(rm_opts)}</select>'
+        "</div>"
+        "</div>"
+    )
+
+    links_line = (
+        f'<p class="forge-support small mb-0">'
+        f'<a href="{esc(plan_link)}">Open Plan</a>'
+        + (f' · <a href="{esc(standalone)}">Standalone timeline</a>' if standalone else "")
+        + (f" · {src_link}" if src_link else "")
+        + "</p>"
+    )
+
+    script = f"<script>\n{FORGE_TIMELINE_SCRIPT}\n</script>"
+    body_inner = (
+        '<div class="lenses-timeline-shell lenses-dash">'
+        '<p class="forge-support">Milestone columns and epic horizon windows. '
+        "Click a bar (when an epic id is present) to open that epic in Plan.</p>"
+        f"{scope_hint}"
+        f"{controls}"
+        f"{gantt_block}"
+        f"{metrics_row}"
+        f"{links_line}"
+        f"{script}"
+        "</div>"
+    )
+
+    extra_css = """
+<style>
+.lenses-timeline-gantt .lenses-roadmap-gantt-svg { width: 100%; overflow-x: auto; }
+.lenses-gantt-bar[data-lenses-node-id] { cursor: pointer; }
+</style>
+"""
+
+    if scope:
+        bc = lenses_breadcrumb_html(
+            ("/", "Overview"),
+            (f"/projects/{urllib.parse.quote(scope, safe='')}", scope),
+            ("", "Timeline"),
+        )
+    else:
+        bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Timeline"))
+    return _wrap_dashboard(
+        lenses_repo_root,
+        browser_title="Timeline — lenses",
+        nav_active="timeline",
+        page_title="Timeline",
+        breadcrumb_html=bc,
+        body_inner=body_inner,
+        handbook_url=handbook_url,
+        forge_url=forge_url,
+        dashboard_extra_css=extra_css,
+        workspace_projects=wp,
+        current_project=scope,
+        roadmap_scope_repo=scope,
+    )
+
+
 def page_plan(
     state: dict[str, Any],
     handbook_url: str,
     forge_url: str,
     lenses_repo_root: Path,
+    query: dict[str, list[str]] | None = None,
 ) -> str:
+    qs = query or {}
+    repo_q = (qs.get("repo") or [""])[0].strip()
+    wp = workspace_project_names_sorted(state)
+    scope = workspace_project_for_repo(repo_q, wp)
+    scope_hint = (
+        '<p class="small text-muted mb-2 lenses-roadmap-scope-hint">'
+        "Each requirements file and roadmap is tagged to one <strong>repository</strong>. "
+        "Choose <strong>Repository</strong> first; the other two lists only show paths for that repo "
+        "(leave Repository unset to list every path).</p>"
+    )
     wbs_rows = [w for w in (state.get("wbs") or []) if isinstance(w, dict)]
     rms = [r for r in (state.get("roadmaps") or []) if isinstance(r, dict)]
     repo_opts: list[str] = ['<option value="">— Repository —</option>']
-    repos_seen: set[str] = set()
-    for w in wbs_rows:
-        h = str(w.get("repo_hint", "")).strip()
-        if h and h not in repos_seen:
-            repos_seen.add(h)
-            repo_opts.append(f'<option value="{esc(h)}">{esc(h)}</option>')
+    for h in _repo_hints_wbs_then_roadmaps(wbs_rows, rms):
+        repo_opts.append(f'<option value="{esc(h)}">{esc(h)}</option>')
     wbs_opts: list[str] = ['<option value="" data-repo="">— WBS file —</option>']
     for w in wbs_rows:
         rp = str(w.get("rel_path", ""))
@@ -3565,257 +5196,10 @@ def page_plan(
             f'<option value="{esc(rp)}" data-repo="{esc(h)}">{esc(rp)}</option>'
         )
 
-    script = r"""
-<script>
-(function () {
-  var repoSel = document.getElementById("lenses-plan-repo");
-  var wbsSel = document.getElementById("lenses-plan-wbs");
-  var rmSel = document.getElementById("lenses-plan-roadmap");
-  var planTreeEl = document.getElementById("lenses-plan-tree");
-  var summaryEl = document.getElementById("lenses-plan-summary");
-  var hubEl = document.getElementById("lenses-plan-hub");
-  var srcFrame = document.getElementById("lenses-plan-source-frame");
-  var tabPlan = document.getElementById("lenses-plan-tab-plan");
-  var tabSrc = document.getElementById("lenses-plan-tab-source");
-  var panelPlan = document.getElementById("lenses-plan-panel-plan");
-  var panelSrc = document.getElementById("lenses-plan-panel-source");
-  if (!wbsSel || !planTreeEl || !hubEl) return;
+    hb = esc(handbook_url)
+    fg = esc(forge_url)
 
-  function qs() {
-    var o = {};
-    var s = window.location.search.replace(/^\?/, "");
-    if (!s) return o;
-    s.split("&").forEach(function (pair) {
-      var i = pair.indexOf("=");
-      if (i < 0) return;
-      var k = decodeURIComponent(pair.slice(0, i).replace(/\+/g, " "));
-      var v = decodeURIComponent(pair.slice(i + 1).replace(/\+/g, " "));
-      o[k] = v;
-    });
-    return o;
-  }
-
-  function setUrl() {
-    var q = new URLSearchParams();
-    var repo = repoSel ? repoSel.value : "";
-    var wbs = wbsSel ? wbsSel.value : "";
-    var rm = rmSel ? rmSel.value : "";
-    var id = hubEl.dataset.storyId || "";
-    if (repo) q.set("repo", repo);
-    if (wbs) q.set("wbs_p", wbs);
-    if (rm) q.set("roadmap_p", rm);
-    if (id) q.set("id", id);
-    var tail = q.toString();
-    var path = window.location.pathname + (tail ? "?" + tail : "");
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState({}, "", path);
-    }
-  }
-
-  function filterSelect(sel, repo) {
-    if (!sel) return;
-    var i, opt;
-    for (i = 0; i < sel.options.length; i++) {
-      opt = sel.options[i];
-      var dr = opt.getAttribute("data-repo") || "";
-      if (!opt.value || !repo) {
-        opt.hidden = false;
-        continue;
-      }
-      opt.hidden = dr !== repo;
-    }
-  }
-
-  function renderHub(data) {
-    hubEl.dataset.storyId = data.work_item_id || "";
-    if (!data.definition) {
-      hubEl.innerHTML = '<p class="forge-support text-warning mb-0">No matching story or task row for this ID in the selected WBS.</p>';
-      return;
-    }
-    var def = data.definition;
-    var html = [];
-    html.push('<h3 class="h6 text-cyan">' + (def.id || "") + " · " + (def.title || "") + "</h3>");
-    if (def.kind === "story") {
-      html.push('<p class="small mb-2">' + (def.acceptance_summary || "").replace(/</g, "&lt;") + "</p>");
-      if (def.product_paths && def.product_paths.length) {
-        html.push('<p class="small mb-1"><strong>Product context</strong></p><ul class="small">');
-        def.product_paths.forEach(function (p) {
-          html.push("<li><code>" + p.replace(/</g, "&lt;") + "</code></li>");
-        });
-        html.push("</ul>");
-      }
-    }
-    if (def.kind === "task") {
-      html.push('<p class="small mb-2">Task (Spark) · parent story <code>' + (def.story_id || "").replace(/</g, "&lt;") + "</code></p>");
-    }
-    html.push('<p class="small mb-1"><strong>Today (Charge)</strong></p>');
-    if (data.today_charge && data.today_charge.length) {
-      html.push('<ul class="small">');
-      data.today_charge.forEach(function (c) {
-        html.push("<li><code>" + c.spark_id + "</code> — " + (c.status || "") + "</li>");
-      });
-      html.push("</ul>");
-    } else {
-      html.push('<p class="forge-support small">No matching rows in Charge.</p>');
-    }
-    html.push('<p class="small mb-1"><strong>Decision log (Ember)</strong></p>');
-    if (data.decision_log_ember && data.decision_log_ember.length) {
-      data.decision_log_ember.forEach(function (e) {
-        html.push('<p class="small border-start border-secondary ps-2"><a href="' + e.view_href + '">' + (e.file_rel || "") + "</a></p>");
-        html.push('<pre class="small text-muted" style="max-height:8rem;overflow:auto">' + (e.snippet || "").replace(/</g, "&lt;") + "</pre>");
-      });
-    } else {
-      html.push('<p class="forge-support small">No Ember hits for this ID.</p>');
-    }
-    html.push('<p class="small mb-1"><strong>Discipline sessions (Versona)</strong></p>');
-    if (data.discipline_sessions_versona && data.discipline_sessions_versona.length) {
-      html.push('<ul class="small">');
-      data.discipline_sessions_versona.forEach(function (s) {
-        html.push('<li><a href="' + s.view_href + '">' + (s.session_id || "") + "</a></li>");
-      });
-      html.push("</ul>");
-    } else {
-      html.push('<p class="forge-support small">No sessions with this work item ref.</p>');
-    }
-    if (data.provenance && data.provenance.wbs_view) {
-      html.push('<p class="small mt-2 mb-0"><a href="' + data.provenance.wbs_view + '">WBS source</a>'
-        + (data.provenance.charge ? ' · <a href="' + data.provenance.charge + '">Charge</a>' : "") + "</p>");
-    }
-    hubEl.innerHTML = html.join("");
-  }
-
-  function loadHub(id) {
-    if (!id || !wbsSel.value) return;
-    hubEl.innerHTML = '<p class="forge-support">Loading…</p>';
-    var repo = repoSel ? repoSel.value : "";
-    var rp = rmSel && rmSel.value ? rmSel.value : "";
-    var u = "/api/story-hub?id=" + encodeURIComponent(id) + "&wbs_p=" + encodeURIComponent(wbsSel.value) + "&repo=" + encodeURIComponent(repo);
-    if (rp) u += "&roadmap_p=" + encodeURIComponent(rp);
-    fetch(u).then(function (r) { return r.json(); }).then(function (data) {
-      if (!data.ok) {
-        hubEl.innerHTML = '<p class="text-warning small">Story hub could not be loaded.</p>';
-        return;
-      }
-      renderHub(data);
-      setUrl();
-    }).catch(function () {
-      hubEl.innerHTML = '<p class="text-warning small">Failed to load story hub.</p>';
-    });
-  }
-
-  function renderPlanTree(payload) {
-    planTreeEl.innerHTML = "";
-    var plan = payload.plan || {};
-    var ms = plan.milestones || [];
-    ms.forEach(function (m) {
-      var h = document.createElement("div");
-      h.className = "mb-2";
-      var epicTit = (m.epic_key || "") + " — " + (m.title || "");
-      h.innerHTML = '<div class="small text-cyan fw-semibold">' + epicTit.replace(/</g, "&lt;") + "</div>";
-      var ul = document.createElement("div");
-      ul.className = "list-group list-group-sm lenses-plan-story-list";
-      (m.stories || []).forEach(function (s) {
-        var b = document.createElement("button");
-        b.type = "button";
-        b.className = "list-group-item list-group-item-action py-1 lenses-plan-story-btn";
-        b.textContent = (s.id || "") + " — " + (s.title || "");
-        b.addEventListener("click", function () {
-          planTreeEl.querySelectorAll(".active").forEach(function (x) { x.classList.remove("active"); });
-          b.classList.add("active");
-          loadHub(s.id);
-        });
-        ul.appendChild(b);
-      });
-      h.appendChild(ul);
-      planTreeEl.appendChild(h);
-    });
-  }
-
-  function loadSpine() {
-    var repo = repoSel ? repoSel.value : "";
-    var wbs = wbsSel ? wbsSel.value : "";
-    if (!wbs) {
-      planTreeEl.innerHTML = '<p class="text-muted small">Select a WBS file.</p>';
-      summaryEl.innerHTML = "";
-      hubEl.innerHTML = "";
-      return;
-    }
-    summaryEl.innerHTML = '<p class="forge-support small mb-0">Loading plan…</p>';
-    var rp = rmSel && rmSel.value ? rmSel.value : "";
-    var u = "/api/plan-spine?wbs_p=" + encodeURIComponent(wbs) + "&repo=" + encodeURIComponent(repo);
-    if (rp) u += "&roadmap_p=" + encodeURIComponent(rp);
-    fetch(u).then(function (r) { return r.json(); }).then(function (data) {
-      if (!data.ok) {
-        planTreeEl.innerHTML = '<p class="text-warning small">Could not load plan.</p>';
-        return;
-      }
-      if (rp) {
-        fetch("/roadmaps/summary?p=" + encodeURIComponent(rp)).then(function (x) { return x.text(); }).then(function (html) {
-          summaryEl.innerHTML = html;
-        }).catch(function () { summaryEl.innerHTML = ""; });
-      } else {
-        summaryEl.innerHTML = '<p class="forge-support small mb-0">No roadmap selected — milestones come from WBS only.</p>';
-      }
-      renderPlanTree(data);
-      hubEl.innerHTML = '<p class="forge-support text-muted mb-0">Click a story to see definition, Charge, Ember, and Versona.</p>';
-      var q0 = qs();
-      if (q0.id) loadHub(q0.id);
-      setUrl();
-    }).catch(function () {
-      summaryEl.innerHTML = '<p class="text-warning small">Plan spine request failed.</p>';
-    });
-  }
-
-  function syncSourceFrame() {
-    if (!srcFrame || !rmSel || !rmSel.value) {
-      if (srcFrame) srcFrame.src = "about:blank";
-      return;
-    }
-    fetch("/api/roadmap-outline?p=" + encodeURIComponent(rmSel.value)).then(function (r) { return r.json(); }).then(function (data) {
-      var sec = (data.sections && data.sections[0]) ? data.sections[0].id : "";
-      if (sec) {
-        srcFrame.src = "/roadmaps/preview?p=" + encodeURIComponent(rmSel.value) + "&section=" + encodeURIComponent(sec);
-      }
-    }).catch(function () { srcFrame.src = "about:blank"; });
-  }
-
-  function showTab(which) {
-    if (which === "source") {
-      if (panelPlan) panelPlan.classList.add("d-none");
-      if (panelSrc) panelSrc.classList.remove("d-none");
-      if (tabPlan) tabPlan.classList.remove("active");
-      if (tabSrc) tabSrc.classList.add("active");
-      syncSourceFrame();
-    } else {
-      if (panelPlan) panelPlan.classList.remove("d-none");
-      if (panelSrc) panelSrc.classList.add("d-none");
-      if (tabPlan) tabPlan.classList.add("active");
-      if (tabSrc) tabSrc.classList.remove("active");
-    }
-  }
-
-  if (repoSel) {
-    repoSel.addEventListener("change", function () {
-      filterSelect(wbsSel, repoSel.value);
-      filterSelect(rmSel, repoSel.value);
-    });
-  }
-  if (wbsSel) wbsSel.addEventListener("change", loadSpine);
-  if (rmSel) rmSel.addEventListener("change", loadSpine);
-  if (tabPlan) tabPlan.addEventListener("click", function () { showTab("plan"); });
-  if (tabSrc) tabSrc.addEventListener("click", function () { showTab("source"); });
-
-  var q0 = qs();
-  if (repoSel && q0.repo) repoSel.value = q0.repo;
-  if (repoSel) filterSelect(wbsSel, repoSel.value);
-  if (repoSel) filterSelect(rmSel, repoSel.value);
-  if (wbsSel && q0.wbs_p) wbsSel.value = q0.wbs_p;
-  if (rmSel && q0.roadmap_p) rmSel.value = q0.roadmap_p;
-  showTab("plan");
-  if (wbsSel && wbsSel.value) loadSpine();
-})();
-</script>
-"""
+    script = f"<script>\n{FORGE_PLAN_SCRIPT}\n</script>"
 
     controls = (
         '<div class="row g-2 mb-3 align-items-end">'
@@ -3836,33 +5220,107 @@ def page_plan(
 
     body_inner = (
         '<div class="lenses-plan-shell lenses-dash">'
-        '<p class="forge-support">Planning and execution lens: <strong>Plan</strong> is the default. '
-        "Requirements live in <code>docs/requirements/WBS.md</code>; roadmap is optional context. "
-        "Familiar labels: Today (Charge), Task (Spark), Decision log (Ember), Discipline session (Versona).</p>"
+        '<p class="forge-support mb-2 lenses-plan-lede"><strong>Roadmap management</strong> — '
+        "<strong>Plan</strong> is the default view. Requirements live in <code>docs/requirements/WBS.md</code>; "
+        "<code>docs/**/ROADMAP.md</code> is optional horizon context.</p>"
+        '<dl class="lenses-plan-glossary row row-cols-1 row-cols-md-2 g-2 mb-3 small">'
+        "<dt class=\"col-auto text-muted\">Today</dt><dd class=\"col\"><span class=\"text-body\">Operational view</span> "
+        '<span class="forge-support">· Charge</span></dd>'
+        "<dt class=\"col-auto text-muted\">Task</dt><dd class=\"col\"><span class=\"text-body\">Unit of work in WBS</span> "
+        '<span class="forge-support">· Spark</span></dd>'
+        "<dt class=\"col-auto text-muted\">Decision log</dt><dd class=\"col\"><span class=\"text-body\">ADR-style record</span> "
+        '<span class="forge-support">· Ember</span></dd>'
+        "<dt class=\"col-auto text-muted\">Discipline session</dt><dd class=\"col\">"
+        '<span class="text-body\">Facilitated session</span> <span class="forge-support">· Versona</span></dd>'
+        "</dl>"
+        f"{scope_hint}"
         f"{controls}"
-        '<ul class="nav nav-tabs mb-3">'
-        '<li class="nav-item"><button type="button" class="nav-link active" id="lenses-plan-tab-plan">Plan</button></li>'
-        '<li class="nav-item"><button type="button" class="nav-link" id="lenses-plan-tab-source">Source</button></li>'
+        '<ul class="nav nav-tabs mb-3 lenses-plan-main-tabs" role="tablist" aria-label="Plan sections">'
+        '<li class="nav-item" role="presentation">'
+        '<button type="button" class="nav-link active" id="lenses-plan-tab-plan" role="tab" '
+        'aria-selected="true" aria-controls="lenses-plan-panel-plan" tabindex="0">Plan</button></li>'
+        '<li class="nav-item" role="presentation">'
+        '<button type="button" class="nav-link" id="lenses-plan-tab-today" role="tab" '
+        'aria-selected="false" aria-controls="lenses-plan-panel-today" tabindex="-1">Today '
+        '<span class="forge-support fw-normal">· Charge</span></button></li>'
+        '<li class="nav-item" role="presentation">'
+        '<button type="button" class="nav-link" id="lenses-plan-tab-source" role="tab" '
+        'aria-selected="false" aria-controls="lenses-plan-panel-source" tabindex="-1">Source '
+        '<span class="forge-support fw-normal">· Roadmap</span></button></li>'
         "</ul>"
-        '<div id="lenses-plan-panel-plan">'
-        '<div id="lenses-plan-summary" class="card mb-3 p-3 lenses-roadmap-summary-card"></div>'
-        '<div class="row g-3">'
-        '<div class="col-lg-5">'
-        '<h3 class="h6 text-cyan mb-2">Milestones / epics / stories</h3>'
-        '<div id="lenses-plan-tree" class="lenses-plan-tree border border-secondary rounded p-2"></div>'
+        '<div id="lenses-plan-panel-plan" role="tabpanel" aria-labelledby="lenses-plan-tab-plan">'
+        '<details class="mb-2 lenses-plan-summary-details" id="lenses-plan-summary-details">'
+        '<summary class="small text-muted cursor-pointer">Roadmap summary (collapsible)</summary>'
+        '<div id="lenses-plan-summary" class="card p-2 mt-2 lenses-roadmap-summary-card"></div>'
+        "</details>"
+        '<div class="row g-2 mb-2 align-items-center">'
+        '<div class="col-md-6 col-lg-5">'
+        '<label for="lenses-plan-search" class="visually-hidden">Filter work tree</label>'
+        '<input type="search" id="lenses-plan-search" class="form-control form-control-sm" '
+        'placeholder="Filter by id, title, status, phase, blockers, docs…" autocomplete="off"/>'
         "</div>"
-        '<div class="col-lg-7">'
-        '<h3 class="h6 text-cyan mb-2">Story hub</h3>'
-        '<div id="lenses-plan-hub" class="card p-3 border border-secondary"></div>'
+        '<div class="col-md-6 col-lg-7 text-md-end">'
+        '<span class="small text-muted me-1">Quick filters:</span>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary me-1" id="lenses-filter-blocked" '
+        'title="Stories with blocked sparks">Blocked</button>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary me-1" id="lenses-filter-decisions" '
+        'title="Stories with Ember decisions">Ember</button>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary" id="lenses-filter-versona" '
+        'title="Stories with Versona sessions">Versona</button>'
+        "</div>"
+        "</div>"
+        '<div id="lenses-plan-explorer-row" class="lenses-plan-explorer row g-0 border border-secondary rounded overflow-hidden">'
+        '<div class="lenses-plan-pane lenses-plan-pane-left col-12 col-lg-3 border-bottom border-lg-0 '
+        'border-lg-end border-secondary p-2">'
+        '<h3 class="h6 text-cyan mb-2">Work hierarchy</h3>'
+        '<div id="lenses-plan-explorer-tree" class="lenses-plan-tree" aria-label="Work hierarchy"></div>'
+        '<div id="lenses-plan-extra-groups" class="mt-2 small"></div>'
+        "</div>"
+        '<div class="lenses-plan-pane lenses-plan-pane-center col-12 col-lg-5 border-bottom border-lg-0 '
+        'border-lg-end border-secondary p-3 lenses-plan-center-pane">'
+        '<h3 class="h6 text-cyan mb-2">Overview</h3>'
+        '<div id="lenses-plan-explorer-center"></div>'
+        "</div>"
+        '<div class="lenses-plan-pane lenses-plan-pane-right col-12 col-lg-4 p-3 bg-body-secondary" '
+        'id="lenses-plan-pane-right">'
+        '<div class="d-flex align-items-start justify-content-between gap-2 mb-2">'
+        '<h3 class="h6 text-cyan mb-0">Detail <span class="forge-support fw-normal small">· rail</span></h3>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary lenses-plan-rail-toggle" '
+        'id="lenses-plan-rail-toggle" aria-expanded="true" aria-controls="lenses-plan-pane-right" '
+        'title="Show or hide the detail column">Hide detail</button>'
+        "</div>"
+        '<div id="lenses-plan-explorer-rail" class="lenses-plan-explorer-rail-host"></div>'
         "</div>"
         "</div>"
         "</div>"
-        '<div id="lenses-plan-panel-source" class="d-none">'
+        '<div id="lenses-plan-panel-source" class="d-none" role="tabpanel" aria-labelledby="lenses-plan-tab-source">'
         '<p class="forge-support small">Raw <code>ROADMAP.md</code> preview (section from outline).</p>'
         '<div class="card lenses-roadmap-preview-window p-0 border border-secondary">'
         '<iframe id="lenses-plan-source-frame" class="w-100 lenses-roadmap-preview-frame" '
         'title="Roadmap source" style="min-height:min(70vh,36rem);border:0"></iframe>'
         "</div>"
+        "</div>"
+        '<div id="lenses-plan-panel-today" class="d-none" role="tabpanel" aria-labelledby="lenses-plan-tab-today">'
+        '<p class="forge-support small mb-2 lenses-plan-today-lede">Operational view from <code>forge/charge.md</code> '
+        'plus WBS context. <span class="text-muted">Primary labels in body text; Forge names secondary.</span></p>'
+        '<div class="row g-2 mb-3 align-items-end">'
+        '<div class="col-md-4 col-lg-3">'
+        '<label for="lenses-today-phase" class="form-label small text-muted mb-1">Phase prefix</label>'
+        '<select id="lenses-today-phase" class="form-select form-select-sm">'
+        '<option value="">All</option>'
+        "</select>"
+        "</div>"
+        '<div class="col-md-8 col-lg-9 text-lg-end">'
+        '<span class="small text-muted me-1">Show:</span>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary me-1 lenses-today-chip" '
+        'id="lenses-today-filter-blocked" data-today-filter="blocked">Blocked</button>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary me-1 lenses-today-chip" '
+        'id="lenses-today-filter-banked" data-today-filter="banked">Banked</button>'
+        '<button type="button" class="btn btn-sm btn-outline-secondary lenses-today-chip" '
+        'id="lenses-today-filter-done" data-today-filter="done">Done / resolved</button>'
+        "</div>"
+        "</div>"
+        '<div id="lenses-today-content" class="lenses-today-content small"></div>'
         "</div>"
         f"{script}"
         "</div>"
@@ -3870,25 +5328,77 @@ def page_plan(
 
     extra_css = """
 <style>
-.lenses-plan-tree { max-height: min(70vh, 36rem); overflow-y: auto; }
-.lenses-plan-story-btn { cursor: pointer; font-size: 0.88rem; }
-.lenses-plan-story-btn.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.35); }
-.lenses-roadmap-summary-card { min-height: 3rem; }
+.lenses-plan-lede { line-height: 1.5; }
+.lenses-plan-glossary dd { margin-bottom: 0; }
+.lenses-plan-glossary dt { font-weight: 500; }
+.lenses-plan-main-tabs .nav-link:focus-visible {
+  outline: 2px solid rgba(6,182,212,0.55);
+  outline-offset: 2px;
+}
+.lenses-plan-rail-toggle:focus-visible {
+  outline: 2px solid rgba(6,182,212,0.55);
+  outline-offset: 2px;
+}
+.lenses-plan-tree { max-height: min(55vh, 28rem); overflow-y: auto; outline: none; }
+.lenses-plan-tree:focus-visible { outline: 2px solid rgba(6,182,212,0.5); outline-offset: 2px; }
+.lenses-tree-item { cursor: pointer; font-size: 0.875rem; line-height: 1.45; }
+.lenses-tree-item-active {
+  background: rgba(6,182,212,0.14);
+  box-shadow: inset 0 0 0 1px rgba(6,182,212,0.4);
+}
+.lenses-tree-item:focus-visible { outline: 2px solid rgba(6,182,212,0.65); outline-offset: 1px; }
+.lenses-plan-center-pane { min-height: min(52vh, 26rem); overflow-y: auto; }
+.lenses-plan-slot-body { line-height: 1.5; }
+.lenses-plan-explorer-rail-host { max-height: min(70vh, 36rem); overflow-y: auto; }
+.lenses-roadmap-summary-card { min-height: 2.25rem; }
 .lenses-roadmap-preview-window { background: var(--bs-body-bg, #0f172a); }
-.nav-tabs .nav-link { cursor: pointer; background: transparent; border: none; }
-.nav-tabs .nav-link.active { color: var(--bs-cyan, #06b6d4); border-bottom: 2px solid rgba(6,182,212,0.6); }
+.lenses-plan-main-tabs.nav-tabs .nav-link { cursor: pointer; background: transparent; border: none; }
+.lenses-plan-main-tabs.nav-tabs .nav-link.active { color: var(--bs-cyan, #06b6d4); border-bottom: 2px solid rgba(6,182,212,0.65); }
+.lenses-story-cockpit .nav-tabs .nav-link:focus-visible { outline: 2px solid rgba(6,182,212,0.55); outline-offset: 2px; }
+.lenses-plan-summary-details > summary { list-style: none; }
+.lenses-plan-summary-details > summary::-webkit-details-marker { display: none; }
+#lenses-filter-blocked.active, #lenses-filter-decisions.active, #lenses-filter-versona.active {
+  background: rgba(6,182,212,0.16);
+  border-color: rgba(6,182,212,0.5);
+}
+.lenses-today-chip.active {
+  background: rgba(6,182,212,0.16);
+  border-color: rgba(6,182,212,0.5);
+}
+.lenses-today-content table { font-size: 0.875rem; }
+.lenses-today-section-title { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; }
+.lenses-plan-today-lede { line-height: 1.45; }
+.lenses-plan-pane-right .forge-support { opacity: 0.92; }
+.lenses-plan-story-mode .lenses-plan-pane-right { display: none !important; }
+.lenses-plan-story-mode .lenses-plan-pane-center { flex: 1 1 auto; max-width: 100%; }
+.lenses-plan-explorer-row.lenses-plan-rail-collapsed .lenses-plan-pane-right { display: none !important; }
+.lenses-plan-explorer-row.lenses-plan-rail-collapsed:not(.lenses-plan-story-mode) .lenses-plan-pane-center {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+.lenses-plan-empty-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; }
 </style>
 """
 
-    bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Forge plan"))
+    if scope:
+        bc = lenses_breadcrumb_html(
+            ("/", "Overview"),
+            (f"/projects/{urllib.parse.quote(scope, safe='')}", scope),
+            ("", "Plan"),
+        )
+    else:
+        bc = lenses_breadcrumb_html(("/", "Overview"), ("", "Plan"))
     return _wrap_dashboard(
         lenses_repo_root,
-        browser_title="Forge plan — lenses",
+        browser_title="Plan — lenses",
         nav_active="plan",
-        page_title="Forge plan",
+        page_title="Plan",
         breadcrumb_html=bc,
         body_inner=body_inner,
         handbook_url=handbook_url,
         forge_url=forge_url,
         dashboard_extra_css=extra_css,
+        workspace_projects=wp,
+        current_project=scope,
+        roadmap_scope_repo=scope,
     )

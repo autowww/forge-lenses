@@ -22,7 +22,7 @@ python3 generator/build-lenses-docs.py
 
 Output: **`lenses-docs/`**. See `_load_pages()` in the generator for ordering.
 
-**Optional — reference page preview PNGs** on this home: install [html2image](https://pypi.org/project/html2image/) and Chromium or Google Chrome, then:
+**Optional — reference page preview PNGs** on this home: `pip install playwright`, run `playwright install chromium`, then:
 
 ```bash
 python3 generator/build-lenses-docs.py --previews
@@ -74,6 +74,14 @@ Internal pages from **`docs/`** and **`lenses/website/`** (see generator for ful
 - [Package architecture](architecture.html)
 - [Forge plan UI map (roadmap → evidence)](ui-map-workflow.html)
 - [HTTP API and routes](http-api-and-routes.html)
+- [Showcase workspace (orchestration demo)](showcase-workspace.html) — env flags and fixture map for end-to-end demos
+- [ADR 013 — Governance, OIDC foundation, audit (Sprint 10)](adr-013-governance-sprint10.html)
+- [ADR 014 — Methodology bridge spine and registry (Sprint B1)](adr-014-bridge-spine-registry.html)
+- [ADR 015 — Artifact, evidence, and decision bridge (Sprint B2)](adr-015-methodology-b2-artifacts-decisions.html)
+- [ADR 016 — Agentic bridge: governed agent execution (Sprint B3)](adr-016-agentic-bridge-b3.html)
+- [ADR 017 — Ceremony bridge: methodology-neutral orchestration (Sprint B4)](adr-017-ceremony-bridge-b4.html)
+- [ADR 018 — Closed-loop Cursor / Claude handoff bridge (Sprint B5)](adr-018-handoff-bridge-b5.html)
+- [ADR 019 — PDLC outcome bridge: launch → learning → demand (Sprint B6)](adr-019-pdlc-outcome-bridge-b6.html)
 - [Workspace scan contract](workspace-scan-contract.html)
 - [Registry configuration](registry-configuration.html)
 - [Dashboard pages](dashboard-pages.html)

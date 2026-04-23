@@ -20,7 +20,8 @@ function parseArgs(argv) {
     else if (a === "--repo-root") out.repoRoot = argv[++i];
     else if (a === "-h" || a === "--help") {
       console.log(`Usage: node studio-explore/runner.mjs [--tour tour.yaml] [--out dir] [--headed] [--repo-root path]
-  Env: LENSES_BASE_URL (default http://127.0.0.1:8080), FORGE_LENSES_ROOT`);
+  Env: LENSES_BASE_URL (default http://127.0.0.1:8080), FORGE_LENSES_ROOT,
+       WORKSPACE_SCREENSHOTS_ROOT (optional; default ../.workspace-screenshots from repo parent)`);
       process.exit(0);
     }
   }
@@ -31,6 +32,28 @@ function defaultRepoRoot() {
   if (process.env.FORGE_LENSES_ROOT) return path.resolve(process.env.FORGE_LENSES_ROOT);
   const here = path.dirname(fileURLToPath(import.meta.url));
   return path.resolve(here, "..", "..");
+}
+
+/** Directory that contains this repo (sibling to other clones under the same workspace). */
+function workspaceParentDir(repoRoot) {
+  return path.dirname(path.resolve(repoRoot));
+}
+
+/**
+ * Root for screenshot runs: **outside** the repo, under the workspace parent.
+ * Default: `<parent-of-repo>/.workspace-screenshots/` (e.g. `Code/.workspace-screenshots/`).
+ * Override with absolute `WORKSPACE_SCREENSHOTS_ROOT` to relocate the whole tree.
+ */
+function workspaceScreenshotsRoot(repoRoot) {
+  const env = process.env.WORKSPACE_SCREENSHOTS_ROOT;
+  if (env && String(env).trim()) return path.resolve(String(env).trim());
+  return path.join(workspaceParentDir(repoRoot), ".workspace-screenshots");
+}
+
+/** Default run folder: `<workspace-screenshots>/<repo-basename>/studio-explore/<runId>`. */
+function defaultStudioExploreOutDir(repoRoot, runId) {
+  const slug = path.basename(path.resolve(repoRoot));
+  return path.join(workspaceScreenshotsRoot(repoRoot), slug, "studio-explore", runId);
 }
 
 function gitHead(cwd) {
@@ -132,9 +155,7 @@ async function main() {
   };
 
   const runId = new Date().toISOString().replace(/[:.]/g, "-");
-  const outRoot = args.outDir
-    ? path.resolve(args.outDir)
-    : path.join(repoRoot, "agents", "workspaces", "studio-explore", runId);
+  const outRoot = args.outDir ? path.resolve(args.outDir) : defaultStudioExploreOutDir(repoRoot, runId);
 
   ensureDir(outRoot);
 
@@ -146,6 +167,7 @@ async function main() {
     `- **Tour:** \`${tourPath}\``,
     `- **Base URL:** ${baseUrl}`,
     `- **Repo root:** ${repoRoot}`,
+    `- **Output:** \`${outRoot}\``,
     `- **Git:** ${gitHead(repoRoot)}`,
     `- **Viewport:** ${viewport.width}x${viewport.height}`,
     ``,

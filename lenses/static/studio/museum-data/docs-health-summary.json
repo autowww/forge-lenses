@@ -1,0 +1,27 @@
+{
+  "active_sessions_estimate": 0,
+  "live_docs_health_sessions": [],
+  "ok": true,
+  "projects": [
+    {
+      "has_docs_contract_file": true,
+      "last_docs_inventory_at": "2026-01-01T11:00:00+00:00",
+      "last_finding_count": 3,
+      "last_score": 72,
+      "last_score_delta": 4,
+      "markdown_document_count": 12,
+      "needs_attention": true,
+      "open_docs_work_items": 0,
+      "project": "demo-repo"
+    }
+  ],
+  "projects_with_contract_file": 1,
+  "projects_with_inventory": 1,
+  "rollup": {
+    "average_last_score": 72,
+    "estimated_llm_tokens_in_flight": 0,
+    "open_docs_work_items_total": 0,
+    "projects_with_critical_open_findings": 0,
+    "projects_with_recent_score_gain": 1
+  }
+}

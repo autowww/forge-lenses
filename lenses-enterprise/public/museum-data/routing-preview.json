@@ -1,0 +1,46 @@
+{
+  "ok": true,
+  "routing_mode": "smart",
+  "rows": [
+    {
+      "task_id": "chat_assistant",
+      "label": "Chat assistant",
+      "provider": "openai_compatible",
+      "model": "ibm/granite4:tiny-h",
+      "routing": "manual_main",
+      "routing_mode": "smart",
+      "explanation": "smart:chat_assistant:balanced→openai_compatible",
+      "privacy": "cloud_allowed",
+      "privacy_warn": null,
+      "fallback_provider": null,
+      "fallback_model": null
+    },
+    {
+      "task_id": "search_knowledge",
+      "label": "Search / knowledge answers",
+      "provider": "openai_compatible",
+      "model": "ibm/granite4:tiny-h",
+      "routing": "manual_main",
+      "routing_mode": "smart",
+      "explanation": "smart:search_knowledge:balanced→openai_compatible",
+      "privacy": "cloud_allowed",
+      "privacy_warn": null,
+      "fallback_provider": null,
+      "fallback_model": null
+    },
+    {
+      "task_id": "embeddings_indexing",
+      "label": "Embeddings / indexing",
+      "provider": "openai_compatible",
+      "model": "ibm/granite4:tiny-h",
+      "routing": "manual_main",
+      "routing_mode": "smart",
+      "explanation": "smart:embeddings_indexing:balanced→openai_compatible",
+      "privacy": "prefer_local",
+      "privacy_warn": null,
+      "fallback_provider": "openai",
+      "fallback_model": "text-embedding-3-small"
+    }
+  ],
+  "connected_providers": 2
+}

@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "comment": "Sprint 7 demo — dependency board, change requests, CAB-lite, calendar; merged with live CI/CD + quality + DevSecOps for go/no-go packet.",
+  "focus_release_version": "1.4.0-rc.3",
+  "teams": [
+    {
+      "id": "team-platform",
+      "name": "Platform",
+      "slack_channel": "#platform-releases",
+      "repo_ids": ["forgesdlc"]
+    },
+    {
+      "id": "team-product",
+      "name": "Product",
+      "slack_channel": "#product-shipping",
+      "repo_ids": []
+    }
+  ],
+  "initiatives": [
+    {
+      "id": "init-oauth",
+      "name": "OAuth and API hardening",
+      "team_id": "team-platform",
+      "summary": "Per-tenant rate limits and dependency upgrades for auth paths.",
+      "target_release": "1.4.0-rc.3"
+    },
+    {
+      "id": "init-client-ui",
+      "name": "Client OAuth refresh UI",
+      "team_id": "team-product",
+      "summary": "SDK and UI work; server throttles must land first.",
+      "target_release": "1.5.0"
+    }
+  ],
+  "dependency_nodes": [
+    {
+      "id": "team:platform",
+      "kind": "team",
+      "label": "Platform",
+      "team_id": "team-platform"
+    },
+    {
+      "id": "team:product",
+      "kind": "team",
+      "label": "Product",
+      "team_id": "team-product"
+    },
+    {
+      "id": "init:oauth",
+      "kind": "initiative",
+      "label": "OAuth hardening",
+      "initiative_id": "init-oauth"
+    },
+    {
+      "id": "init:client-ui",
+      "kind": "initiative",
+      "label": "Client OAuth UI",
+      "initiative_id": "init-client-ui"
+    },
+    {
+      "id": "repo:forgesdlc",
+      "kind": "repo",
+      "label": "forgesdlc",
+      "project": "forgesdlc"
+    },
+    {
+      "id": "rel:1.4.0-rc.3",
+      "kind": "release",
+      "label": "v1.4.0-rc.3",
+      "version": "1.4.0-rc.3"
+    },
+    {
+      "id": "env:staging",
+      "kind": "environment",
+      "label": "staging",
+      "environment_id": "staging"
+    },
+    {
+      "id": "env:production",
+      "kind": "environment",
+      "label": "production",
+      "environment_id": "production"
+    }
+  ],
+  "dependency_edges": [
+    {
+      "from_id": "init:client-ui",
+      "to_id": "init:oauth",
+      "from_kind": "initiative",
+      "to_kind": "initiative",
+      "from_ref": "init-client-ui",
+      "to_ref": "init-oauth",
+      "relation": "depends_on",
+      "note": "UI release blocked on server-side rate limits"
+    },
+    {
+      "from_id": "team:platform",
+      "to_id": "init:oauth",
+      "from_kind": "team",
+      "to_kind": "initiative",
+      "from_ref": "team-platform",
+      "to_ref": "init-oauth",
+      "relation": "owns",
+      "note": ""
+    },
+    {
+      "from_id": "init:oauth",
+      "to_id": "rel:1.4.0-rc.3",
+      "from_kind": "initiative",
+      "to_kind": "release",
+      "from_ref": "init-oauth",
+      "to_ref": "1.4.0-rc.3",
+      "relation": "ships_in",
+      "note": ""
+    },
+    {
+      "from_id": "repo:forgesdlc",
+      "to_id": "rel:1.4.0-rc.3",
+      "from_kind": "repo",
+      "to_kind": "release",
+      "from_ref": "forgesdlc",
+      "to_ref": "1.4.0-rc.3",
+      "relation": "builds",
+      "note": ""
+    },
+    {
+      "from_id": "rel:1.4.0-rc.3",
+      "to_id": "env:staging",
+      "from_kind": "release",
+      "to_kind": "environment",
+      "from_ref": "1.4.0-rc.3",
+      "to_ref": "staging",
+      "relation": "deployed_to",
+      "note": ""
+    },
+    {
+      "from_id": "rel:1.4.0-rc.3",
+      "to_id": "env:production",
+      "from_kind": "release",
+      "to_kind": "environment",
+      "from_ref": "1.4.0-rc.3",
+      "to_ref": "production",
+      "relation": "targets",
+      "note": "Pending CAB + freeze lift"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "ms-rc-freeze",
+      "title": "RC branch freeze",
+      "at": "2026-04-12T17:00:00Z",
+      "release_version": "1.4.0-rc.3",
+      "status": "planned"
+    },
+    {
+      "id": "ms-prod-cut",
+      "title": "Production cutover window opens",
+      "at": "2026-04-15T02:00:00Z",
+      "release_version": "1.4.0-rc.3",
+      "status": "planned"
+    }
+  ],
+  "readiness_views": [
+    {
+      "id": "rv-staging",
+      "environment_id": "staging",
+      "release_version": "1.4.0-rc.3",
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "id": "rv-production",
+      "environment_id": "production",
+      "release_version": "1.4.0-rc.3",
+      "ready": false,
+      "gaps": [
+        "QA sign-off on promo promo-stg-prod-1",
+        "Exit Q2 patch freeze for production",
+        "Security policy pol-no-critical-prod"
+      ]
+    }
+  ],
+  "change_requests": [
+    {
+      "id": "CHG-2026-0411",
+      "title": "Promote 1.4.0-rc.3 to production",
+      "scope": "Auth rate limits, parser dependency bump, handbook generator fixes.",
+      "risk": "medium",
+      "risk_notes": "Canary on 5% then full rollout; feature flags for limiter.",
+      "release_version": "1.4.0-rc.3",
+      "environment_targets": ["production"],
+      "project": "forgesdlc",
+      "implementation_window": {
+        "start": "2026-04-15T02:00:00Z",
+        "end": "2026-04-15T04:00:00Z",
+        "timezone": "UTC"
+      },
+      "rollback_notes": "Revert to rollback_target_version on production (see CI/CD environments). Drain connections; run `deploy/rollback-prod.sh` per runbook.",
+      "approvers": [
+        {
+          "role": "sre",
+          "login": "sre-lead",
+          "status": "approved",
+          "at": "2026-04-10T12:00:00Z"
+        },
+        {
+          "role": "qa_lead",
+          "login": "qa-lead",
+          "status": "pending",
+          "at": null
+        },
+        {
+          "role": "product_owner",
+          "login": "pm-auth",
+          "status": "approved",
+          "at": "2026-04-09T16:00:00Z"
+        }
+      ]
+    }
+  ],
+  "cab_sessions": [
+    {
+      "id": "cab-2026-04-11",
+      "scheduled_at": "2026-04-11T15:00:00Z",
+      "change_request_ids": ["CHG-2026-0411"],
+      "attendees": ["ciso-delegate", "sre-lead", "qa-lead", "pm-auth"],
+      "decisions": [
+        {
+          "change_request_id": "CHG-2026-0411",
+          "decision": "conditional",
+          "notes": "Approve after QA sign-off and freeze window ends.",
+          "decided_at": null
+        }
+      ]
+    }
+  ]
+}

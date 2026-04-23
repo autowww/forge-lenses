@@ -39,6 +39,144 @@ DEFAULT_KANBAN_COLUMNS: list[dict[str, str]] = [
 
 UNASSIGNED_PROJECT_KEY = "_unassigned"
 
+MAX_GITHUB_LOGIN_LEN = 39
+MAX_ACL_ENTRIES = 64
+
+
+def _valid_github_login(s: str) -> bool:
+    t = (s or "").strip()
+    if not t or len(t) > MAX_GITHUB_LOGIN_LEN:
+        return False
+    return all(c.isalnum() or c == "-" for c in t)
+
+
+def _normalize_login_list(raw: Any) -> list[str] | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, list):
+        return None
+    out: list[str] = []
+    seen: set[str] = set()
+    for x in raw[:MAX_ACL_ENTRIES]:
+        if isinstance(x, str) and _valid_github_login(x):
+            ln = x.strip().lower()
+            if ln not in seen:
+                seen.add(ln)
+                out.append(ln)
+    return out
+
+
+def registry_entry_acl(entry: dict[str, Any]) -> dict[str, Any]:
+    """Subset of registry entry for sharing UI (owner, editors, viewers)."""
+    owner = str(entry.get("owner_login", "")).strip().lower()
+    ed = entry.get("editors")
+    vw = entry.get("viewers")
+    editors = [x for x in (ed if isinstance(ed, list) else []) if isinstance(x, str)]
+    viewers = [x for x in (vw if isinstance(vw, list) else []) if isinstance(x, str)]
+    return {
+        "owner_login": owner if owner and _valid_github_login(owner) else "",
+        "editors": editors,
+        "viewers": viewers,
+    }
+
+
+def can_view_sticker_board(
+    session_login: str | None,
+    entry: dict[str, Any],
+    *,
+    is_workspace_super_admin: bool,
+    can_read_project: bool,
+) -> bool:
+    if is_workspace_super_admin:
+        return True
+    if not session_login or not session_login.strip():
+        return False
+    sl = session_login.strip().lower()
+    acl = registry_entry_acl(entry)
+    owner = acl["owner_login"]
+    editors_l = {str(x).strip().lower() for x in acl["editors"] if isinstance(x, str)}
+    viewers_l = {str(x).strip().lower() for x in acl["viewers"] if isinstance(x, str)}
+    explicit = bool(owner) or bool(editors_l) or bool(viewers_l)
+    if explicit:
+        if owner and sl == owner:
+            return True
+        if sl in viewers_l or sl in editors_l:
+            return True
+        return False
+    return can_read_project
+
+
+def can_manage_board_acl(
+    session_login: str | None,
+    entry: dict[str, Any],
+    *,
+    is_workspace_super_admin: bool,
+    can_manage_project_access: bool,
+) -> bool:
+    """Who may PATCH registry acl (owner, project access admin, or workspace super admin)."""
+    if is_workspace_super_admin:
+        return True
+    if can_manage_project_access:
+        return True
+    if not session_login or not session_login.strip():
+        return False
+    sl = session_login.strip().lower()
+    owner = registry_entry_acl(entry).get("owner_login") or ""
+    return bool(owner) and sl == owner
+
+
+def can_edit_sticker_board(
+    session_login: str | None,
+    entry: dict[str, Any],
+    *,
+    is_workspace_super_admin: bool,
+    can_write_project: bool,
+) -> bool:
+    if is_workspace_super_admin:
+        return True
+    if not session_login or not session_login.strip():
+        return False
+    sl = session_login.strip().lower()
+    acl = registry_entry_acl(entry)
+    owner = acl["owner_login"]
+    editors_l = {str(x).strip().lower() for x in acl["editors"] if isinstance(x, str)}
+    explicit = bool(owner) or bool(editors_l)
+    if explicit:
+        if owner and sl == owner:
+            return True
+        if sl in editors_l:
+            return True
+        return False
+    return can_write_project
+
+
+def _parse_column_entries(
+    raw: Any, *, array_err: str = "columns_must_be_array"
+) -> tuple[list[dict[str, str]], str]:
+    """Parse a columns or saved_kanban_columns array. Returns (entries, error_code)."""
+    if raw is None:
+        return [], ""
+    if not isinstance(raw, list):
+        return [], array_err
+    if len(raw) > MAX_COLUMNS:
+        return [], "too_many_columns"
+    columns: list[dict[str, str]] = []
+    seen_ids: set[str] = set()
+    for c in raw:
+        if not isinstance(c, dict):
+            return [], "column_must_be_object"
+        cid = str(c.get("id", "")).strip()
+        title = str(c.get("title", "")).strip()
+        if not _ID_RE.match(cid):
+            return [], "invalid_column_id"
+        if not title or len(title) > 80:
+            return [], "invalid_column_title"
+        if cid in seen_ids:
+            return [], "duplicate_column_id"
+        seen_ids.add(cid)
+        columns.append({"id": cid, "title": title})
+    return columns, ""
+
 
 def _alnum_board_id(length: int = 22) -> str:
     """URL/file-safe opaque id (default 22 chars, matches BOARD_ID_RE min 16)."""
@@ -150,6 +288,7 @@ def default_state(template: str, board_storage: str = "local") -> dict[str, Any]
         "board_storage": bs,
         "template": t,
         "columns": cols,
+        "saved_kanban_columns": [],
         "stickers": [],
     }
 
@@ -202,6 +341,7 @@ def _migrate_legacy_to_v2(data: dict[str, Any]) -> dict[str, Any]:
         "board_storage": "local",
         "template": data.get("template", "freeform"),
         "columns": data.get("columns") or [],
+        "saved_kanban_columns": data.get("saved_kanban_columns") or [],
         "stickers": data.get("stickers") or [],
     }
     return out
@@ -324,6 +464,7 @@ def ensure_legacy_migrated(
                     "version": BOARD_VERSION,
                     "template": "freeform",
                     "columns": [],
+                    "saved_kanban_columns": [],
                     "stickers": [],
                 },
             )
@@ -370,6 +511,7 @@ def ensure_legacy_migrated(
         "board_storage": "local",
         "template": data.get("template", "freeform"),
         "columns": data.get("columns") or [],
+        "saved_kanban_columns": data.get("saved_kanban_columns") or [],
         "stickers": [],
     }
     for s in data.get("stickers") or []:
@@ -481,6 +623,7 @@ def load_board(
                 "board_storage": "shared",
                 "template": tmpl,
                 "columns": [],
+                "saved_kanban_columns": [],
                 "stickers": [],
             },
             None,
@@ -496,11 +639,13 @@ def load_board(
 
     tmpl = "freeform"
     cols: list[Any] = []
+    saved_kanban_cols: list[Any] = []
     shared_stickers: list[Any] = []
     if repo:
         repo_m = _migrate_legacy_to_v2(repo) if int(repo.get("version", 0)) == 1 else repo
         tmpl = str(repo_m.get("template", "freeform"))
         cols = list(repo_m.get("columns") or [])
+        saved_kanban_cols = list(repo_m.get("saved_kanban_columns") or [])
         for s in repo_m.get("stickers") or []:
             if isinstance(s, dict):
                 shared_stickers.append(dict(s))
@@ -521,6 +666,7 @@ def load_board(
         "board_storage": "shared",
         "template": tmpl if tmpl in ("kanban", "freeform") else "freeform",
         "columns": cols,
+        "saved_kanban_columns": saved_kanban_cols,
         "stickers": shared_stickers + local_stickers,
     }
     ok, _err = validate_board(merged, login)
@@ -556,6 +702,7 @@ def save_board(
             "board_storage": "local",
             "template": data["template"],
             "columns": data["columns"],
+            "saved_kanban_columns": data["saved_kanban_columns"],
             "stickers": [],
         }
         for s in data["stickers"]:
@@ -585,6 +732,7 @@ def save_board(
         "version": BOARD_VERSION,
         "template": data["template"],
         "columns": data["columns"],
+        "saved_kanban_columns": data["saved_kanban_columns"],
         "stickers": [{k: v for k, v in s.items() if k != "scope"} for s in shared_list],
     }
     overlay_payload = {
@@ -627,6 +775,11 @@ def normalize_board(
             for c in (data.get("columns") or [])
             if isinstance(c, dict)
         ],
+        "saved_kanban_columns": [
+            {"id": str(c["id"]), "title": str(c["title"])}
+            for c in (data.get("saved_kanban_columns") or [])
+            if isinstance(c, dict)
+        ],
         "stickers": [],
     }
     col_ids = {c["id"] for c in out["columns"]}
@@ -654,6 +807,9 @@ def normalize_board(
         if bs == "shared":
             sc = s.get("scope", "shared")
             st["scope"] = "local" if sc == "local" else "shared"
+        ol = s.get("owner_login")
+        if isinstance(ol, str) and _valid_github_login(ol):
+            st["owner_login"] = ol.strip().lower()
         out["stickers"].append(st)
     return out
 
@@ -678,30 +834,20 @@ def validate_board(
     if bs == "shared" and not (expected_github_login or "").strip():
         return False, "shared_board_login_required"
 
-    cols_raw = data.get("columns")
-    if cols_raw is None:
-        cols_raw = []
-    if not isinstance(cols_raw, list):
-        return False, "columns_must_be_array"
-    if len(cols_raw) > MAX_COLUMNS:
-        return False, "too_many_columns"
-    columns: list[dict[str, str]] = []
-    seen_ids: set[str] = set()
-    for c in cols_raw:
-        if not isinstance(c, dict):
-            return False, "column_must_be_object"
-        cid = str(c.get("id", "")).strip()
-        title = str(c.get("title", "")).strip()
-        if not _ID_RE.match(cid):
-            return False, "invalid_column_id"
-        if not title or len(title) > 80:
-            return False, "invalid_column_title"
-        if cid in seen_ids:
-            return False, "duplicate_column_id"
-        seen_ids.add(cid)
-        columns.append({"id": cid, "title": title})
+    columns, col_err = _parse_column_entries(
+        data.get("columns"), array_err="columns_must_be_array"
+    )
+    if col_err:
+        return False, col_err
     if tmpl == "kanban" and len(columns) < 1:
         return False, "kanban_needs_columns"
+
+    saved_columns, saved_err = _parse_column_entries(
+        data.get("saved_kanban_columns"),
+        array_err="saved_kanban_columns_must_be_array",
+    )
+    if saved_err:
+        return False, saved_err
 
     stickers_raw = data.get("stickers")
     if stickers_raw is None:
@@ -712,6 +858,7 @@ def validate_board(
         return False, "too_many_stickers"
 
     col_ids = {c["id"] for c in columns}
+    freeform_column_ids = col_ids | {c["id"] for c in saved_columns}
     seen_sticker_ids: set[str] = set()
     legacy_stickers = int(raw_ver) == BOARD_VERSION_LEGACY
     for s in stickers_raw:
@@ -759,8 +906,17 @@ def validate_board(
             if str(cid) not in col_ids:
                 return False, "unknown_column_id"
         else:
-            if cid is not None and str(cid).strip() != "" and str(cid) not in col_ids:
-                return False, "unknown_column_id"
+            if cid is not None and str(cid).strip() != "":
+                cid_s = str(cid).strip()
+                if freeform_column_ids:
+                    if cid_s not in freeform_column_ids:
+                        return False, "unknown_column_id"
+                elif not _ID_RE.match(cid_s):
+                    return False, "invalid_column_id"
+        ol = s.get("owner_login")
+        if ol is not None and ol != "":
+            if not isinstance(ol, str) or not _valid_github_login(ol):
+                return False, "invalid_sticker_owner_login"
     return True, ""
 
 
@@ -807,6 +963,13 @@ def registry_snapshot(
                 "label": label[:MAX_BOARD_LABEL_LEN],
                 "storage": storage,
             }
+            acl = registry_entry_acl(e)
+            if acl.get("owner_login"):
+                row["owner_login"] = acl["owner_login"]
+            if acl.get("editors"):
+                row["editors"] = acl["editors"]
+            if acl.get("viewers"):
+                row["viewers"] = acl["viewers"]
             if pm is not None:
                 row["preview_mtime"] = pm
             board_list.append(row)
@@ -825,6 +988,8 @@ def registry_apply(
     valid_slugs: set[str],
     action: str,
     payload: dict[str, Any],
+    *,
+    creator_login: str | None = None,
 ) -> tuple[bool, str, dict[str, Any] | None]:
     ensure_legacy_migrated(workspace_root, expected_github_login)
     act = (action or "").strip().lower()
@@ -853,6 +1018,7 @@ def registry_apply(
                 "version": BOARD_VERSION,
                 "template": "freeform",
                 "columns": [],
+                "saved_kanban_columns": [],
                 "stickers": [],
             }
             _atomic_write_json(
@@ -873,7 +1039,17 @@ def registry_apply(
         if not isinstance(lst, list):
             lst = []
             reg["projects"][project] = lst
-        lst.append({"id": board_id, "label": label, "storage": storage})
+        entry: dict[str, Any] = {"id": board_id, "label": label, "storage": storage}
+        cl = (creator_login or "").strip()
+        if cl and _valid_github_login(cl):
+            entry["owner_login"] = cl.lower()
+        eds = _normalize_login_list(payload.get("editors"))
+        vws = _normalize_login_list(payload.get("viewers"))
+        if eds:
+            entry["editors"] = eds
+        if vws:
+            entry["viewers"] = vws
+        lst.append(entry)
         save_registry_raw(workspace_root, reg)
         return True, "", {"board_id": board_id}
 
@@ -949,6 +1125,49 @@ def registry_apply(
             dest = []
             reg["projects"][to_project] = dest
         dest.append(entry)
+        save_registry_raw(workspace_root, reg)
+        return True, "", None
+
+    if act == "acl":
+        board_id = str(payload.get("board_id", "")).strip()
+        if not is_valid_board_id(board_id):
+            return False, "invalid_board_id", None
+        found = find_board_entry(reg, board_id)
+        if not found:
+            return False, "board_not_found", None
+        proj, _ent_copy = found
+        entries = reg["projects"].get(proj) or []
+        ent: dict[str, Any] | None = None
+        for e in entries:
+            if isinstance(e, dict) and str(e.get("id", "")) == board_id:
+                ent = e
+                break
+        if ent is None:
+            return False, "board_not_found", None
+        ol = payload.get("owner_login")
+        if ol is not None:
+            if ol == "":
+                ent.pop("owner_login", None)
+            elif isinstance(ol, str) and _valid_github_login(ol):
+                ent["owner_login"] = ol.strip().lower()
+            else:
+                return False, "invalid_owner_login", None
+        if "editors" in payload:
+            eds = _normalize_login_list(payload.get("editors"))
+            if eds is None:
+                return False, "invalid_editors", None
+            if eds:
+                ent["editors"] = eds
+            else:
+                ent.pop("editors", None)
+        if "viewers" in payload:
+            vws = _normalize_login_list(payload.get("viewers"))
+            if vws is None:
+                return False, "invalid_viewers", None
+            if vws:
+                ent["viewers"] = vws
+            else:
+                ent.pop("viewers", None)
         save_registry_raw(workspace_root, reg)
         return True, "", None
 
