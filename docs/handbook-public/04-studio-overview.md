@@ -1,4 +1,5 @@
 ---
+
 nav_title: Studio overview
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: studio
 tier: overview
 handbook_area: studio
 learning_level: overview
+section: studio-wizard
+status: shipped
+description: Studio overview — Forge Lenses handbook entry (product-areas).
+page_type: concept
 ---
 
 # Forge Studio overview
@@ -13,6 +18,12 @@ learning_level: overview
 ## What it is
 
 **Forge Studio** (also called Lenses Studio) is the **React** UI served at **`/studio/`** on your local Lenses server. It is the default place for **new** product surfaces (with Classic HTML catching up over time). **Blueprints Wizard** is a Studio feature under **`/studio/blueprints/wizard/`**.
+
+```blueprint-diagram
+key: tree
+alt: Workspace root branching into Classic slash URL and Studio subtree with Wizard leaf
+caption: Operators choose Classic or Studio shells from the same local server process
+```
 
 ## When to use it
 

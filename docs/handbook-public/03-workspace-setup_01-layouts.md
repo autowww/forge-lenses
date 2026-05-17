@@ -1,4 +1,5 @@
 ---
+
 nav_title: Common workspace layouts for Lenses (siblings vs host repo)
 public_publish: true
 audience: public
@@ -6,6 +7,11 @@ product_area: lenses
 tier: overview
 handbook_area: lenses
 learning_level: '201'
+section: get-started
+status: shipped
+description: Common workspace layouts for Lenses (siblings vs host repo) — Forge Lenses
+  handbook entry (start).
+page_type: how-to
 ---
 
 # Common workspace layouts for Lenses (sibling repos vs host repo)

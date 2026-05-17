@@ -1,4 +1,5 @@
 ---
+
 nav_title: Wizard 201
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: wizard
 tier: '201'
 handbook_area: wizard
 learning_level: '201'
+section: tutorials-201
+status: experimental
+description: Wizard 201 — Forge Lenses handbook entry (tutorials-201).
+page_type: tutorial
 ---
 
 # Wizard 201 — Mission modes

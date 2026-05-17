@@ -18,10 +18,10 @@ Set before running (or `source` a **gitignored** env file such as `Situ8/taxonom
 
 | Variable | Required | Notes |
 |----------|----------|--------|
-| `TAXONOMY_LLM_BASE_URL` | Yes (unless `--deterministic-only`) | OpenAI-compatible base including `/v1`, no trailing slash |
-| `TAXONOMY_LLM_MODEL` | No | Model id on your server |
-| `TAXONOMY_LLM_API_KEY` | No | Bearer token if required |
-| `TAXONOMY_LLM_NGROK_BYPASS` | No | `1` if you get HTML instead of JSON behind ngrok free |
+| `LLM_BASE_URL` | Yes (unless `--deterministic-only`) | OpenAI-compatible base including `/v1`, no trailing slash |
+| `LLM_MODEL` | No | Model id on your server |
+| `LLM_API_KEY` | No | Bearer token if required |
+| `LLM_NGROK_BYPASS` | No | `1` if you get HTML instead of JSON behind ngrok free |
 
 Reference implementation in Situ8: `Situ8/scripts/taxonomy_llm_openai.py`.
 
@@ -69,7 +69,7 @@ python3 scripts/compare_files_llm_report.py --deterministic-only \
   --json-out ../Situ8/taxonomy-llm-artifacts/compare-run.json
 ```
 
-With LLM narrative, after exporting `TAXONOMY_LLM_BASE_URL`, or using `--env-file`:
+With LLM narrative, after exporting `LLM_BASE_URL`, or using `--env-file`:
 
 ```bash
 python3 scripts/compare_files_llm_report.py \

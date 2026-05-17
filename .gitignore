@@ -1,3 +1,6 @@
+# API route snapshot from scripts/check-docs.sh (`collect_lenses_api_routes.py --output`)
+build/
+
 # Electron desktop shell (Phase 1)
 desktop/node_modules/
 desktop/test-results/

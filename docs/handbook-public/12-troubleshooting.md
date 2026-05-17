@@ -1,4 +1,5 @@
 ---
+
 nav_title: Troubleshooting
 public_publish: true
 audience: public
@@ -6,6 +7,12 @@ product_area: lenses
 tier: troubleshooting
 handbook_area: lenses
 learning_level: troubleshooting
+section: resources
+status: shipped
+description: Symptom-oriented fixes for Forge Lenses — Classic and Studio routing, Wizard
+  sessions, workspace scans, offline lookup, and when to escalate to server operators or
+  deeper maintainer diagnostics.
+page_type: troubleshooting
 ---
 
 # Troubleshooting
@@ -17,6 +24,10 @@ learning_level: troubleshooting
 ## When to use it
 
 Something failed during [Install and run](02-install-and-run.md), [Workspace setup](03-workspace-setup.md), [Studio 101](05-studio-101.md), or [Wizard 101](09-wizard-101.md).
+
+## Search & offline lookup
+
+Static Firebase hosting does **not** ship a bundled search index yet. Use **browser Find** (`Ctrl+F` / `⌘F`) on long references such as [`api-routes.md`](../generated/api-routes.md), rely on the **horizontal IA + contextual sidebar** for discovery, or jump via [Cross-site map](cross-site-map.md). Full-text search remains on the backlog pending a Pagefind-style spike.
 
 ## Prerequisites
 

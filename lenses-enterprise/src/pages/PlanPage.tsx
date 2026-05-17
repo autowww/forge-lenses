@@ -117,6 +117,15 @@ export function PlanPage() {
   const nodeId = sp.get('id') || ''
   const tab = sp.get('tab') || 'plan'
 
+  /** When Work journey selects Sources, scroll the Sources block into view (Flow has it above the sub-tabs; Artifacts mounts it in the source tab). */
+  useEffect(() => {
+    if (tab !== 'source') return
+    const t = window.setTimeout(() => {
+      document.getElementById('le-plan-source-h')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 0)
+    return () => clearTimeout(t)
+  }, [tab, pathname, mode])
+
   const copilotDefaultQuery = useMemo(() => {
     if (mode === 'flow' && tab === 'today') return WORK_COPILOT_DEFAULT_TODAY
     if (mode === 'flow') return WORK_COPILOT_DEFAULT_PLAN
@@ -621,9 +630,9 @@ export function PlanPage() {
           )}
 
           {tab === 'source' && (
-            <p className="forge-support">
-              Roadmap outline and full Plan UI:{' '}
-              <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameQuery}</a>
+            <p className="forge-support" role="status">
+              {STUDIO_VOCAB.sources} is summarized in the section above this strip — the page scrolls to that heading
+              when you open this tab.
             </p>
           )}
 
@@ -840,10 +849,21 @@ export function PlanPage() {
       )}
 
       {tab === 'source' && (
-        <p className="forge-support">
-          Roadmap outline and full Plan UI:{' '}
-          <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameQuery}</a>
-        </p>
+        <>
+          <SourceContext classicPlanHref={classicPlanHref} />
+          <section className="le-plan-roadmap-horizon" aria-label="Roadmap horizon">
+            <h2 className="le-plan-section__title">Roadmap horizon</h2>
+            <p className="forge-support le-plan-section__lead">
+              Same workspace matrix as the plan summary: month buckets and milestones for the scope you set above.
+            </p>
+            <NestedRoadmapWorkspaceFrame frameMinHeight="min(48vh, 26rem)" />
+          </section>
+          <RoadmapTrace
+            roadmapP={roadmapP}
+            classicPlanHref={classicPlanHref}
+            roadmapSummaryHref={roadmapSummaryHref}
+          />
+        </>
       )}
 
       {tab === 'story' && !nodeId.trim() && (

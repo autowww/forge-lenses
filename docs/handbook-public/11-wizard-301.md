@@ -1,4 +1,5 @@
 ---
+
 nav_title: Wizard 301
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: wizard
 tier: '301'
 handbook_area: wizard
 learning_level: '301'
+section: tutorials-301
+status: experimental
+description: Wizard 301 — Forge Lenses handbook entry (tutorials-301).
+page_type: tutorial
 ---
 
 # Wizard 301 — Advanced usage
@@ -13,6 +18,12 @@ learning_level: '301'
 ## What it is
 
 Deeper use of the Wizard: **artifact bundles**, **Refine** and LLM-assisted steps, **review and recheck**, and **Cursor Launch Pack** packaging. This hub links to focused pages; read the **worked example session** below once so the advanced topics read as **one workflow**, not isolated toggles.
+
+```blueprint-diagram
+key: sequence
+alt: Refine prompts call guarded POST routes before review/recheck publishes bundles
+caption: Wizard 301 coordinates LLM optional steps behind the same Session shell as 101/201
+```
 
 ## When to use it
 

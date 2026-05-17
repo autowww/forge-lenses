@@ -3,7 +3,7 @@
 Hybrid file comparison: normalization → deterministic evidence → multi-pass LLM.
 
 Environment (same as Situ8 taxonomy drafting):
-  TAXONOMY_LLM_BASE_URL, TAXONOMY_LLM_MODEL, TAXONOMY_LLM_API_KEY, TAXONOMY_LLM_NGROK_BYPASS
+  LLM_BASE_URL, LLM_MODEL, LLM_API_KEY, LLM_NGROK_BYPASS
 
 Default outputs in --out-dir:
   comparison_report.md, comparison_report.json, optional comparison_debug.json
@@ -205,8 +205,8 @@ def main() -> int:
     if not args.deterministic_only:
         import os
 
-        if not os.environ.get("TAXONOMY_LLM_BASE_URL", "").strip():
-            print("Missing TAXONOMY_LLM_BASE_URL (or use --deterministic-only)", file=sys.stderr)
+        if not os.environ.get("LLM_BASE_URL", "").strip():
+            print("Missing LLM_BASE_URL (or use --deterministic-only)", file=sys.stderr)
             return 2
         bump("Run LLM pipeline (4 chat calls: pass1a, pass1b, pass2, pass3)")
         try:

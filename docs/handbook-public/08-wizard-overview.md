@@ -1,4 +1,5 @@
 ---
+
 nav_title: Wizard overview
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: wizard
 tier: overview
 handbook_area: wizard
 learning_level: overview
+section: studio-wizard
+status: experimental
+description: Wizard overview — Forge Lenses handbook entry (product-areas).
+page_type: concept
 ---
 
 # Blueprints Wizard overview
@@ -37,6 +42,37 @@ The **Blueprints Wizard** is a guided flow **inside Forge Studio** that walks a 
 | **Mission through scope** | Context, constraints, disagreements | Shared targets and an explicit increment |
 | **Run plan through review** | Owners, risks, dependencies | Ordered steps and generated artifacts |
 | **Recheck / experimental** | Policy for exports | Packaged handoff (for example Cursor Launch Pack) when enabled |
+
+## Trust boundaries (Studio ↔ Lenses ↔ outbound)
+
+```blueprint-diagram
+key: sequence
+alt: Trust boundaries for Wizard sessions vs repo and outbound services
+caption: Wizard stores session JSON locally; LLM and Fleet calls are explicit POST surfaces
+```
+
+| Boundary | Shipped today | Your responsibility |
+|----------|---------------|---------------------|
+| **Git working tree** | Wizard does **not** auto-commit Blueprints submodule bumps | Review exports before `git add` |
+| **`.lenses-local/`** | Session envelope + telemetry land here | Back up or wipe per policy ([Security and local-first](17-security-and-local-first.md)) |
+| **LLM vendor** | Optional refine/interpret calls via server-side POST routes | Redact prompts; use corporate gateways when required |
+| **Forge Fleet** | Optional job orchestration when enabled | Treat bearer tokens like production secrets |
+
+Deep dives: [Wizard — operator trust boundaries](wizard-operator-trust-boundaries.md) and [Wizard — builder session HTTP API](wizard-builder-session-api.md).
+
+## Session lifecycle (happy path)
+
+```blueprint-diagram
+key: linear
+alt: Wizard session lifecycle from hub create through export
+caption: Hub creates id; session route loads stepper; exports are explicit actions
+```
+
+```blueprint-diagram
+key: state
+alt: Wizard session states from hub through review and optional export
+caption: Happy path advances; recheck or repair can loop until consistency passes
+```
 
 ## When to use it
 

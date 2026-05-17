@@ -1,4 +1,5 @@
 ---
+
 nav_title: How to choose LENSES_WORKSPACE_ROOT for Studio and Wizard
 public_publish: true
 audience: public
@@ -6,6 +7,11 @@ product_area: lenses
 tier: overview
 handbook_area: lenses
 learning_level: '201'
+section: get-started
+status: shipped
+description: How to choose LENSES_WORKSPACE_ROOT for Studio and Wizard — Forge Lenses
+  handbook entry (start).
+page_type: how-to
 ---
 
 # How to choose LENSES_WORKSPACE_ROOT for Studio and Wizard

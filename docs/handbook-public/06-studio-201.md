@@ -1,4 +1,5 @@
 ---
+
 nav_title: Studio 201
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: studio
 tier: '201'
 handbook_area: studio
 learning_level: '201'
+section: tutorials-201
+status: shipped
+description: Studio 201 — Forge Lenses handbook entry (tutorials-201).
+page_type: tutorial
 ---
 
 # Studio 201 — Day-to-day use
@@ -13,6 +18,12 @@ learning_level: '201'
 ## What it is
 
 Using Forge Studio for **regular** work: switching between **workspace lenses** (for example Flow vs Artifacts), moving between **Plans**, **Projects**, and **Knowledge**, and keeping context while you work.
+
+```blueprint-diagram
+key: swimlane
+alt: Daily operator lane switching Flow and Artifacts lenses without losing project context
+caption: Studio 201 assumes you already trust the local loopback surface from 101
+```
 
 ## When to use it
 

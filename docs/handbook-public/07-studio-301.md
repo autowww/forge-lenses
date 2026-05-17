@@ -1,4 +1,5 @@
 ---
+
 nav_title: Studio 301
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: studio
 tier: '301'
 handbook_area: studio
 learning_level: '301'
+section: tutorials-301
+status: shipped
+description: Studio 301 — Forge Lenses handbook entry (tutorials-301).
+page_type: tutorial
 ---
 
 # Studio 301 — Advanced

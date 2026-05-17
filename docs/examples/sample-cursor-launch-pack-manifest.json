@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "cursor_launch_pack",
+  "created_at": "2026-05-16T12:34:56Z",
+  "session_id": "sess_example",
+  "session_title": "Launch pack sample",
+  "base_artifact_keys": ["mission.md"],
+  "expanded_artifact_keys": ["mission.md", "runbook.md"],
+  "allowed_write_scope": ["docs/**"],
+  "guardrails": ["strict_approval"],
+  "closure_options_applied": ["include_runbook"],
+  "closure_trace": [],
+  "prompt_recipe": {},
+  "approval_summary": {}
+}
+

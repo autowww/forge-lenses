@@ -87,9 +87,12 @@ Top navigation and sidebar: workspace pages (including **Tutorials** → **`/tut
 
 ## JSON API
 
+Maintainer-facing JSON schemas (Wizard payloads, canonical HTTP errors) ship in **`docs/schemas/`** beside this repo (`README.md` explains stability tiers). Companion **`docs/examples/`** snippets are exercised by **`tests/test_docs_schemas.py`**.
+
 | Method | Path | Response |
 |--------|------|----------|
 | `GET` | `/api/roadmap-outline?p=<relative-path>` | `application/json` — `{ "doc_title", "sections": [ { "id", "level", "title" } ] }` for one `ROADMAP.md`. **400** if `p` missing; **404** if path not allowed or missing. |
+| `GET` | `/api/roadmaps-matrix` | JSON matrix summarizing roadmap coverage across tracked workspace repos (Forge Studio **`Plan`** views). Mirrors **`/plan`** explorers; honours the same roadmap allowlisting rules as **`/api/roadmap-outline`**. Typical query knobs: **`repo`** filter + pagination hints surfaced in **`ui-map-workflow.md`**. |
 | `GET` | `/api/plan-spine?wbs_p=<rel>&repo=<repo_hint>&roadmap_p=<rel optional>` | JSON: joined **plan** tree (from WBS), optional roadmap metrics, Charge rows, Versona session count, forge path hints. When the orchestration graph is enabled and the DB is available, includes **`orchestration`**: graph completeness score, dependency pressure, critical path, and scenario ids (Studio readiness cards). **400** if `wbs_p` missing; **404** if WBS path not allowed. |
 | `GET` | `/api/story-hub?id=<WBS_ID>&wbs_p=<rel>&repo=<repo_hint>&roadmap_p=<rel optional>` | JSON: story or task **definition**; **today_charge**, **decision_log_ember**, **discipline_sessions_versona**, **journal** (legacy fields); **`story_view`** when the work item resolves to a story (or a spark’s parent story): structured **slots** (WBS column → problem, acceptance, notes, etc.), **milestone_outcome**, **phase_affinity**, **roadmap_hits** (sections mentioning the story id), **product_context** (work-graph doc links), **execution** (WBS sparks + charge rows), **decisions** (Ember scans, graph-linked decisions/sessions, Versona list), **sources** (WBS / Charge / journal). When orchestration + repo-workflow features are on, includes **`code_execution`**: **`graph`** (branch / PR / commit links and merge readiness from **`implements`** / **`targets`** edges), **`repo`** (fixture-backed PR preview, **`project_href`** to Studio Projects), and when the graph DB is available **`cicd_trace`** (story → **build** → **artifact** → **release** → **environment** via **`tests`**, **`contains`**, **`deploys`** edges), **`quality_trace`** (**test_plan** / **test_suite** / **test_case** / **test_run** / **defect** / **release** via **`validates`**, **`raised_defect`**, **`affects`**), **`security_trace`** (**security_finding** → story via **`affects`**; **compliance_exception** via **`accepted_risk_for`**; **control** → **release** via **`satisfies`** when delivery trace yields releases). When test-quality is on and a fixture exists, **`quality_evidence`** (test cases, runs, defects, UAT, attachments for that story id). When DevSecOps is on and **`devsecops-compliance`** data exists, **`devsecops_evidence`** (findings, vulns, secrets, exceptions, controls tagged with **`story_ids`**). When Ops delivery is on and the graph DB is available, **`ops_trace`** (**incident** → story via **`affects`**, **`triggered_after`** **release**, **`impacts`** **service**, **postmortem** **`analyzes`** incident). When Ops delivery is on and **`ops-delivery`** data exists, **`ops_delivery_evidence`** (incidents, postmortems, SLOs tagged with **`story_ids`**). Optional **`roadmap_ctx`** (metrics) when **`roadmap_p`** is set. **400** if `id` or `wbs_p` missing. |
 | `GET` | `/api/today-charge?wbs_p=<rel>&repo=<repo_hint>&roadmap_p=<rel optional>` | JSON: **Today (Charge)** operational view — **`spark_rows`** (full list with **`flags`**, **`breadcrumb`**, **`plan_href`**), **`sections`** ( **`active`**, **`blocked`**, **`banked`**, **`recently_resolved`**, **`pending_versona`** ), **`charge`** (frontmatter hat/date, **`view_href`**), **`phase_prefixes`**, **`notes`**. Joins **`forge/charge.md`** (Active Sparks + Blockers + Banking tables) with WBS and Versona session index. **400** if `wbs_p` missing; **404** if WBS path not allowed. |
@@ -195,6 +198,8 @@ Feature flag **`LENSES_EXPERIMENTAL_SDLC_COPILOT`** — on by default; set to **
 | Method | Path | Purpose |
 |--------|------|---------|
 | `GET` | `/api/sdlc-copilot/enabled` | JSON **`{ "ok", "enabled" }`** — whether the copilot package is active. |
+| `GET` | `/api/sdlc-copilot/chat-stream` | **SSE**/stream continuation for copilot chats (same policy as **`POST /api/sdlc-copilot/chat`**). Query parameters mirror the synchronous chat envelope Studio uses (`provider`, **`message`** / continuation token, **`model`** hints). Intended for Forge Studio. |
+| `POST` | `/api/sdlc-copilot/chat-async` | Starts an asynchronous copilot chat job (returns **`202`** + **`job_id`** semantics) so Studio can poll or stream later. Shares audit + grounding rules with **`chat`**. Requires loopback or **`LENSES_ALLOW_ACTIONS=1`**. |
 | `POST` | `/api/sdlc-copilot/chat` | Body: **`provider`**, **`message`**, optional **`model`**, **`refine`**, **`tool_mode`** (`read_only` \| `propose_writes`), **`route`** (Studio route name for audit), optional **`project_slug`**, **`entity_id`**, **`scope_site`** / **`repo`**, optional **`studio_chat_mode`** (`threads` \| `linear`) so the model knows when Chat is in Threads vs linear mode. Returns the same fields as **`/api/llm/chat`** plus **`citations`**, **`audit_id`**, **`grounding_truncated`**, **`write_proposals`**, and **`turn_reflection`** (answered / agent_note / suggested_follow_up / adjust_context; heuristic by default). Appends one line per turn to **`.lenses-local/sdlc-copilot-audit.jsonl`**. Optional second-pass JSON: set **`LENSES_COPILOT_LLM_TURN_REFLECTION=1`** to merge an LLM classifier (same provider; extra latency/tokens). **`propose_writes`** requires GitHub session with **`can_write_project`** for **`project_slug`** when RBAC is enforced (or workspace super_admin). |
 | `POST` | `/api/sdlc-copilot/topic-archive` | Body: **`topic_id`**, **`started_at_iso`**, **`ended_at_iso`**, **`route`**, optional **`project_slug`**, **`turns`** (list of `{role, text_excerpt, usage?}`), **`tags`**, **`title`**, **`summary`**, optional **`totals`** (e.g. token sums, **`dwell_approx_sec`**). Appends **`.lenses-local/copilot-topics.jsonl`** and writes **`.lenses-local/copilot-discussions/<date>_<route>.md`** when possible. |
 | `POST` | `/api/sdlc-copilot/commit-proposal` | Body: **`proposal_id`**, **`confirm`: true** — exports one persisted proposal to **`.lenses-local/copilot-exports/<timestamp>_<tool>_<id>.md`** and removes the staging file under **`.lenses-local/copilot-proposals/`**. Appends a **`commit_proposal`** row to the audit log. Same permission gate as propose-writes. **400** if not confirmed; **404** if proposal missing or expired (~48h); **403** if forbidden. |
@@ -322,10 +327,125 @@ Feature flag **`LENSES_EXPERIMENTAL_SDLC_COPILOT`** — on by default; set to **
 | `POST` | `/api/launches` | Create **`launch_record`** + **`launch_for`** → **`release_id`**. Loopback / **`LENSES_ALLOW_ACTIONS=1`**. |
 | `POST` | `/api/launches/<id>/link-outcome` | **`outcome_observed`** edge from outcome entity → launch. Loopback / **`LENSES_ALLOW_ACTIONS=1`**. |
 
-## Blueprints Wizard (experimental)
+## LLM providers, Forge Fleet helpers, and core chat transports
 
-Requires **`LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD`**. LLM routes also require loopback or **`LENSES_ALLOW_ACTIONS=1`** (same policy as Chat).
+Companion design notes live in **`design-studio-ai-setup.html`** (Forge Studio → AI pane). **`403`** from these routes usually means the client IP is outside loopback **and** **`LENSES_ALLOW_ACTIONS` / `LENSES_ALLOW_GIT_ACTIONS`** are not set appropriately.
+
+### LLM settings and diagnostics (`/api/llm/*`)
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| `POST` | `/api/blueprints/wizard/session/<id>/clarify-suggest` | JSON: `deterministic_questions`, `use_llm`, optional `provider` / `model` / `refine` — returns merged clarification question list (optional LLM extras). |
+| `GET` | `/api/llm/providers` | JSON catalog of selectable providers/schemas for Studio dropdowns (static + persisted overrides). Read-only. |
+| `GET` | `/api/llm/settings` | JSON snapshot of persisted provider configuration (merged workspace + **`~/.lenses-local`**). |
+| `GET` | `/api/llm/usage` | Rolling usage counters (calls, tokens where available) per coarse capability. Read-only audit aid. |
+| `GET` | `/api/llm/diagnostics` | Last-good/bad states, warmup flags, remediation hints surfaced in Studio banners. Read-only. |
+| `GET` | `/api/llm/ollama-status` | Connectivity JSON for **`OLLAMA_BASE_URL`** probing; never blocks silently if Ollama is down. Read-only. |
+| `GET` | `/api/llm/model-catalog-notifications` | Lightweight feed of catalog refresh/import events for banners. Read-only. |
+| `GET` | `/api/llm/routing-preview` | Expands hypothetical routing (**query/body**) without mutating persisted settings (**read-only analyzer** used by routing UI). |
+| `POST` | `/api/llm/settings` | Merge + normalize provider payloads; persists to workspace-local store. Requires loopback or **`LENSES_ALLOW_ACTIONS=1`** (classic LLM privilege gate). |
+| `POST` | `/api/llm/chat` | One-shot chat completions for Classic UI + scripted clients. Mirrors provider capabilities from **`/api/sdlc-copilot/chat`** without SDLC scaffolding. Protected like other LLM POSTs. |
+| `POST` | `/api/llm/provider-probe` | Validates credentials / reachable HTTP / model id for **one provider profile** (POST JSON body identifies profile). |
+| `POST` | `/api/llm/routing-preview-draft` | Persistable preview for routing tables (Studio advanced flows). Shares validation with **`GET /api/llm/routing-preview`** but allows draft persistence. |
+| `POST` | `/api/llm/ollama-action` | Model lifecycle helpers (warm/pull) against Ollama with fixed argv allowlists. Requires loopback or actions flag. |
+
+### Forge Fleet probes (`/api/fleet/*`)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/fleet/settings` | Mirrors persisted Fleet YAML/JSON overlays + discovery hints for Studio (**read-only envelope** aligned with Forge LLM nodes). |
+| `POST` | `/api/fleet/settings` | Persists Fleet mesh configuration (discovery interval, subnets, bearer references). Shares LLM privilege gate (loopback or **`LENSES_ALLOW_ACTIONS=1`**). Writes **`.lenses-local`** state. |
+| `POST` | `/api/fleet/probe` | **`probe_health`** — returns reachability summaries for configured nodes/token holders. Read/write audit only in memory. |
+| `POST` | `/api/fleet/test-fleet` | Runs bounded synthetic checks across registered Fleet nodes (**`count`** knob in POST JSON body). |
+| `POST` | `/api/fleet/discover` | Triggers **`run_discovery`** (quick/subnet scans, extra hosts hints, timeout tuning). Outputs candidate nodes + confidence. |
+| `POST` | `/api/fleet/node-detail` | Hydrates richer metadata about a Fleet peer (versions, GPUs, workloads) when probes succeed. |
+| `POST` | `/api/fleet/connect-forge-llm` | Validates + stores pairing metadata so Studio can advertise **Forge-hosted** LLMs via Fleet. Shares LLM gates. |
+
+## Docs-health overlays
+
+Used by Forge Studio Docs Health rail + maintainer overlays in **`docs/maintainer/docs-health-mvp.md`**.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/docs-health/summary` | Compact JSON status for dashboards (overall green/yellow/red, outstanding counts). Read-only. |
+| `GET` | `/api/docs-health/work-items` | Paginated remediation queue (titles, repos, timestamps). Read-only. |
+| `GET` | `/api/docs-health/live-sessions` | Telemetry for live verification sessions keyed by Lens job ids (who is validating which repo). Requires same auth posture as Docs Health viewer. |
+
+## ForgeSDLC public blog mirror endpoints
+
+Backed by **`lenses/forgesdlc_blog*`** ingestion helpers — safe to expose read-only summaries on LAN **only when** bindings allow it.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/forgesdlc-blog` | Lightweight feed metadata (titles, summaries, CDN pointers). Read-only GET. |
+| `GET` | `/api/forgesdlc-blog/content` | Hydrated article payload for Studio previews (Markdown + sanitized HTML snippets). Query parameters select slug/id. Read-only GET. |
+| `POST` | `/api/forgesdlc-blog/sync` | Forces a sync pass against the ForgeSDLC blog origin (downloads + rewrite cache). Shares privileged POST policy (**loopback** or **`LENSES_ALLOW_ACTIONS=1`**). Touches **`~/.lenses-local/forgesdlc-blog*`** caches. |
+
+## Workspace Markdown FTS manifest
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/workspace-md-index` | Manifest JSON enumerating searchable Markdown/HTML targets that power Studio “Knowledge workspace” overlays (paired with **`GET /api/search`**). Honors workspace ignore rules identical to roadmap/WBS scanners. |
+
+## Agent runtime façade
+
+Requests whose path **`startswith("/api/agent-runtime")`** (both **`GET`** and **`POST`**) defer to **`lenses.agent_runtime.http`**. Typical consumers: Claude/Cursor bridging inside localhost sandboxes.
+
+- **Purpose:** multiplex agent session CRUD (`/sessions`, SSE streams, action hooks) behind the same bearer/loopback policy as other **`LENSES_ALLOW_ACTIONS`** routes.
+- **Security:** rejects non-loopback clients unless **`LENSES_ALLOW_ACTIONS=1`** (mirrors **`llm_chat_allowed_from_loopback…`** guards used by Wizard refinement routes).
+
+Keep descriptions aligned with **`lenses/agent_runtime/http.py`** if response schemas change — the façade path prefix is intentional so Studio can statically allowlist upgrades.
+
+## Plan / workflow JSON helpers
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/wbs-management` | JSON bundle listing every detected **`WBS.md`**, rollup stats, linkage into roadmap sections; powers Studio Workspace → Plans tables. Read-only snapshot. |
+| `GET` | `/api/workflow-context` | Returns serialized workflow board context (lanes, sparks, forge hints) keyed by roadmap/WBS tuples for Studio overlays. Read-only helper for `/studio/plan`. |
+| `POST` | `/api/wbs/create` | Creates a scaffold **`WBS.md`** + optional starter rows inside an allowlisted workspace child. Requires **`LENSES_ALLOW_GIT_ACTIONS=1`** or loopback shell policy + **`can_write_project`** when RBAC is active. Writes git-tracked Markdown. |
+
+## Blueprints Wizard (experimental)
+
+Requires **`LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD`**. Sensitive POST bodies (LLM + repo creation) reuse the **`llm_chat_allowed_from_loopback_or_lenses_allow_actions`** gate unless noted.
+
+### Capability switches and session catalogs
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/blueprints/wizard/enabled` | JSON **`{ ok, enabled }`** — whether Wizard routes are active (**server + workspace flag** parity). Read-only. |
+| `GET` | `/api/blueprints/wizard/sessions` | Paginated/registry JSON listing session ids, timestamps, statuses for Studio hubs. |
+
+### Session fetch + Cursor launch-pack download
+
+Everything under **`/api/blueprints/wizard/session/…`** (**`GET`**) shares **`parse_session_path`** normalization.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/blueprints/wizard/session/<id>` | Hydrates persisted session JSON (wizard payload envelope + metadata). **`405`** if callers wrongly hit refinement-only tails with GET. |
+| `GET` | `/api/blueprints/wizard/session/<id>/cursor-launch-pack/download/<token>` | Streams **`cursor-launch-pack-<id-prefix>.zip`** when staging token validates; consumes entry from **`.lenses-local/blueprints-wizard/cursor-launch-staging`** (see Wizard 301 guide). Shares LLM/action gate before streaming bytes. |
+
+### Session lifecycle writes
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `PUT` | `/api/blueprints/wizard/session/<id>` | `put_session` — authoritative replace/merge (`body` validated + written to disk). Shares experimental flag + normalization with GET. Requires loopback/action guard equivalent to POST refine stack. |
+| `POST` | `/api/blueprints/wizard/session` | **`post_create_session`** — allocates new session scaffolding (title/purpose stubs). **`404`** when feature disabled. |
+| `POST` | `/api/blueprints/wizard/telemetry` | **`post_wizard_telemetry_event`** — lightweight analytics (`step`, `elapsed_ms`, `error_hint`). Bounded JSON body (**≤16 KiB**). |
+
+### LLM-heavy session actions (POST tails)
+
+Unless otherwise noted, each **`POST`** path below validates session id fragments via `parse_session_*`, enforces **`experimental_blueprints_wizard_enabled()`**, requires loopback **or **`LENSES_ALLOW_ACTIONS=1`**, accepts JSON payloads **≤ 256 KiB** (**export** **`≤ 512 KiB`**), and returns structured `{ ok, error, … }` envelopes inherited from **`lenses.blueprints_wizard.api`**.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/blueprints/wizard/session/<id>/clarify-suggest` | Deterministic clarification question merge + optional LLM embellishments (`deterministic_questions`, `use_llm`, routing knobs). |
+| `POST` | `/api/blueprints/wizard/session/<id>/refine` | `post_refine_session` — iterative refinement lane (notes backlog, approvals). Known errors: `missing_notes`, `empty_model_output`, `save_failed`. |
+| `POST` | `/api/blueprints/wizard/session/<id>/interpret` | `post_interpret_session` — richer interpretation summarizer with provider validation gates. Adds errors like `interpretation_parse_error`. |
+| `POST` | `/api/blueprints/wizard/session/<id>/generate-artifacts` | `post_generate_artifacts` — artifact generation v2 run graph; persists telemetry via `wizard_telemetry.record_http_api_result`. |
+| `POST` | `/api/blueprints/wizard/session/<id>/artifact-review` | Binding review transitions (`approve`, `reject`, `bundle` semantics) with **`approve_bundle_blocked`** guardrails when strict approval tiers fail. |
+| `POST` | `/api/blueprints/wizard/session/<id>/artifact-export` | Exports zipped/markdown payloads for integrations; rejects invalid **`artifact_keys`**. |
+| `POST` | `/api/blueprints/wizard/session/<id>/cursor-launch-pack/preview` | `post_cursor_launch_pack_preview` — non-mutating dry-run describing manifest closures + guardrails (**no zip** emission). |
+| `POST` | `/api/blueprints/wizard/session/<id>/cursor-launch-pack/export` | `post_cursor_launch_pack_export` — stages zip + manifests for download token path above. Validates **`destination`**, **`strict_approval_failed`**, TTL via **`LENSES_CURSOR_LAUNCH_STAGING_TTL_SEC`**. |
+| `POST` | `/api/blueprints/wizard/session/<id>/artifact-recheck` | `post_artifact_recheck` — post-generation QA prompts; emits telemetry similar to **`generate-artifacts`**. |
+| `POST` | `/api/blueprints/wizard/session/<id>/create-repo` | `post_create_repo` — GitHub repository bootstrap with explicit confirmation + PAT surfaces (`missing_github_token`, `confirmation_required`). |
+
+See also **`docs/blueprints/wizard-domain-model.html`** and **`docs/handbook-public/`** Wizard chapters for end-user narration (this table is maintainer-contract focused).

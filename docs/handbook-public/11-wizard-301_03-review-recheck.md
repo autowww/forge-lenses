@@ -1,11 +1,16 @@
 ---
-nav_title: "Wizard 301: Review and recheck"
+
+nav_title: 'Wizard 301: Review and recheck'
 public_publish: true
 audience: public
 product_area: wizard
 tier: '301'
 handbook_area: wizard
 learning_level: '301'
+section: tutorials-301
+status: experimental
+description: 'Wizard 301: Review and recheck — Forge Lenses handbook entry (tutorials-301).'
+page_type: tutorial
 ---
 
 # Wizard 301 — Review and recheck
@@ -35,6 +40,10 @@ learning_level: '301'
 
 - **Review** is the **quality gate** before exports.
 - **Recheck** is the **consistency gate** — treat failing recheck as signal, not nagging.
+
+## Verify
+
+**Review & generate** shows artifacts that match session notes (no stale preview-only edits). **Recheck** is clear or every listed gap has an **owner** and **rationale** you accept.
 
 ## What to do next
 

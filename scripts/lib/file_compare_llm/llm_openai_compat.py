@@ -22,10 +22,10 @@ def chat_url(base: str) -> str:
 
 def _headers() -> dict[str, str]:
     h: dict[str, str] = {"Content-Type": "application/json"}
-    api_key = os.environ.get("TAXONOMY_LLM_API_KEY", "").strip()
+    api_key = os.environ.get("LLM_API_KEY", "").strip()
     if api_key:
         h["Authorization"] = f"Bearer {api_key}"
-    if os.environ.get("TAXONOMY_LLM_NGROK_BYPASS", "").strip() in ("1", "true", "yes"):
+    if os.environ.get("LLM_NGROK_BYPASS", "").strip() in ("1", "true", "yes"):
         h["ngrok-skip-browser-warning"] = "true"
     return h
 
@@ -44,9 +44,9 @@ def chat_completion(
     temperature: float = 0.25,
     timeout_sec: int = 300,
 ) -> ChatResult:
-    base = os.environ.get("TAXONOMY_LLM_BASE_URL", "").strip()
+    base = os.environ.get("LLM_BASE_URL", "").strip()
     if not base:
-        return ChatResult(False, "Missing TAXONOMY_LLM_BASE_URL")
+        return ChatResult(False, "Missing LLM_BASE_URL")
 
     try:
         from forge_composer.taxonomy_llm.thermal_guard import ensure_cool_before_chat
@@ -55,7 +55,7 @@ def chat_completion(
     except ImportError:
         pass
 
-    m = model or os.environ.get("TAXONOMY_LLM_MODEL", "ibm/granite4:tiny-h")
+    m = model or os.environ.get("LLM_MODEL", "ibm/granite4:tiny-h")
     url = chat_url(base)
     body: dict[str, Any] = {"model": m, "temperature": temperature, "messages": messages}
     data = json.dumps(body).encode("utf-8")
@@ -74,7 +74,7 @@ def chat_completion(
     except json.JSONDecodeError:
         return ChatResult(
             False,
-            "Response was not JSON (tunnel HTML interstitial?). Try TAXONOMY_LLM_NGROK_BYPASS=1.",
+            "Response was not JSON (tunnel HTML interstitial?). Try LLM_NGROK_BYPASS=1.",
             raw[:4000],
         )
 

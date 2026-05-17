@@ -1,11 +1,16 @@
 ---
-nav_title: "Wizard 301: Refine"
+
+nav_title: 'Wizard 301: Refine'
 public_publish: true
 audience: public
 product_area: wizard
 tier: '301'
 handbook_area: wizard
 learning_level: '301'
+section: tutorials-301
+status: experimental
+description: 'Wizard 301: Refine — Forge Lenses handbook entry (tutorials-301).'
+page_type: tutorial
 ---
 
 # Wizard 301 — Refine
@@ -33,6 +38,10 @@ Read output, edit notes, refine again. Paste **constraints** and **non-goals** e
 
 - **Refine** is **assistive**: you remain the editor of record; nothing ships without your **Review** step.
 - **Constraints** and **non-goals** belong in your notes so Refine does not “invent” organization policy.
+
+## Verify
+
+After **Refine**, the updated text still reflects **facts the team named** (dates, owners, boundaries). If the model dropped a constraint you need, put it back in notes and run **Refine** again or fix it in **Review & generate**.
 
 ## Recheck loop
 

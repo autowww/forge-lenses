@@ -1,4 +1,5 @@
 ---
+
 nav_title: Lenses overview
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: lenses
 tier: overview
 handbook_area: lenses
 learning_level: overview
+section: product
+status: shipped
+description: Lenses overview — Forge Lenses handbook entry (start).
+page_type: landing
 ---
 
 # Lenses overview
@@ -46,6 +51,23 @@ alt: Lenses server — Classic at /, Forge Studio at /studio/, Wizard inside Stu
 | Daily scan of repos and health | **Classic** `/` |
 | Newer UX, Studio-only flows | **Forge Studio** `/studio/` |
 | Facilitated workshop or export pack | **Wizard** ([Wizard overview](08-wizard-overview.md)) |
+
+### Product map — integrations and Docs Health
+
+| Concern | Where it lives |
+|---------|----------------|
+| **Docs Health** scans & reports | [Docs Health](15-docs-health.md); Studio-focused UI notes in product pages. |
+| **HTTP surfaces for automation** | [Builders overview](builders-api-overview.md), [Schemas and API (builders)](16-schemas-and-api-for-builders.md), generated [HTTP API route catalog](../generated/api-routes.md). |
+| **Environment & knobs** | [Configuration reference](../reference/config-env.md) cross-linked from Enterprise pages. |
+| **Fleet or LLM (optional)** | Configured deliberately — see [LLM and AI setup](13-llm-and-ai-setup.md) and enterprise guides. |
+
+### Maintainer vs product documentation boundary
+
+Everything under **`docs/handbook-public/`**, **`docs/reference/`** (entries listed in **`docs/nav.yml`**), **`docs/generated/`** mirrors, is **oriented toward readers adopting Lenses**.
+
+**Contributor-only** drafts, ADRs, raw strategy inventories, and publishing workflows live under **`docs/maintainer/`**, **`docs/strategy/`**, and related trees in the **[GitHub repository](https://github.com/autowww/forge-lenses)**. They summarize into public pages instead of leaking as primary reader links.
+
+When you finish this overview and install, **[Pick your path](role-based-paths.md)** helps choose Studio, Wizard (experimental), Enterprise, or builder tracks.
 
 ## When to use it
 

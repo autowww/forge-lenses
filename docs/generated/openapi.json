@@ -1,0 +1,1724 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Forge Lenses HTTP API (derived)",
+    "version": "1",
+    "description": "Machine-derived **partial** OpenAPI rollup from docs/generated/api-routes.json \u2014 method inventory only. Handlers reuse query strings for actions; authoritative semantics remain in lenses/serve.py and the handbook (Schemas and API for builders).",
+    "contact": {
+      "name": "Forge Lenses",
+      "url": "https://github.com/autowww/forge-lenses"
+    },
+    "license": {
+      "name": "See forge-lenses repository LICENSE"
+    },
+    "x-lenses-docs-coverage": "partial-route-inventory-only",
+    "x-lenses-source": "generator/export_openapi.py"
+  },
+  "tags": [
+    {
+      "name": "forge-lenses-derived",
+      "description": "Emitted from tracked route signatures."
+    }
+  ],
+  "paths": {
+    "/PREFIX-/api/agent-runtime": {
+      "get": {
+        "summary": "PREFIX:/api/agent-runtime",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/agent-runtime",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/agents": {
+      "get": {
+        "summary": "PREFIX:/api/agents",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/agents",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/artifacts": {
+      "get": {
+        "summary": "PREFIX:/api/artifacts",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/artifacts",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/assay-packets": {
+      "get": {
+        "summary": "PREFIX:/api/assay-packets",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/blueprints/wizard/session": {
+      "get": {
+        "summary": "PREFIX:/api/blueprints/wizard/session",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/blueprints/wizard/session",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "put": {
+        "summary": "PREFIX:/api/blueprints/wizard/session",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/bridge": {
+      "get": {
+        "summary": "PREFIX:/api/bridge",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/ceremonies": {
+      "get": {
+        "summary": "PREFIX:/api/ceremonies",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/ceremonies",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/decisions": {
+      "get": {
+        "summary": "PREFIX:/api/decisions",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/decisions",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/evidence": {
+      "get": {
+        "summary": "PREFIX:/api/evidence",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/execution-sessions": {
+      "get": {
+        "summary": "PREFIX:/api/execution-sessions",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/execution-sessions",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/handoffs": {
+      "get": {
+        "summary": "PREFIX:/api/handoffs",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/handoffs",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/launches": {
+      "get": {
+        "summary": "PREFIX:/api/launches",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/launches",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/methodology": {
+      "get": {
+        "summary": "PREFIX:/api/methodology",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/outcomes": {
+      "get": {
+        "summary": "PREFIX:/api/outcomes",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "PREFIX:/api/outcomes",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/pdlc/bridge": {
+      "get": {
+        "summary": "PREFIX:/api/pdlc/bridge",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/PREFIX-/api/review-packs": {
+      "get": {
+        "summary": "PREFIX:/api/review-packs",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/access/policy": {
+      "get": {
+        "summary": "/api/access/policy",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/access/set-member": {
+      "post": {
+        "summary": "/api/access/set-member",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/actions/run": {
+      "post": {
+        "summary": "/api/actions/run",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/assay-packets": {
+      "post": {
+        "summary": "/api/assay-packets",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/auth/github": {
+      "post": {
+        "summary": "/api/auth/github",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "/api/auth/logout",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/auth/oidc/callback": {
+      "get": {
+        "summary": "/api/auth/oidc/callback",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/auth/oidc/login": {
+      "get": {
+        "summary": "/api/auth/oidc/login",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/auth/oidc/status": {
+      "get": {
+        "summary": "/api/auth/oidc/status",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/auth/status": {
+      "get": {
+        "summary": "/api/auth/status",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/enabled": {
+      "get": {
+        "summary": "/api/blueprints/wizard/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/artifact-export": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/artifact-export",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/artifact-recheck": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/artifact-recheck",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/artifact-review": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/artifact-review",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/clarify-suggest": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/clarify-suggest",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/create-repo": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/create-repo",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/cursor-launch-pack/export": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/cursor-launch-pack/export",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/cursor-launch-pack/preview": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/cursor-launch-pack/preview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/generate-artifacts": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/generate-artifacts",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/interpret": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/interpret",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/session/-id-/refine": {
+      "post": {
+        "summary": "/api/blueprints/wizard/session/<id>/refine",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/sessions": {
+      "get": {
+        "summary": "/api/blueprints/wizard/sessions",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/blueprints/wizard/telemetry": {
+      "post": {
+        "summary": "/api/blueprints/wizard/telemetry",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/bridge/links": {
+      "post": {
+        "summary": "/api/bridge/links",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/chart-data/overview": {
+      "get": {
+        "summary": "/api/chart-data/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/cicd/control-tower": {
+      "get": {
+        "summary": "/api/cicd/control-tower",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/cicd/enabled": {
+      "get": {
+        "summary": "/api/cicd/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/connectors/health": {
+      "get": {
+        "summary": "/api/connectors/health",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/cross-team-release/enabled": {
+      "get": {
+        "summary": "/api/cross-team-release/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/cross-team-release/overview": {
+      "get": {
+        "summary": "/api/cross-team-release/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/delivery/enabled": {
+      "get": {
+        "summary": "/api/delivery/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/delivery/overview": {
+      "get": {
+        "summary": "/api/delivery/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/devsecops/enabled": {
+      "get": {
+        "summary": "/api/devsecops/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/devsecops/overview": {
+      "get": {
+        "summary": "/api/devsecops/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/docs-health/live-sessions": {
+      "get": {
+        "summary": "/api/docs-health/live-sessions",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/docs-health/summary": {
+      "get": {
+        "summary": "/api/docs-health/summary",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/docs-health/work-items": {
+      "get": {
+        "summary": "/api/docs-health/work-items",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/fleet/connect-forge-llm": {
+      "post": {
+        "summary": "/api/fleet/connect-forge-llm",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/fleet/discover": {
+      "post": {
+        "summary": "/api/fleet/discover",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/fleet/node-detail": {
+      "post": {
+        "summary": "/api/fleet/node-detail",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/fleet/probe": {
+      "post": {
+        "summary": "/api/fleet/probe",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/fleet/settings": {
+      "get": {
+        "summary": "/api/fleet/settings",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/fleet/settings",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/fleet/test-fleet": {
+      "post": {
+        "summary": "/api/fleet/test-fleet",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/forge-work-model": {
+      "get": {
+        "summary": "/api/forge-work-model",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/forgesdlc-blog": {
+      "get": {
+        "summary": "/api/forgesdlc-blog",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/forgesdlc-blog/content": {
+      "get": {
+        "summary": "/api/forgesdlc-blog/content",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/forgesdlc-blog/sync": {
+      "post": {
+        "summary": "/api/forgesdlc-blog/sync",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/governance/audit": {
+      "get": {
+        "summary": "/api/governance/audit",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/governance/scopes": {
+      "get": {
+        "summary": "/api/governance/scopes",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/chat": {
+      "post": {
+        "summary": "/api/llm/chat",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/diagnostics": {
+      "get": {
+        "summary": "/api/llm/diagnostics",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/model-catalog-notifications": {
+      "get": {
+        "summary": "/api/llm/model-catalog-notifications",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/ollama-action": {
+      "post": {
+        "summary": "/api/llm/ollama-action",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/ollama-status": {
+      "get": {
+        "summary": "/api/llm/ollama-status",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/provider-probe": {
+      "post": {
+        "summary": "/api/llm/provider-probe",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/providers": {
+      "get": {
+        "summary": "/api/llm/providers",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/routing-preview": {
+      "get": {
+        "summary": "/api/llm/routing-preview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/routing-preview-draft": {
+      "post": {
+        "summary": "/api/llm/routing-preview-draft",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/settings": {
+      "get": {
+        "summary": "/api/llm/settings",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/llm/settings",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/llm/usage": {
+      "get": {
+        "summary": "/api/llm/usage",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/ops-delivery/enabled": {
+      "get": {
+        "summary": "/api/ops-delivery/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/ops-delivery/overview": {
+      "get": {
+        "summary": "/api/ops-delivery/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/orchestration/enabled": {
+      "get": {
+        "summary": "/api/orchestration/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/orchestration/entity": {
+      "get": {
+        "summary": "/api/orchestration/entity",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/orchestration/portfolio-context": {
+      "get": {
+        "summary": "/api/orchestration/portfolio-context",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/orchestration/seed-demo": {
+      "post": {
+        "summary": "/api/orchestration/seed-demo",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/orchestration/status": {
+      "get": {
+        "summary": "/api/orchestration/status",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/orchestration/trace": {
+      "get": {
+        "summary": "/api/orchestration/trace",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/plan-spine": {
+      "get": {
+        "summary": "/api/plan-spine",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/quality/enabled": {
+      "get": {
+        "summary": "/api/quality/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/quality/overview": {
+      "get": {
+        "summary": "/api/quality/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/repo-workflow/enabled": {
+      "get": {
+        "summary": "/api/repo-workflow/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/repo-workflow/overview": {
+      "get": {
+        "summary": "/api/repo-workflow/overview",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/review-packs": {
+      "post": {
+        "summary": "/api/review-packs",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/roadmap-outline": {
+      "get": {
+        "summary": "/api/roadmap-outline",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/roadmap-section": {
+      "get": {
+        "summary": "/api/roadmap-section",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/roadmaps-matrix": {
+      "get": {
+        "summary": "/api/roadmaps-matrix",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sdlc-copilot/chat": {
+      "post": {
+        "summary": "/api/sdlc-copilot/chat",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sdlc-copilot/chat-async": {
+      "post": {
+        "summary": "/api/sdlc-copilot/chat-async",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sdlc-copilot/chat-stream": {
+      "get": {
+        "summary": "/api/sdlc-copilot/chat-stream",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sdlc-copilot/commit-proposal": {
+      "post": {
+        "summary": "/api/sdlc-copilot/commit-proposal",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sdlc-copilot/enabled": {
+      "get": {
+        "summary": "/api/sdlc-copilot/enabled",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sdlc-copilot/topic-archive": {
+      "post": {
+        "summary": "/api/sdlc-copilot/topic-archive",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "summary": "/api/search",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/search/ingest": {
+      "post": {
+        "summary": "/api/search/ingest",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/search/reindex": {
+      "get": {
+        "summary": "/api/search/reindex",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/search/reindex",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sticker-board": {
+      "get": {
+        "summary": "/api/sticker-board",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/sticker-board",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/sticker-board-registry": {
+      "get": {
+        "summary": "/api/sticker-board-registry",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/sticker-board-registry",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/story-hub": {
+      "get": {
+        "summary": "/api/story-hub",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/timeline-context": {
+      "get": {
+        "summary": "/api/timeline-context",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/today-charge": {
+      "get": {
+        "summary": "/api/today-charge",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/toolset/run": {
+      "post": {
+        "summary": "/api/toolset/run",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/tutorials-index": {
+      "get": {
+        "summary": "/api/tutorials-index",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/wbs-file": {
+      "get": {
+        "summary": "/api/wbs-file",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/wbs-management": {
+      "get": {
+        "summary": "/api/wbs-management",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/wbs/create": {
+      "post": {
+        "summary": "/api/wbs/create",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/workflow-context": {
+      "get": {
+        "summary": "/api/workflow-context",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/workspace-md-file": {
+      "get": {
+        "summary": "/api/workspace-md-file",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/workspace-md-index": {
+      "get": {
+        "summary": "/api/workspace-md-index",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    },
+    "/api/workspace-state": {
+      "get": {
+        "summary": "/api/workspace-state",
+        "responses": {
+          "200": {
+            "description": "Success (schema varies by handler \u2014 see handbook)."
+          },
+          "default": {
+            "description": "Structured error envelopes mirror https://lenses.forgesdlc.com/schemas/api-error.schema.json."
+          }
+        }
+      }
+    }
+  },
+  "x-lenses-route-count": 133,
+  "x-lenses-route-catalog-version": 1
+}

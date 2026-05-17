@@ -1,0 +1,27 @@
+# Substrings expected in docs/handbook-public/14-studio-route-map.md (helps catch drift vs lenses-enterprise/src/App.tsx).
+version: 1
+reference_source: lenses-enterprise/src/App.tsx
+needles:
+  - overview/charts
+  - projects
+  - docs-health
+  - blueprints/wizard
+  - settings/llm
+  - governance
+  - toolset
+  - websites
+  - wbs
+  - plan/matrix
+  - timeline
+  - board
+  - tutorials
+  - workspace-md
+  - knowledge/methodology
+  - agentic-bridge
+  - roadmap-section
+  - feature-showcase
+  - blog
+  - search
+  - chat
+  - fleet
+  - view/docs

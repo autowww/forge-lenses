@@ -9,10 +9,13 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from 'react'
 import type {
+  TileDropdownDensity,
+  TileDropdownMedia,
   TileDropdownOption,
   TileDropdownRenderTile,
   TileRenderContext,
@@ -32,6 +35,12 @@ export type TileDropdownControlProps = {
   emptyMessage?: string
   /** Max height of the option panel (scroll). */
   panelMaxHeight?: string
+  /** Extra class names on the listbox panel (e.g. width utilities). */
+  panelClassName?: string
+  /** CSS min-width on the panel (hero tiles often need a wider panel than the trigger). */
+  panelMinWidth?: string
+  /** Default tile layout; per-option `density` overrides. */
+  tileDensity?: TileDropdownDensity
   /** Optional `aria-label` on the trigger when there is no visible `label` prop. */
   ariaLabel?: string
   /** `aria-label` on the listbox when `label` is omitted (default: "Options"). */
@@ -40,39 +49,134 @@ export type TileDropdownControlProps = {
   renderTile?: TileDropdownRenderTile
 }
 
-function enabledIndices(options: TileDropdownOption[]): number[] {
-  return options.map((o, i) => (o.disabled ? -1 : i)).filter((i) => i >= 0)
+export function resolveTileDensity(
+  option: TileDropdownOption,
+  controlDensity: TileDropdownDensity,
+): TileDropdownDensity {
+  return option.density ?? controlDensity
 }
 
-function defaultRenderTile(option: TileDropdownOption, _ctx: TileRenderContext): ReactNode {
-  const statusClass = option.status?.variant
+function triggerSummaryText(option: TileDropdownOption): string {
+  if (option.triggerSummary) return option.triggerSummary
+  if (option.subtitle) return `${option.title} — ${option.subtitle}`
+  return option.title
+}
+
+function heroBodyText(option: TileDropdownOption): string | undefined {
+  const raw = option.body ?? option.description
+  if (raw == null || String(raw).trim() === '') return undefined
+  return String(raw)
+}
+
+function compactBodyText(option: TileDropdownOption): string | undefined {
+  const raw = option.description ?? option.body
+  if (raw == null || String(raw).trim() === '') return undefined
+  return String(raw)
+}
+
+function TileMedia({ media }: { media: TileDropdownMedia }) {
+  const imgClass =
+    media.kind === 'icon'
+      ? 'ks-tile-dropdown__tile-media-img ks-tile-dropdown__tile-media-img--icon'
+      : 'ks-tile-dropdown__tile-media-img ks-tile-dropdown__tile-media-img--photo'
+  const decorative = media.alt.trim() === ''
+  return (
+    <div className="ks-tile-dropdown__tile-media">
+      <img
+        className={imgClass}
+        src={media.src}
+        alt={decorative ? '' : media.alt}
+        loading="lazy"
+        decoding="async"
+        {...(decorative ? { role: 'presentation' as const } : {})}
+        onError={(e) => {
+          e.currentTarget.hidden = true
+        }}
+      />
+    </div>
+  )
+}
+
+function statusClassName(option: TileDropdownOption): string {
+  return option.status?.variant
     ? `ks-tile-dropdown__status ks-tile-dropdown__status--${option.status.variant}`
     : 'ks-tile-dropdown__status ks-tile-dropdown__status--default'
+}
+
+function defaultRenderTile(
+  option: TileDropdownOption,
+  _ctx: TileRenderContext,
+  density: TileDropdownDensity,
+): ReactNode {
+  const statusClass = statusClassName(option)
+
+  if (density === 'compact') {
+    const desc = compactBodyText(option)
+    return (
+      <>
+        <div className="ks-tile-dropdown__tile-head">
+          <span className="ks-tile-dropdown__tile-title">{option.title}</span>
+          {option.status ? <span className={statusClass}>{option.status.text}</span> : null}
+        </div>
+        {option.subtitle ? (
+          <p className="ks-tile-dropdown__tile-subtitle">{option.subtitle}</p>
+        ) : null}
+        {desc ? (
+          <p className="ks-tile-dropdown__tile-desc" style={{ whiteSpace: 'pre-wrap' }}>
+            {desc}
+          </p>
+        ) : null}
+        {option.meta && option.meta.length > 0 ? (
+          <dl className="ks-tile-dropdown__meta">
+            {option.meta.map((row) => (
+              <div key={row.label} className="ks-tile-dropdown__meta-row">
+                <dt>{row.label}</dt>
+                <dd>{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+      </>
+    )
+  }
+
+  const leadLine = option.lead ?? option.subtitle
+  const body = heroBodyText(option)
 
   return (
-    <>
-      <div className="ks-tile-dropdown__tile-head">
-        <span className="ks-tile-dropdown__tile-title">{option.title}</span>
-        {option.status ? <span className={statusClass}>{option.status.text}</span> : null}
+    <div className="ks-tile-dropdown__tile-hero-inner">
+      {option.media ? <TileMedia media={option.media} /> : null}
+      <div className="ks-tile-dropdown__tile-hero-copy">
+        {option.kicker ? (
+          <p className="ks-tile-dropdown__tile-kicker">{option.kicker}</p>
+        ) : null}
+        <div className="ks-tile-dropdown__tile-head">
+          <span className="ks-tile-dropdown__tile-title">{option.title}</span>
+          {option.status ? <span className={statusClass}>{option.status.text}</span> : null}
+        </div>
+        {leadLine ? <p className="ks-tile-dropdown__tile-lead">{leadLine}</p> : null}
+        {body ? (
+          <p className="ks-tile-dropdown__tile-body" style={{ whiteSpace: 'pre-wrap' }}>
+            {body}
+          </p>
+        ) : null}
+        {option.meta && option.meta.length > 0 ? (
+          <dl className="ks-tile-dropdown__meta ks-tile-dropdown__meta--hero">
+            {option.meta.map((row) => (
+              <div key={row.label} className="ks-tile-dropdown__meta-row">
+                <dt>{row.label}</dt>
+                <dd>{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
       </div>
-      {option.subtitle ? (
-        <p className="ks-tile-dropdown__tile-subtitle">{option.subtitle}</p>
-      ) : null}
-      {option.description ? (
-        <p className="ks-tile-dropdown__tile-desc">{option.description}</p>
-      ) : null}
-      {option.meta && option.meta.length > 0 ? (
-        <dl className="ks-tile-dropdown__meta">
-          {option.meta.map((row) => (
-            <div key={row.label} className="ks-tile-dropdown__meta-row">
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
-    </>
+    </div>
   )
+}
+
+function enabledIndices(options: TileDropdownOption[]): number[] {
+  return options.map((o, i) => (o.disabled ? -1 : i)).filter((i) => i >= 0)
 }
 
 export function TileDropdownControl({
@@ -86,6 +190,9 @@ export function TileDropdownControl({
   disabled = false,
   emptyMessage = 'No options',
   panelMaxHeight = 'min(70vh, 22rem)',
+  panelClassName = '',
+  panelMinWidth,
+  tileDensity = 'compact',
   ariaLabel,
   panelAriaLabel = 'Options',
   renderTile,
@@ -208,20 +315,31 @@ export function TileDropdownControl({
     }
   }
 
-  const triggerText = selected
-    ? selected.subtitle
-      ? `${selected.title} — ${selected.subtitle}`
-      : selected.title
-    : placeholder
+  const triggerText = selected ? triggerSummaryText(selected) : placeholder
 
-  const defaultTriggerAria = `Select option. ${selected ? `Current: ${selected.title}` : placeholder}`
+  const defaultTriggerAria = `Select option. ${selected ? `Current: ${triggerSummaryText(selected)}` : placeholder}`
   const triggerAriaResolved = ariaLabel ?? (label ? undefined : defaultTriggerAria)
 
-  const rootClass = ['ks-tile-dropdown', open ? 'ks-tile-dropdown--open' : '', className]
+  const rootClass = [
+    'ks-tile-dropdown',
+    open ? 'ks-tile-dropdown--open' : '',
+    tileDensity === 'hero' ? 'ks-tile-dropdown--hero-root' : '',
+    className,
+  ]
     .filter(Boolean)
     .join(' ')
 
-  const renderBody = renderTile ?? defaultRenderTile
+  const panelClass = ['ks-tile-dropdown__panel', panelClassName].filter(Boolean).join(' ')
+
+  const panelStyle = useMemo(() => {
+    const s: CSSProperties = { maxHeight: panelMaxHeight }
+    if (panelMinWidth) s.minWidth = panelMinWidth
+    return s
+  }, [panelMaxHeight, panelMinWidth])
+
+  const renderBody: TileDropdownRenderTile =
+    renderTile ??
+    ((opt, ctx) => defaultRenderTile(opt, ctx, resolveTileDensity(opt, tileDensity)))
 
   return (
     <div ref={rootRef} className={rootClass}>
@@ -249,13 +367,13 @@ export function TileDropdownControl({
 
       <div
         id={panelId}
-        className="ks-tile-dropdown__panel"
+        className={panelClass}
         hidden={!open}
         role="listbox"
         aria-labelledby={label ? labelId : undefined}
         aria-label={label ? undefined : panelAriaLabel}
         tabIndex={-1}
-        style={{ maxHeight: panelMaxHeight }}
+        style={panelStyle}
         onKeyDown={onPanelKeyDown}
       >
         {options.length === 0 ? (
@@ -266,6 +384,7 @@ export function TileDropdownControl({
             const isHighlighted = optionIndex === highlight
             const ctx: TileRenderContext = { selected: isSelected, highlighted: isHighlighted }
             const isDisabled = !!opt.disabled
+            const effectiveDensity = resolveTileDensity(opt, tileDensity)
 
             return (
               <div
@@ -278,8 +397,10 @@ export function TileDropdownControl({
                 aria-selected={isSelected}
                 aria-disabled={isDisabled}
                 data-highlighted={isHighlighted ? 'true' : undefined}
+                data-tile-density={effectiveDensity}
                 className={
                   'ks-tile-dropdown__tile' +
+                  (effectiveDensity === 'hero' ? ' ks-tile-dropdown__tile--hero' : '') +
                   (isSelected ? ' ks-tile-dropdown__tile--selected' : '') +
                   (isHighlighted ? ' ks-tile-dropdown__tile--highlighted' : '') +
                   (isDisabled ? ' ks-tile-dropdown__tile--disabled' : '')

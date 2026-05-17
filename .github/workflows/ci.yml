@@ -10,6 +10,22 @@ on:
     branches: [main, master]
 
 jobs:
+  docs-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Markdown + PyYAML (handbook build)
+        run: pip install "markdown>=3.5" PyYAML
+      - name: Documentation gate (public build + nav + links + diagrams + API coverage)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: bash scripts/check-docs.sh
+
   python-tests:
     runs-on: ubuntu-latest
     steps:
@@ -18,7 +34,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install pytest PyYAML "markdown>=3.5"
+        run: pip install pytest PyYAML "markdown>=3.5" jsonschema referencing
       - name: Pytest (full tests/ tree)
         env:
           PYTHONPATH: ${{ github.workspace }}

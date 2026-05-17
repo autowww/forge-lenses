@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/fleet-job-descriptor.schema.json",
+  "title": "Forge Fleet job descriptor (handbook contract)",
+  "x-lenses-stability": "experimental",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_kind", "status"],
+  "properties": {
+    "job_kind": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Logical job name surfaced in Studio or automation."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "succeeded", "failed"]
+    },
+    "trace_token": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "Opaque correlation identifier for downstream logs."
+    }
+  }
+}

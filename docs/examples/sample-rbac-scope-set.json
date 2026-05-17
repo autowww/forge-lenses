@@ -1,0 +1,4 @@
+{
+  "scopes": ["studio.projects.read", "docs_health.scan/run"],
+  "actor": "automation-runner@corp.example.com"
+}

@@ -1,0 +1,17 @@
+# High-risk environment variables (documentation contract)
+# Each `name` MUST appear in docs/reference/config-env.md (validated in tests).
+
+version: 1
+variables:
+  - name: LENSES_ALLOW_ACTIONS
+    risk: high
+  - name: LENSES_ALLOW_GIT_ACTIONS
+    risk: critical
+  - name: LENSES_PORT
+    risk: medium
+  - name: LENSES_OIDC_ISSUER
+    risk: high
+  - name: LENSES_OIDC_CLIENT_ID
+    risk: high
+  - name: LENSES_OIDC_REDIRECT_PATH
+    risk: high

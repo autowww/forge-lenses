@@ -1,11 +1,13 @@
 # forge-lenses
 
+## Overview
+
 Public repo: **`autowww/forge-lenses`** on GitHub — local workspace visualization for **Blueprints** / **ForgeSDLC** development (Python server on **:8080**, dynamic dashboard, ks-built docs under `/docs/`).
 
 - **Dynamic dashboard** — reload to refresh (no server-side cache in v1).
 - **Reference docs** — `generator/build-lenses-docs.py` → `lenses-docs/`, served under `/docs/`.
 - **Tutorials** — Markdown in `lenses/fa-tutorial-md/`; run `./build-fa-tutorials.sh` (forge-autodoc) → `lenses/tutorials/`, synced to repo-root `tutorial/` for dashboard **Tutorial** links.
-- **Not deployed to Firebase.**
+- **Firebase:** the live **Lenses** app and dashboard are local-first; a **private static handbook** (Markdown → HTML) deploys separately from repo **`autowww/forge-lenses-website`** to Firebase project **`lenses-d0fdb`**. See [`docs/maintainer/forge-lenses-website-handbook.md`](docs/maintainer/forge-lenses-website-handbook.md).
 
 The Python package inside this repo is still named **`lenses`** (`python3 -m lenses`).
 
@@ -19,14 +21,15 @@ The Python package inside this repo is still named **`lenses`** (`python3 -m len
 | `blueprints/` | Submodule (framework source) |
 | `lenses/` | Python package (`serve`, `scan`, …) |
 | `lenses/website/` | Markdown source for **maintainer** reference pages (merged with `docs/` in `build-lenses-docs.py`) |
-| `docs/website/` | User-facing handbook source published on **blueprints.forgesdlc.com/lenses/** (not the full internal `docs/` tree) |
+| `docs/handbook-public/` + `docs/index.md` | **Product docs** published on **[lenses.forgesdlc.com](https://lenses.forgesdlc.com/)** (manifest: `docs/nav.yml`) |
+| `docs/website/` | Maintainer-facing Studio/dashboard Markdown (full static build / GitHub) |
 | `lenses/fa-tutorial-md/` | Markdown source for **forge-autodoc** tutorials |
 | `lenses/tutorials/` | Generated tutorial HTML (gitignored); synced to `tutorial/` at repo root |
 | `tutorial/` | Synced tutorial output for `/local-site/<repo>/tutorial/…` (gitignored) |
 | `generator/build-lenses-docs.py` | Builds `lenses-docs/` for `/docs/` |
 | `build-fa-tutorials.sh` | Builds tutorials via **fa** + rsync to `tutorial/` |
 | `fa-handbook.yaml` | forge-autodoc config (paths under `lenses/`) |
-| `docs/` | Internal maintainer handbook (`index.md` hub) + `docs/website/` user guide; see `generator/build-lenses-docs.py` |
+| `docs/` | Product landing (`index.md`), **`handbook-public/`**, reference; maintainer-only pages under `docs/maintainer/` |
 | `scripts/setup.sh` | Init nested submodules + optional `lenses-startup.sh` |
 | `scripts/lenses-startup.sh` | Host-repo `.lenses-local/` + `.lenses-repo/<github-login>/` |
 | `scripts/run-lenses.sh` | Build docs (if `markdown`) + start server |

@@ -1,4 +1,5 @@
 ---
+
 nav_title: Studio 101
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: studio
 tier: '101'
 handbook_area: studio
 learning_level: '101'
+section: tutorials-101
+status: shipped
+description: Studio 101 — Forge Lenses handbook entry (tutorials-101).
+page_type: tutorial
 ---
 
 # Studio 101 — First session
@@ -17,6 +22,15 @@ Your **first successful visit** to Forge Studio: confirm **`/studio/`** loads, t
 ## When to use it
 
 Right after [Install and run](02-install-and-run.md), before deeper Studio or Wizard work.
+
+## Time and checks
+
+| | |
+|-|--|
+| **Time** | **5–10 minutes** once the server is up. |
+| **Check** | `/studio/` returns **200** and the shell renders without a blank white screen. |
+| **Scenario** | You just finished install and need proof Studio is viable before inviting a teammate. |
+| **Next** | [Studio 201](06-studio-201.md) for daily review habits. |
 
 ## Prerequisites
 
@@ -32,6 +46,20 @@ Right after [Install and run](02-install-and-run.md), before deeper Studio or Wi
 | **Plans / Flow** | Delivery-oriented views (names vary) |
 
 Exact wording changes between builds; use this table only to orient, not as an API.
+
+```blueprint-diagram-ascii
+key: linear
+alt: Studio first session flow
+caption: Open Studio, confirm workspace, open one project
+
++-------------+     +------------------+     +----------------+
+| Open /studio| --> | Confirm workspace | --> | Open a project |
++-------------+     +------------------+     +----------------+
+```
+
+## Expected outcome
+
+You leave this tutorial with **`/studio/`** returning HTTP **200**, visible chrome (navigation + content panels), and confidence that one workspace/project surface renders live data—matching the baseline captured in [Install and run](02-install-and-run.md).
 
 ## First session flow
 
@@ -49,10 +77,14 @@ Exact wording changes between builds; use this table only to orient, not as an A
 
 3. Use the **sidebar** to open **one** primary area (for example **Projects** or **Workspace**) and confirm content appears.
 
-## How to verify success
+## Verify
 
 - **`/studio/`** shows chrome and at least one content area without errors.
 - You can repeat the navigation without reading source files.
+
+## Recover
+
+If you still see a **blank `/studio/` page**, restart the server, confirm asset URLs resolve, then walk through [Troubleshooting](12-troubleshooting.md) starting with **Fast triage**.
 
 ## What to do next
 

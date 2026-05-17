@@ -1,4 +1,5 @@
 ---
+
 nav_title: When projects or scans look wrong
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: lenses
 tier: overview
 handbook_area: lenses
 learning_level: '201'
+section: get-started
+status: shipped
+description: When projects or scans look wrong — Forge Lenses handbook entry (start).
+page_type: how-to
 ---
 
 # Workspace setup — When projects or scans look wrong

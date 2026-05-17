@@ -1,4 +1,5 @@
 ---
+
 nav_title: Wizard 101
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: wizard
 tier: '101'
 handbook_area: wizard
 learning_level: '101'
+section: tutorials-101
+status: experimental
+description: Wizard 101 — Forge Lenses handbook entry (tutorials-101).
+page_type: tutorial
 ---
 
 # Wizard 101 — First session
@@ -14,9 +19,23 @@ learning_level: '101'
 
 Your **first** run through the Blueprints Wizard: open the hub, create a session, understand the **twelve steps**, and complete one short **worked example**.
 
+```blueprint-diagram
+key: state
+alt: Wizard steps advancing from hub through assess refine review without leaving Studio
+caption: Treat the twelve-step pipeline as a state machine with explicit recovery paths
+```
+
 ## When to use it
 
 After [Wizard overview](08-wizard-overview.md) and [Studio 101](05-studio-101.md).
+
+## Time and checks
+
+| | |
+|-|--|
+| **Time** | **15–25 minutes** for a first neutral session (no LLM calls required for navigation). |
+| **Verify** | Hub lists your session; deep link `/studio/blueprints/wizard/session/<id>` renders the step chrome. |
+| **Scenario** | You want to learn the twelve-step UX on a **throwaway** Blueprints topic without exporting bundles to GitHub. |
 
 ## Prerequisites
 

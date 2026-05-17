@@ -1,4 +1,4 @@
-"""Optional live LLM test for file compare (skipped without TAXONOMY_LLM_BASE_URL)."""
+"""Optional live LLM test for file compare (skipped without LLM_BASE_URL)."""
 
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ FX = ROOT / "tests/fixtures/file_compare_llm"
 
 
 @pytest.mark.skipif(
-    not os.environ.get("TAXONOMY_LLM_BASE_URL", "").strip(),
-    reason="Set TAXONOMY_LLM_BASE_URL to run live file-compare LLM pipeline test",
+    not os.environ.get("LLM_BASE_URL", "").strip(),
+    reason="Set LLM_BASE_URL to run live file-compare LLM pipeline test",
 )
 def test_run_llm_pipeline_on_fixtures() -> None:
     profile = load_profile(None)
@@ -32,7 +32,7 @@ def test_run_llm_pipeline_on_fixtures() -> None:
         evidence=ev,
         fa=fa,
         fb=fb,
-        model=os.environ.get("TAXONOMY_LLM_MODEL") or None,
+        model=os.environ.get("LLM_MODEL") or None,
         temperature=0.2,
         excerpt_cap=8000,
         debug=False,

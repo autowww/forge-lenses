@@ -1,11 +1,16 @@
 ---
-nav_title: "Wizard 301: Cursor Launch Pack"
+
+nav_title: 'Wizard 301: Cursor Launch Pack'
 public_publish: true
 audience: public
 product_area: wizard
 tier: '301'
 handbook_area: wizard
 learning_level: '301'
+section: tutorials-201
+status: experimental
+description: 'Wizard 301: Cursor Launch Pack — Forge Lenses handbook entry (tutorials-201).'
+page_type: tutorial
 ---
 
 # Wizard 301 — Cursor Launch Pack
@@ -35,6 +40,10 @@ Some environments offer extra steps (for example creating a remote repository af
 If your team maintains the server, advanced setup lives with the **forge-lenses** project; everyday users should rely on this handbook and [Troubleshooting](12-troubleshooting.md).
 
 **Tie-in:** The **worked example session** on [Wizard 301 — Advanced usage](11-wizard-301.md) ends with a **Launch Pack** that carries summary, tasks, and constraints into an editor — the same handoff shape this page describes step by step.
+
+## Verify
+
+You can export or copy the **Launch Pack** without bypassing **strict** mode unintentionally. The bundle includes the slices you expect (summary, tasks, constraints); if export was blocked earlier, the UI listed cause is resolved or you chose a smaller slice on purpose.
 
 ## What to do next
 

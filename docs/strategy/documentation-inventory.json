@@ -1,0 +1,3013 @@
+{
+  "generated_at": "2026-05-17T09:45:14Z",
+  "repo": "forge-lenses",
+  "git_commit": "fbd5d681f13ca156b7eec681c6889aab17897723",
+  "source_nav_path": "docs/nav.yml",
+  "nav_sha256": "1a3a5b8457f139117021870ecab7987f1d2a64147ba8cac3653766531ffbb67c",
+  "nav_entry_count_manifest": 83,
+  "effective_public_nav_page_count": 83,
+  "suppressed_nav_page_count": 0,
+  "suppressed_pages": [],
+  "diagram_public_page_hits_approx": 29,
+  "approx_sum_word_counts_handbook_nav": 26321,
+  "schema_file_count": 14,
+  "sample_json_example_count": 14,
+  "generated_api_routes_json_sha256": "e37fae07126446217cccd47120344a486f9b448727cabd3f80bcb05f67736f78",
+  "tutorial_signal_hits_approx": {
+    "verify_hits": 48,
+    "recover_hits": 19
+  },
+  "nav_manifest_version": 1,
+  "public_nav_page_count": 83,
+  "api_routes": {
+    "count": 133,
+    "sha256_prefix": "4aa5a8425ccca6c7",
+    "methods": [
+      "GET",
+      "POST",
+      "PUT"
+    ]
+  },
+  "api_route_families": {
+    "/api/access": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/actions": {
+      "POST": 1
+    },
+    "/api/agent-runtime": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/agents": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/artifacts": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/assay-packets": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/auth": {
+      "GET": 4,
+      "POST": 2
+    },
+    "/api/blueprints": {
+      "GET": 3,
+      "POST": 13,
+      "PUT": 1
+    },
+    "/api/bridge": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/ceremonies": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/chart-data": {
+      "GET": 1
+    },
+    "/api/cicd": {
+      "GET": 2
+    },
+    "/api/connectors": {
+      "GET": 1
+    },
+    "/api/cross-team-release": {
+      "GET": 2
+    },
+    "/api/decisions": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/delivery": {
+      "GET": 2
+    },
+    "/api/devsecops": {
+      "GET": 2
+    },
+    "/api/docs-health": {
+      "GET": 3
+    },
+    "/api/evidence": {
+      "GET": 1
+    },
+    "/api/execution-sessions": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/fleet": {
+      "GET": 1,
+      "POST": 6
+    },
+    "/api/forge-work-model": {
+      "GET": 1
+    },
+    "/api/forgesdlc-blog": {
+      "GET": 2,
+      "POST": 1
+    },
+    "/api/governance": {
+      "GET": 2
+    },
+    "/api/handoffs": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/launches": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/llm": {
+      "GET": 7,
+      "POST": 5
+    },
+    "/api/methodology": {
+      "GET": 1
+    },
+    "/api/ops-delivery": {
+      "GET": 2
+    },
+    "/api/orchestration": {
+      "GET": 5,
+      "POST": 1
+    },
+    "/api/outcomes": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/pdlc": {
+      "GET": 1
+    },
+    "/api/plan-spine": {
+      "GET": 1
+    },
+    "/api/quality": {
+      "GET": 2
+    },
+    "/api/repo-workflow": {
+      "GET": 2
+    },
+    "/api/review-packs": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/roadmap-outline": {
+      "GET": 1
+    },
+    "/api/roadmap-section": {
+      "GET": 1
+    },
+    "/api/roadmaps-matrix": {
+      "GET": 1
+    },
+    "/api/sdlc-copilot": {
+      "GET": 2,
+      "POST": 4
+    },
+    "/api/search": {
+      "GET": 2,
+      "POST": 2
+    },
+    "/api/sticker-board": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/sticker-board-registry": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/story-hub": {
+      "GET": 1
+    },
+    "/api/timeline-context": {
+      "GET": 1
+    },
+    "/api/today-charge": {
+      "GET": 1
+    },
+    "/api/toolset": {
+      "POST": 1
+    },
+    "/api/tutorials-index": {
+      "GET": 1
+    },
+    "/api/wbs": {
+      "POST": 1
+    },
+    "/api/wbs-file": {
+      "GET": 1
+    },
+    "/api/wbs-management": {
+      "GET": 1
+    },
+    "/api/workflow-context": {
+      "GET": 1
+    },
+    "/api/workspace-md-file": {
+      "GET": 1
+    },
+    "/api/workspace-md-index": {
+      "GET": 1
+    },
+    "/api/workspace-state": {
+      "GET": 1
+    }
+  },
+  "nav_entries": [
+    {
+      "path": "docs/index.md",
+      "section_id": "product",
+      "section_title": "Product",
+      "nav_title_override": "Home",
+      "html_slug": "index.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "product",
+      "public_publish": "true"
+    },
+    {
+      "path": "docs/handbook-public/role-based-paths.md",
+      "section_id": "product",
+      "section_title": "Product",
+      "nav_title_override": "Pick your path",
+      "html_slug": "role-based-paths.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "product",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 442,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/01-lenses-overview.md",
+      "section_id": "product",
+      "section_title": "Product",
+      "nav_title_override": null,
+      "html_slug": "01-lenses-overview.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "product",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 587,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/02-install-and-run.md",
+      "section_id": "get-started",
+      "section_title": "Get started",
+      "nav_title_override": null,
+      "html_slug": "02-install-and-run.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "get-started",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 423,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": true,
+        "has_scenario_or_example": false,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 3,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/03-workspace-setup.md",
+      "section_id": "get-started",
+      "section_title": "Get started",
+      "nav_title_override": null,
+      "html_slug": "03-workspace-setup.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "get-started",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 423,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/03-workspace-setup_01-layouts.md",
+      "section_id": "get-started",
+      "section_title": "Get started",
+      "nav_title_override": null,
+      "html_slug": "03-workspace-setup_01-layouts.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "get-started",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 550,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 3,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/03-workspace-setup_02-root-choice.md",
+      "section_id": "get-started",
+      "section_title": "Get started",
+      "nav_title_override": null,
+      "html_slug": "03-workspace-setup_02-root-choice.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "get-started",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 540,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 3,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/03-workspace-setup_03-scan-host.md",
+      "section_id": "get-started",
+      "section_title": "Get started",
+      "nav_title_override": null,
+      "html_slug": "03-workspace-setup_03-scan-host.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "get-started",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 715,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/tutorials-101.md",
+      "section_id": "tutorials-101",
+      "section_title": "Tutorials \u2014 101",
+      "nav_title_override": "101: Overview",
+      "html_slug": "tutorials-101.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-101",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 324,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": true,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/05-studio-101.md",
+      "section_id": "tutorials-101",
+      "section_title": "Tutorials \u2014 101",
+      "nav_title_override": null,
+      "html_slug": "05-studio-101.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-101",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 416,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": true,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/05-studio-101_01-first-classic-dashboard.md",
+      "section_id": "tutorials-101",
+      "section_title": "Tutorials \u2014 101",
+      "nav_title_override": null,
+      "html_slug": "05-studio-101_01-first-classic-dashboard.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-101",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 321,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": true,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/05-studio-101_02-first-docs-health-scan.md",
+      "section_id": "tutorials-101",
+      "section_title": "Tutorials \u2014 101",
+      "nav_title_override": null,
+      "html_slug": "05-studio-101_02-first-docs-health-scan.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-101",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 362,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": true,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/09-wizard-101.md",
+      "section_id": "tutorials-101",
+      "section_title": "Tutorials \u2014 101",
+      "nav_title_override": null,
+      "html_slug": "09-wizard-101.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-101",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 653,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/tutorials-201.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": "201: Overview",
+      "html_slug": "tutorials-201.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 335,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": true,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/06-studio-201.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "06-studio-201.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 443,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/10-wizard-201.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "10-wizard-201.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 383,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/10-wizard-201_01-start-from-idea.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "10-wizard-201_01-start-from-idea.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 371,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/10-wizard-201_02-assess-current-project.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "10-wizard-201_02-assess-current-project.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 340,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/10-wizard-201_03-resume-and-advance.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "10-wizard-201_03-resume-and-advance.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 352,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/10-wizard-201_04-repair-stage.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "10-wizard-201_04-repair-stage.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 340,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/13-llm-and-ai-setup.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": null,
+      "html_slug": "13-llm-and-ai-setup.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 375,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/11-wizard-301_04-cursor-launch-pack.md",
+      "section_id": "tutorials-201",
+      "section_title": "Tutorials \u2014 201",
+      "nav_title_override": "Cursor Launch Pack",
+      "html_slug": "11-wizard-301_04-cursor-launch-pack.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-201",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 340,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/tutorials-301.md",
+      "section_id": "tutorials-301",
+      "section_title": "Tutorials \u2014 301",
+      "nav_title_override": "301: Overview",
+      "html_slug": "tutorials-301.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-301",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 237,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": true,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/07-studio-301.md",
+      "section_id": "tutorials-301",
+      "section_title": "Tutorials \u2014 301",
+      "nav_title_override": null,
+      "html_slug": "07-studio-301.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-301",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 625,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/11-wizard-301.md",
+      "section_id": "tutorials-301",
+      "section_title": "Tutorials \u2014 301",
+      "nav_title_override": null,
+      "html_slug": "11-wizard-301.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-301",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 429,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/11-wizard-301_01-artifact-bundles.md",
+      "section_id": "tutorials-301",
+      "section_title": "Tutorials \u2014 301",
+      "nav_title_override": null,
+      "html_slug": "11-wizard-301_01-artifact-bundles.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-301",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 307,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/11-wizard-301_02-refine.md",
+      "section_id": "tutorials-301",
+      "section_title": "Tutorials \u2014 301",
+      "nav_title_override": null,
+      "html_slug": "11-wizard-301_02-refine.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-301",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 276,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/11-wizard-301_03-review-recheck.md",
+      "section_id": "tutorials-301",
+      "section_title": "Tutorials \u2014 301",
+      "nav_title_override": null,
+      "html_slug": "11-wizard-301_03-review-recheck.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "tutorials-301",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 269,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/04-studio-overview.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "04-studio-overview.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 338,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/08-wizard-overview.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "08-wizard-overview.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 631,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 3,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/wizard-operator-trust-boundaries.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "wizard-operator-trust-boundaries.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 263,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/wizard-builder-session-api.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "wizard-builder-session-api.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 280,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/14-studio-route-map.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "14-studio-route-map.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 554,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 3,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/studio-navigation-and-shell.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "studio-navigation-and-shell.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 232,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/studio-workspace-and-projects.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "studio-workspace-and-projects.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 170,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/studio-docs-health-ui.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "studio-docs-health-ui.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 158,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/studio-settings-llm-fleet.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "studio-settings-llm-fleet.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 157,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/studio-troubleshooting.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "studio-troubleshooting.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 220,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/15-docs-health.md",
+      "section_id": "studio-wizard",
+      "section_title": "Studio & Wizard",
+      "nav_title_override": null,
+      "html_slug": "15-docs-health.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "studio-wizard",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 268,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": true,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-index.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": "Enterprise hub",
+      "html_slug": "enterprise-index.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 246,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/17-security-and-local-first.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "17-security-and-local-first.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 272,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-network-binding.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-network-binding.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 119,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-oidc-sessions.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-oidc-sessions.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 118,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-actions-allowlists.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-actions-allowlists.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 109,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-llm-boundaries.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-llm-boundaries.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 102,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-fleet-integration.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-fleet-integration.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 73,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-backup-upgrades.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-backup-upgrades.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 293,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-deployment.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-deployment.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 370,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": true,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/enterprise-incident-response.md",
+      "section_id": "enterprise",
+      "section_title": "Enterprise",
+      "nav_title_override": null,
+      "html_slug": "enterprise-incident-response.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "enterprise",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 185,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": true,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/builders-api-overview.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": "Builders overview",
+      "html_slug": "builders-api-overview.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 210,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/builders-route-families.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "builders-route-families.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 148,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/builders-auth-and-safety.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "builders-auth-and-safety.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 117,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/builders-schemas.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "builders-schemas.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 129,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/builders-openapi.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "builders-openapi.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 354,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 2,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/builders-stability-policy.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "builders-stability-policy.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 129,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": true,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/19-examples-hub.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": "JSON examples",
+      "html_slug": "19-examples-hub.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 300,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 2,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/26-examples-scenarios-hub.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": "Scenario examples",
+      "html_slug": "26-examples-scenarios-hub.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 225,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-sibling-repos.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-sibling-repos.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 87,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-root-choice.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-root-choice.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 83,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-classic-studio-daily.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-classic-studio-daily.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 71,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-wizard-greenfield.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-wizard-greenfield.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 65,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-wizard-repair.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-wizard-repair.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 54,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-cursor-launch-pack.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-cursor-launch-pack.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 67,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-docs-health.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-docs-health.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 186,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-enterprise-network-binding.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-enterprise-network-binding.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 185,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-oidc-login.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-oidc-login.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 149,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-live-deploy-parity.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-live-deploy-parity.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 148,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-api-workspace-scan.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-api-workspace-scan.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 157,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-docs-inventory-refresh.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-docs-inventory-refresh.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 119,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": true,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-llm-local.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-llm-local.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 69,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/examples-scenario-api-error-shape.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "examples-scenario-api-error-shape.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 70,
+        "has_outcome_heading": true,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": true
+      }
+    },
+    {
+      "path": "docs/handbook-public/16-schemas-and-api-for-builders.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": null,
+      "html_slug": "16-schemas-and-api-for-builders.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 287,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": true,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/generated/api-routes.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": "HTTP API route catalog",
+      "html_slug": "generated-api-routes.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true"
+    },
+    {
+      "path": "docs/reference/config-env.md",
+      "section_id": "builders",
+      "section_title": "Builders & API",
+      "nav_title_override": "Configuration reference",
+      "html_slug": "reference-config-env.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "builders",
+      "public_publish": "true"
+    },
+    {
+      "path": "docs/handbook-public/12-troubleshooting.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": null,
+      "html_slug": "12-troubleshooting.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 603,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/cross-site-map.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": "Cross-site map",
+      "html_slug": "cross-site-map.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 196,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/diagram-catalog-lenses.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": "Diagram catalog",
+      "html_slug": "diagram-catalog-lenses.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 212,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 1,
+        "has_blueprint_diagram_fence": true,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/24-release-notes.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": "Release notes",
+      "html_slug": "24-release-notes.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 147,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/25-docs-versioning.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": "Docs versioning",
+      "html_slug": "25-docs-versioning.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 190,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/20-support.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": null,
+      "html_slug": "20-support.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 117,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/21-glossary.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": null,
+      "html_slug": "21-glossary.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 120,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/22-changelog.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": null,
+      "html_slug": "22-changelog.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 56,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    },
+    {
+      "path": "docs/handbook-public/23-roadmap.md",
+      "section_id": "resources",
+      "section_title": "Resources",
+      "nav_title_override": null,
+      "html_slug": "23-roadmap.html",
+      "frontmatter_keys": [
+        "audience",
+        "description",
+        "handbook_area",
+        "learning_level",
+        "nav_title",
+        "page_type",
+        "product_area",
+        "public_publish",
+        "section",
+        "status",
+        "tier"
+      ],
+      "audience": "public",
+      "section_frontmatter": "resources",
+      "public_publish": "true",
+      "handbook_metrics": {
+        "word_count_approx": 116,
+        "has_outcome_heading": false,
+        "has_verify_or_checks": false,
+        "has_recover": false,
+        "has_scenario_or_example": false,
+        "has_shell_commands": false,
+        "fenced_block_count_approx": 0,
+        "has_blueprint_diagram_fence": false,
+        "mentions_sample_json": false
+      }
+    }
+  ]
+}

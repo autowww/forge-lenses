@@ -1,0 +1,8 @@
+# Optional stub filenames for legacy handbook URLs (meta refresh targets).
+#
+# Keys are **stub-only** HTML basenames: they MUST NOT collide with handbook pages Forge autodoc
+# already emits. Values are emitted slugs that exist after ``python3 generator/build-lenses-docs.py``.
+#
+redirects:
+  forge-lenses-api-quickref.html: generated-api-routes.html
+  lenses-docs-health-legacy-guide.html: 15-docs-health.html

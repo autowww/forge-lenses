@@ -1,8 +1,10 @@
 export { WorkspaceLensControl, type WorkspaceLensControlProps } from './WorkspaceLensControl'
 export type { WorkspaceLensMode } from './workspaceLensTypes'
 
-export { TileDropdownControl, type TileDropdownControlProps } from './TileDropdownControl'
+export { TileDropdownControl, resolveTileDensity, type TileDropdownControlProps } from './TileDropdownControl'
 export type {
+  TileDropdownDensity,
+  TileDropdownMedia,
   TileDropdownMetaRow,
   TileDropdownOption,
   TileDropdownRenderTile,

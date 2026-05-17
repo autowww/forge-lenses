@@ -1,4 +1,5 @@
 ---
+
 nav_title: Choose Wizard artifact bundles for planning, engineering, or execution
 public_publish: true
 audience: public
@@ -6,6 +7,11 @@ product_area: wizard
 tier: '301'
 handbook_area: wizard
 learning_level: '301'
+section: tutorials-301
+status: experimental
+description: Choose Wizard artifact bundles for planning, engineering, or execution
+  — Forge Lenses handbook entry (tutorials-301).
+page_type: tutorial
 ---
 
 # Choose Wizard artifact bundles for planning, engineering, or execution
@@ -40,6 +46,10 @@ Treat emphasis as **what the generator highlights**, not as automatic commits to
 
 - **Emphasis** controls what the session **foregrounds** in artifacts — it does not replace your repo’s branching or CI.
 - If your build shows **pack** or **bundle** wording, treat it as the same idea: **what this session optimizes for**.
+
+## Verify
+
+The generated outline foregrounds the **emphasis** you chose (planning, engineering, execution, or full stack). If the wrong slice dominates, change emphasis and regenerate before **Review & generate**.
 
 ## What to do next
 
