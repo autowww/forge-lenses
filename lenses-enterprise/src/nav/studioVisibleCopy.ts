@@ -77,6 +77,8 @@ export const STUDIO_VOCAB = {
   lensesReference: 'Lenses reference',
   blueprintsWizard: 'Blueprints Wizard',
   featureShowcase: 'Feature showcase',
+  /** Forge Platform Self-Host — `.forge/runs/` file store surfaced in Studio. */
+  forgePlatformRun: 'Forge Platform run',
   /** Local browser UX diagnostics (route/sidebar/state counts). */
   uxInsights: 'UX insights',
   /** Provider dispatch, token ledger, and agent sessions (Admin & inspect). */
@@ -474,6 +476,8 @@ export const PROJECT_OBJECT_HOME = {
     'Per-repository charts use the same JSON bundle as the full workspace UI. If a block fails, use recovery actions or open the classic charts page.',
   strategyPageLead:
     'Submodule layout from the project chart payload. Extended strategy (registry, LENSES-REPO-STRATEGY.md) remains on the full workspace page.',
+  forgeRunPageLead:
+    'File-backed ForgeRun under `.forge/runs/` — approval, evidence packet, and local runner output. Hermes and Fleet placeholders stay explicit until later milestones.',
 } as const
 
 /** Embedded copilot default on project dashboard (plain-language health). */

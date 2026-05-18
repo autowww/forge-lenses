@@ -15,6 +15,7 @@ import { ProjectsPage } from './pages/ProjectsPage'
 import { ProjectDetailPage } from './pages/ProjectDetailPage'
 import { ProjectChartsPage } from './pages/ProjectChartsPage'
 import { ProjectStrategyPage } from './pages/ProjectStrategyPage'
+import { ProjectForgeRunPage } from './pages/ProjectForgeRunPage'
 import { ProjectDocsHealthPage } from './pages/ProjectDocsHealthPage'
 import { ProjectDocsHealthMasterPage } from './pages/ProjectDocsHealthMasterPage'
 import { ProjectDocsHealthSessionPage } from './pages/ProjectDocsHealthSessionPage'
@@ -113,8 +114,9 @@ export default function App() {
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="projects/:name" element={<ProjectDetailPage />} />
               <Route path="projects/:name/charts" element={<ProjectChartsPage />} />
-              <Route path="projects/:name/strategy" element={<ProjectStrategyPage />} />
-              <Route path="projects/:name/docs-health/session/:sessionId" element={<ProjectDocsHealthSessionPage />} />
+            <Route path="projects/:name/strategy" element={<ProjectStrategyPage />} />
+            <Route path="projects/:name/forge-run" element={<ProjectForgeRunPage />} />
+            <Route path="projects/:name/docs-health/session/:sessionId" element={<ProjectDocsHealthSessionPage />} />
               <Route path="projects/:name/docs-health/master" element={<ProjectDocsHealthMasterPage />} />
               <Route path="projects/:name/docs-health" element={<ProjectDocsHealthPage />} />
               <Route path="search" element={<SearchPage />} />

@@ -97,6 +97,7 @@ export const SR = {
   projectDocsHealthSession: 'sr.projects.docsHealthSession',
   projectDocsHealthMaster: 'sr.projects.docsHealthMaster',
   projectDocsHealth: 'sr.projects.docsHealth',
+  projectForgeRun: 'sr.projects.forgeRun',
   search: 'sr.utilities.search',
   chat: 'sr.utilities.chat',
   llmSettings: 'sr.workspace.llmSettings',
@@ -191,6 +192,20 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     sidebar: {
       flow: { projects: V.architectureStrategy },
       artifacts: { projects: V.architectureStrategy },
+    },
+  },
+  {
+    id: SR.projectForgeRun,
+    pattern: '/projects/:name/forge-run',
+    kind: 'canonical',
+    canonicalTitle: V.forgePlatformRun,
+    objectType: 'project',
+    lensVisibility: PRIMARY,
+    flow: bundle('projects', [V.projects, V.forgePlatformRun], ['/projects', null]),
+    artifacts: bundle('projects', [V.projects, V.forgePlatformRun], ['/projects', null]),
+    sidebar: {
+      flow: { projects: V.forgePlatformRun },
+      artifacts: { projects: V.forgePlatformRun },
     },
   },
   {

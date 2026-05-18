@@ -26,3 +26,15 @@ export { ForgeDecisionActionBar, type ForgeDecisionActionBarProps } from './Forg
 export { ForgeEventTimeline, type ForgeEventTimelineProps, type ForgeTimelineEvent } from './ForgeEventTimeline'
 export { ForgeDiagnosticPanel, type ForgeDiagnosticPanelProps } from './ForgeDiagnosticPanel'
 export { ForgeReviewPanel, type ForgeReviewPanelProps } from './ForgeReviewPanel'
+
+export {
+  ForgeAgentLiveLog,
+  type ForgeAgentLiveLogLine,
+  type ForgeAgentLiveLogProps,
+} from './ForgeAgentLiveLog'
+export { ForgeLivePulse, type ForgeLivePulseProps } from './ForgeLivePulse'
+export {
+  ForgeRunProgressTrack,
+  type ForgeRunProgressMilestone,
+  type ForgeRunProgressTrackProps,
+} from './ForgeRunProgressTrack'

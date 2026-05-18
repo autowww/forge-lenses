@@ -2402,6 +2402,29 @@ class LensesHandler(BaseHTTPRequestHandler):
                 except (BrokenPipeError, ConnectionResetError, OSError):
                     return
                 return
+            if tail == "forge-runs":
+                from lenses.platform_selfhost_runs import (
+                    list_forge_runs,
+                    load_forge_run_bundle,
+                )
+
+                bundle = self._project_access(name)
+                if not bundle.get("can_read_project"):
+                    self._send_json(403, {"ok": False, "error": "project_forbidden"})
+                    return
+                child_path = bundle.get("child_path")
+                if not isinstance(child_path, Path):
+                    self._send_json(404, {"ok": False, "error": "not_found"})
+                    return
+                fr_qs = urllib.parse.parse_qs(parsed.query or "").get("run_id", [])
+                rid = str(fr_qs[0]).strip() if fr_qs else ""
+                if rid:
+                    payload = load_forge_run_bundle(child_path, rid)
+                else:
+                    payload = list_forge_runs(child_path)
+                code = 200 if payload.get("ok") else 404
+                self._send_json(code, payload)
+                return
             if tail == "docs-health":
                 from lenses.docs_health.api_handlers import get_project_docs_health
 
@@ -4133,6 +4156,39 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         api_proj = _parse_api_project_subpath(post_path)
+        if api_proj is not None and api_proj[1] == "forge-run-decision":
+            from lenses.platform_selfhost_runs import patch_for_decision
+
+            name, _tail_d = api_proj
+            client_ip = self.client_address[0]
+            if not client_may_run_shell_actions(client_ip):
+                self._send_json(
+                    403,
+                    {
+                        "ok": False,
+                        "error": "decision_writes_require_loopback_or_lenses_allow_actions",
+                    },
+                )
+                return
+            bundle = self._project_access(name)
+            if not bundle.get("can_write_project"):
+                self._send_json(403, {"ok": False, "error": "project_forbidden"})
+                return
+            child_path = bundle.get("child_path")
+            if not isinstance(child_path, Path):
+                self._send_json(404, {"ok": False, "error": "not_found"})
+                return
+            body = self._read_json_body(max_len=32_000)
+            rid = str(body.get("forge_run_id") or "").strip()
+            state = str(body.get("state") or "").strip()
+            ho = body.get("human_owner")
+            human_owner = str(ho).strip() if ho not in (None, "") else None
+            out = patch_for_decision(
+                child_path, rid, state=state, human_owner=human_owner
+            )
+            self._send_json(200 if out.get("ok") else 400, out)
+            return
+
         if api_proj is not None and api_proj[1] == "docs-health":
             from lenses.docs_health.api_handlers import post_project_docs_health
 

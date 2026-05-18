@@ -97,6 +97,9 @@ export function museumFileForApiPath(apiPath: string): string {
   if (/\/docs-health$/.test(pathOnly) && pathOnly.startsWith('/api/project/')) {
     return 'docs-health-project.json'
   }
+  if (/\/forge-runs$/.test(pathOnly) && pathOnly.startsWith('/api/project/')) {
+    return 'project-forge-runs.json'
+  }
   return 'empty.json'
 }
 

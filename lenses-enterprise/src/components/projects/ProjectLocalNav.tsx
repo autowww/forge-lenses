@@ -35,6 +35,11 @@ export function ProjectLocalNav({ projectName }: Props) {
           </NavLink>
         </li>
         <li>
+          <NavLink to={`${base}/forge-run`} className={({ isActive }) => linkClass(isActive)}>
+            {STUDIO_VOCAB.forgePlatformRun}
+          </NavLink>
+        </li>
+        <li>
           <NavLink to={`${base}/docs-health`} className={({ isActive }) => linkClass(isActive)}>
             {STUDIO_VOCAB.docsHealth}
           </NavLink>
