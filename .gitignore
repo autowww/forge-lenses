@@ -10,6 +10,10 @@ desktop/blob-report/
 # Machine-local lenses data (forge-lenses checkout)
 .lenses-local/
 
+# Versona / Ember session exports (local-only)
+forge-logs/
+ember-logs/
+
 # Studio screenshot tours default to ../.workspace-screenshots/<repo>/studio-explore/ (outside repo).
 # Legacy runs may still exist here until moved:
 agents/workspaces/studio-explore/
