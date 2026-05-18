@@ -57,7 +57,7 @@ Paths below are **relative to `/ studio /`** (spaces added to avoid accidental l
 
 | Area | Path tokens (representative) | Typical APIs | Notes |
 |------|------------------------------|--------------|--------|
-| Home | `overview/charts`, `projects`, `projects/:name`, `projects/:name/charts`, `projects/:name/strategy`, `projects/:name/docs-health`, `projects/:name/docs-health/master`, `projects/:name/docs-health/session/:sessionId` | workspace state, chart bundles, git proxies | Project scoping is the busiest subtree. |
+| Home | `overview/charts`, `projects`, `projects/:name`, `projects/:name/charts`, `projects/:name/strategy`, `projects/:name/branching`, `projects/:name/forge-run`, `projects/:name/docs-health`, `projects/:name/docs-health/master`, `projects/:name/docs-health/session/:sessionId` | workspace state, chart bundles, git proxies | Project scoping is the busiest subtree. |
 | Discovery | `search`, `chat` | search indices, assistant | `chat` may be gated by LLM config. |
 | Settings | `settings/llm`, `settings/fleet`, `settings/ux-insights`, `settings/agent-runtime` | LLM gateway, Fleet jobs, experiments | `fleet` also appears in settings paths. |
 | Governance | `governance/connectors`, `governance/audit` | governance APIs | Distinct from methodology knowledge panes. |

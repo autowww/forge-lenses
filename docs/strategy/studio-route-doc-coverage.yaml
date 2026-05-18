@@ -5,6 +5,8 @@ needles:
   - overview/charts
   - projects
   - docs-health
+  - branching
+  - forge-run
   - blueprints/wizard
   - settings/llm
   - governance

@@ -94,6 +94,7 @@ export const SR = {
   projectDashboard: 'sr.projects.dashboard',
   projectCharts: 'sr.projects.charts',
   projectStrategy: 'sr.projects.strategy',
+  projectBranching: 'sr.projects.branching',
   projectDocsHealthSession: 'sr.projects.docsHealthSession',
   projectDocsHealthMaster: 'sr.projects.docsHealthMaster',
   projectDocsHealth: 'sr.projects.docsHealth',
@@ -192,6 +193,21 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     sidebar: {
       flow: { projects: V.architectureStrategy },
       artifacts: { projects: V.architectureStrategy },
+    },
+  },
+  {
+    id: SR.projectBranching,
+    pattern: '/projects/:name/branching',
+    kind: 'canonical',
+    canonicalTitle: V.projectBranching,
+    subtitle: SUB.repositoryCharts,
+    objectType: 'project',
+    lensVisibility: PRIMARY,
+    flow: bundle('projects', [V.projects, V.projectBranching], ['/projects', null]),
+    artifacts: bundle('projects', [V.projects, V.projectBranching], ['/projects', null]),
+    sidebar: {
+      flow: { projects: V.projectBranching },
+      artifacts: { projects: V.projectBranching },
     },
   },
   {

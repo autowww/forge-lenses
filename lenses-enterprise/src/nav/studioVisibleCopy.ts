@@ -45,6 +45,7 @@ export const STUDIO_VOCAB = {
   automationRun: 'Automation run',
   roadmapMatrix: 'Roadmap matrix',
   architectureStrategy: 'Architecture & repo strategy',
+  projectBranching: 'Branching',
   repositoryCharts: 'Repository charts',
   /** Grounded orchestration assistant (search index + graph + delivery payloads). */
   llmChat: 'Lenses Copilot',

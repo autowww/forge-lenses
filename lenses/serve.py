@@ -2304,6 +2304,28 @@ class LensesHandler(BaseHTTPRequestHandler):
                 )
                 self._send_json(200, payload)
                 return
+            if tail == "branching":
+                from lenses.project_branching import build_project_branching_payload
+
+                bundle = self._project_access(name)
+                if not bundle.get("can_read_project"):
+                    self._send_json(403, {"ok": False, "error": "project_forbidden"})
+                    return
+                child_path = resolve_workspace_child_dir(
+                    self.workspace_root, name, self.registry
+                )
+                if child_path is None or not (child_path / ".git").exists():
+                    self._send_json(404, {"ok": False, "error": "not_found"})
+                    return
+                state = self._scan(git_extended=True, force_refresh=force_refresh)
+                payload = build_project_branching_payload(
+                    workspace_root=self.workspace_root,
+                    project_root=child_path,
+                    project_name=name,
+                    scan_state=state,
+                )
+                self._send_json(200, payload)
+                return
             if tail == "quality":
                 from lenses.test_quality import build_project_quality_payload
 

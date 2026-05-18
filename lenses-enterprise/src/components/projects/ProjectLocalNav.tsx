@@ -35,6 +35,11 @@ export function ProjectLocalNav({ projectName }: Props) {
           </NavLink>
         </li>
         <li>
+          <NavLink to={`${base}/branching`} className={({ isActive }) => linkClass(isActive)}>
+            {STUDIO_VOCAB.projectBranching}
+          </NavLink>
+        </li>
+        <li>
           <NavLink to={`${base}/forge-run`} className={({ isActive }) => linkClass(isActive)}>
             {STUDIO_VOCAB.forgePlatformRun}
           </NavLink>

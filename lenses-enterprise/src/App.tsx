@@ -15,6 +15,7 @@ import { ProjectsPage } from './pages/ProjectsPage'
 import { ProjectDetailPage } from './pages/ProjectDetailPage'
 import { ProjectChartsPage } from './pages/ProjectChartsPage'
 import { ProjectStrategyPage } from './pages/ProjectStrategyPage'
+import { ProjectBranchingPage } from './pages/ProjectBranchingPage'
 import { ProjectForgeRunPage } from './pages/ProjectForgeRunPage'
 import { ProjectDocsHealthPage } from './pages/ProjectDocsHealthPage'
 import { ProjectDocsHealthMasterPage } from './pages/ProjectDocsHealthMasterPage'
@@ -115,6 +116,7 @@ export default function App() {
               <Route path="projects/:name" element={<ProjectDetailPage />} />
               <Route path="projects/:name/charts" element={<ProjectChartsPage />} />
             <Route path="projects/:name/strategy" element={<ProjectStrategyPage />} />
+            <Route path="projects/:name/branching" element={<ProjectBranchingPage />} />
             <Route path="projects/:name/forge-run" element={<ProjectForgeRunPage />} />
             <Route path="projects/:name/docs-health/session/:sessionId" element={<ProjectDocsHealthSessionPage />} />
               <Route path="projects/:name/docs-health/master" element={<ProjectDocsHealthMasterPage />} />

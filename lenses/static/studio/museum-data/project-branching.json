@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "project": "forgesdlc",
+  "policy": {
+    "source": "forge/branching.yml",
+    "trunk": "main",
+    "model": "team_tier",
+    "team_scale": "team",
+    "topology": "single",
+    "cicd_maturity": "standard",
+    "require_pr": true,
+    "required_approvals": 1,
+    "require_green_checks": true,
+    "lanes_enabled": false
+  },
+  "current": {
+    "branch": "feature/studio-branching-view",
+    "head_short": "abc1234",
+    "origin_url": "https://github.com/example/forgesdlc",
+    "is_git": true
+  },
+  "structure": {
+    "branches": [
+      { "name": "main", "category": "main", "protected": true },
+      { "name": "feature/studio-branching-view", "category": "feature", "protected": false },
+      { "name": "fix/flaky-test", "category": "fix", "protected": false }
+    ],
+    "branches_by_lane": {
+      "main": [{ "name": "main" }],
+      "feature": [{ "name": "feature/studio-branching-view" }],
+      "fix": [{ "name": "fix/flaky-test" }],
+      "other": []
+    },
+    "pull_requests": [
+      {
+        "number": 42,
+        "title": "feat(studio): add project branching surface",
+        "head_ref": "feature/studio-branching-view",
+        "base_ref": "main",
+        "state": "open",
+        "mergeable": "mergeable"
+      }
+    ],
+    "branch_protection": [{ "pattern": "main", "required_reviews": 1 }],
+    "work_item_links": []
+  },
+  "recommendations": {
+    "charge_work": "feature/<topic> or fix/<topic> depending on intent",
+    "backlog_lane_work": "use branch documented by the backlog item when present",
+    "ad_hoc_user_task": "feature/<topic> (or fix/<topic> for bugfixes)",
+    "exploration_spike": "prefer read-only exploration; use short-lived topic branch only when edits are needed",
+    "hotfix": "fix/<topic> (or dedicated hotfix branch in production-sensitive repos)",
+    "release_hardening": "normally merge to trunk; use release branch only if explicitly documented"
+  },
+  "hints": []
+}
+{
+  "ok": true,
+  "schema_version": 1,
+  "project": "forgesdlc",
+  "policy": {
+    "source": "forge/branching.yml",
+    "trunk": "main",
+    "model": "team_tier",
+    "team_scale": "team",
+    "topology": "single",
+    "cicd_maturity": "standard",
+    "require_pr": true,
+    "required_approvals": 1,
+    "require_green_checks": true,
+    "lanes_enabled": false
+  },
+  "current": {
+    "branch": "feature/studio-branching-view",
+    "head_short": "abc1234",
+    "origin_url": "https://github.com/example/forgesdlc",
+    "is_git": true
+  },
+  "structure": {
+    "branches": [
+      { "name": "main", "category": "main", "protected": true },
+      { "name": "feature/studio-branching-view", "category": "feature", "protected": false },
+      { "name": "fix/flaky-test", "category": "fix", "protected": false }
+    ],
+    "branches_by_lane": {
+      "main": [{ "name": "main" }],
+      "feature": [{ "name": "feature/studio-branching-view" }],
+      "fix": [{ "name": "fix/flaky-test" }],
+      "other": []
+    },
+    "pull_requests": [
+      {
+        "number": 42,
+        "title": "feat(studio): add project branching surface",
+        "head_ref": "feature/studio-branching-view",
+        "base_ref": "main",
+        "state": "open",
+        "mergeable": "mergeable"
+      }
+    ],
+    "branch_protection": [{ "pattern": "main", "required_reviews": 1 }],
+    "work_item_links": []
+  },
+  "recommendations": {
+    "charge_work": "feature/<topic> or fix/<topic> depending on intent",
+    "backlog_lane_work": "use branch documented by the backlog item when present",
+    "ad_hoc_user_task": "feature/<topic> (or fix/<topic> for bugfixes)",
+    "exploration_spike": "prefer read-only exploration; use short-lived topic branch only when edits are needed",
+    "hotfix": "fix/<topic> (or dedicated hotfix branch in production-sensitive repos)",
+    "release_hardening": "normally merge to trunk; use release branch only if explicitly documented"
+  },
+  "hints": []
+}

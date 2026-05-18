@@ -88,6 +88,9 @@ export function museumFileForApiPath(apiPath: string): string {
   if (/\/repo-workflow$/.test(pathOnly) && pathOnly.startsWith('/api/project/')) {
     return 'project-repo-workflow.json'
   }
+  if (/\/branching$/.test(pathOnly) && pathOnly.startsWith('/api/project/')) {
+    return 'project-branching.json'
+  }
   if (/\/quality$/.test(pathOnly) && pathOnly.startsWith('/api/project/')) {
     return 'project-quality.json'
   }
