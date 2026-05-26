@@ -70,8 +70,26 @@ def test_board_acl_view_edit() -> None:
     assert not can_view_sticker_board(
         "stranger", ent, is_workspace_super_admin=False, can_read_project=True
     )
+    assert can_view_sticker_board(
+        None,
+        {"id": "b-open"},
+        is_workspace_super_admin=False,
+        can_read_project=True,
+    )
+    assert not can_view_sticker_board(
+        None,
+        ent,
+        is_workspace_super_admin=False,
+        can_read_project=True,
+    )
     assert can_edit_sticker_board(
         "ed", ent, is_workspace_super_admin=False, can_write_project=False
+    )
+    assert can_edit_sticker_board(
+        None,
+        {"id": "b-open"},
+        is_workspace_super_admin=False,
+        can_write_project=True,
     )
     assert can_manage_board_acl(
         "owner", ent, is_workspace_super_admin=False, can_manage_project_access=False

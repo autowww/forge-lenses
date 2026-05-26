@@ -13,7 +13,12 @@ from lenses.access_policy import (
     resolve_project_role,
 )
 from lenses.auth_session import SESSION_COOKIE
+from lenses.git_actions import client_may_write_sticker_board
 from lenses.scan import resolve_workspace_child_dir
+from lenses.sticker_board import UNASSIGNED_PROJECT_KEY
+
+# Loopback facilitator when access policy is not enforced (local Studio / Electron).
+LOCAL_LOOPBACK_FACILITATOR_LOGIN = "local-dev@lenses.loopback"
 
 
 def cookie_value(cookie_header: str | None, name: str) -> str | None:
@@ -61,6 +66,14 @@ def project_access_bundle(
         "git_user_email": "",
     }
     if child is None:
+        if project_slug == UNASSIGNED_PROJECT_KEY:
+            if not enforced:
+                return out
+            if not session_login_val:
+                out["can_read_project"] = False
+                out["can_write_project"] = False
+                return out
+            return out
         out["can_read_project"] = False
         out["can_write_project"] = False
         return out
@@ -93,6 +106,25 @@ def project_access_bundle(
 
     out["effective_readonly"] = effective_project_readonly(child)
     return out
+
+
+def resolve_facilitator_login(
+    session_login_val: str | None,
+    *,
+    client_ip: str,
+    workspace_root: Path,
+) -> str | None:
+    """
+    Signed-in user, or loopback + open workspace policy for local Studio sharing.
+    """
+    if session_login_val and session_login_val.strip():
+        return session_login_val.strip()
+    if not client_may_write_sticker_board(client_ip):
+        return None
+    policy = load_policy(workspace_root)
+    if is_policy_enforced(policy):
+        return None
+    return LOCAL_LOOPBACK_FACILITATOR_LOGIN
 
 
 def attach_git_identity(bundle: dict[str, Any]) -> None:

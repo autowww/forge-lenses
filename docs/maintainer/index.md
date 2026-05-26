@@ -42,7 +42,7 @@ pip install markdown PyYAML
 
 React SPA at **`/studio/`**; shares `/api/…` with Classic Lenses. Build from **`lenses-enterprise/`**.
 
-- Interface / dashboard design notes — **`docs/maintainer/website/`**
+- Interface / dashboard design notes — **`docs/maintainer/website/`** (built handbook: [project Branching (Studio)](../website/branching-studio-page.md))
 - [Studio shell — API mapping and gaps](../studio-shell-api-map.md)
 - [Studio flow shell — MVP scope](../studio-flow-shell-mvp-scope.md)
 - [Studio shell — Classic parity](../studio-shell-classic-parity.md)

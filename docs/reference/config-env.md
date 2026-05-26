@@ -32,8 +32,9 @@ Audience: **operators + power users** configuring local Forge Lenses / Studio. `
 | **`LENSES_OPENAI_COMPAT_BASE_URL`** | unset | Global override for OpenAI-compatible transports. | Bearer tokens live in settings JSON. |
 | **`LENSES_ARTIFACT_GENERATION_MOCK`** | `0` | Enables deterministic wizard artifact fixtures. | Keep off in production writes. |
 | **`LENSES_CURSOR_LAUNCH_STAGING_TTL_SEC`** | server default | TTL for Cursor launch zip staging tokens. | Larger values → more disk in **`.lenses-local`**. |
-| **`LENSES_OIDC_ISSUER`** | unset | OIDC discovery root. | Requires matching redirect path. |
-| **`LENSES_OIDC_CLIENT_ID`** / **`SECRET`** | unset | OAuth confidential client. | Store via env, not git. |
+| **`LENSES_PUBLIC_ORIGIN`** | unset | Canonical HTTPS origin (`https://leo.forgedc.net`) for OAuth redirect URIs behind a proxy. | Wrong value → Google redirect mismatch. |
+| **`LENSES_OIDC_ISSUER`** | unset | OIDC discovery root (Google: `https://accounts.google.com`). | Also loadable from **`.lenses-local/lenses-oidc.env`**. |
+| **`LENSES_OIDC_CLIENT_ID`** / **`SECRET`** | unset | OAuth confidential client. | Store via env or `lenses-oidc.env`, not git. |
 | **`LENSES_OIDC_REDIRECT_PATH`** | `/api/auth/oidc/callback` | Must match reverse proxy paths. | Wrong value → login loops. |
 | **`LENSES_OIDC_SCOPES`** | `openid profile email` | Space-delimited scopes. | Omit sensitive scopes when possible. |
 

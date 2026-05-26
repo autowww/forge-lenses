@@ -95,11 +95,25 @@ export function lensesJsonApiOrigin(): string {
  *   (avoids hard-coding a port and 404s when Lenses runs on another port or only the dev server handles `/api`).
  * Set **`VITE_LENSES_API_BASE`** at build time when the SPA is hosted separately from the API.
  */
+/** When the guest SPA is served under ``/stickerboard/`` (leo tunnel), call ``/stickerboard/api/…``. */
+export function stickerboardApiPrefix(): string {
+  if (typeof window === 'undefined') return ''
+  const p = window.location.pathname
+  if (p === '/stickerboard' || p.startsWith('/stickerboard/')) return '/stickerboard'
+  return ''
+}
+
+/** Same path prefix as JSON ``fetch`` — use for ``<a href>`` OIDC login on public hosts. */
+export function apiPath(path: string): string {
+  const prefix = stickerboardApiPrefix()
+  return prefix ? `${prefix}${path}` : path
+}
+
 function apiUrl(path: string): string {
   if (STATIC_MUSEUM) return museumDataUrl(museumFileForApiPath(path))
   const explicit = (import.meta.env.VITE_LENSES_API_BASE as string | undefined)?.trim().replace(/\/$/, '') ?? ''
   if (explicit) return `${explicit}${path}`
-  return path
+  return apiPath(path)
 }
 
 export async function apiGetJson<T>(path: string, init?: RequestInit): Promise<T> {

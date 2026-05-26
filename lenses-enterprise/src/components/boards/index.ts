@@ -1,3 +1,8 @@
 export { BoardPlanningShortcutStrip } from './BoardPlanningShortcutStrip'
+export { BoardWorkshopEditor } from './BoardWorkshopEditor'
+export type { WorkshopBoardPayload, WorkshopSticker } from './BoardWorkshopEditor'
+export { BoardStickerboardSharePanel } from './BoardStickerboardSharePanel'
+export { BoardWorkshopPhaseStrip } from './BoardWorkshopPhaseStrip'
+export type { WorkshopPhase } from './BoardWorkshopPhaseStrip'
 export { BoardsArtifactsHub } from './BoardsArtifactsHub'
 export type { BoardsArtifactsHubProps, BoardsHubVariant } from './BoardsArtifactsHub'

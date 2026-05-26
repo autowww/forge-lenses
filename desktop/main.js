@@ -74,6 +74,69 @@ function studioUiFromEnv() {
   );
 }
 
+/** @param {string} base */
+function isLoopbackStickerboardBase(base) {
+  const b = String(base || "").trim().toLowerCase();
+  if (!b) return true;
+  return b.includes("127.0.0.1") || b.includes("://localhost");
+}
+
+/**
+ * @param {string} filePath
+ * @returns {Record<string, string>}
+ */
+function readDotEnvFile(filePath) {
+  /** @type {Record<string, string>} */
+  const out = {};
+  try {
+    for (const line of fsSync.readFileSync(filePath, "utf8").split("\n")) {
+      const chunk = line.trim();
+      if (!chunk || chunk.startsWith("#") || !chunk.includes("=")) continue;
+      const eq = chunk.indexOf("=");
+      const key = chunk.slice(0, eq).trim();
+      let val = chunk.slice(eq + 1).trim();
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1);
+      }
+      if (key) out[key] = val;
+    }
+  } catch (_) {
+    /* missing */
+  }
+  return out;
+}
+
+/**
+ * Public guest URL base for copy links (non-loopback when configured).
+ * @param {string} workspaceRoot
+ * @returns {string}
+ */
+function resolveStickerboardPublicBase(workspaceRoot) {
+  const fromShell = (process.env.LENSES_STICKERBOARD_PUBLIC_BASE || "").trim();
+  if (fromShell && !isLoopbackStickerboardBase(fromShell)) {
+    return fromShell.replace(/\/$/, "");
+  }
+  const wsEnv = readDotEnvFile(
+    path.join(workspaceRoot, ".lenses-local", "stickerboard-public.env"),
+  );
+  const wsBase = (wsEnv.LENSES_STICKERBOARD_PUBLIC_BASE || "").trim();
+  if (wsBase && !isLoopbackStickerboardBase(wsBase)) {
+    return wsBase.replace(/\/$/, "");
+  }
+  for (const rel of [".env.local", ".env.development", ".env"]) {
+    const ent = readDotEnvFile(path.join(REPO_ROOT, "lenses-enterprise", rel));
+    const vite = (ent.VITE_STICKERBOARD_PUBLIC_BASE || "").trim();
+    if (vite && !isLoopbackStickerboardBase(vite)) {
+      return vite.replace(/\/$/, "");
+    }
+  }
+  if (fromShell) return fromShell.replace(/\/$/, "");
+  return "http://127.0.0.1:9999";
+}
+
 function appIconPath() {
   const name = studioUiFromEnv() ? "forge-studio.png" : "forge-lenses.png";
   return path.join(__dirname, "icons", name);
@@ -377,29 +440,20 @@ async function resolveWorkspaceRoot() {
   return path.resolve(chosen);
 }
 
-/**
- * @returns {Promise<number>}
- */
-function getFreePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.listen(0, "127.0.0.1", () => {
-      const addr = server.address();
-      const port = typeof addr === "object" && addr ? addr.port : null;
-      server.close(() => {
-        if (port == null) {
-          reject(new Error("Could not allocate a free TCP port"));
-        } else {
-          resolve(port);
-        }
-      });
-    });
-    server.on("error", reject);
-  });
-}
-
-/** Default `python3 -m lenses` port (matches CLI). Electron prefers this when free. */
+/** Default `python3 -m lenses` port (matches CLI). Studio always uses this (see resolvePortAndAttachMode). */
 const DEFAULT_LENSES_PORT = 8080;
+
+/**
+ * @returns {number}
+ */
+function studioLensesPort() {
+  const raw = process.env.LENSES_PORT;
+  const envPort = raw && String(raw).trim() ? parseInt(String(raw).trim(), 10) : NaN;
+  if (Number.isFinite(envPort) && envPort > 0 && envPort < 65536) {
+    return envPort;
+  }
+  return DEFAULT_LENSES_PORT;
+}
 
 /**
  * @param {number} port
@@ -420,6 +474,80 @@ function isTcpPortFree(port) {
  * @param {string} expectedWorkspaceRoot
  * @returns {Promise<boolean>}
  */
+/**
+ * Free TCP listeners on loopback so Studio can bind the fixed Lenses port.
+ * @param {number} port
+ */
+function killListenersOnPort(port) {
+  const p = Number(port);
+  if (!Number.isFinite(p) || p <= 0 || p >= 65536) {
+    return;
+  }
+  if (process.platform === "win32") {
+    try {
+      const out = execSync(`netstat -ano | findstr :${p}`, {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      const pids = new Set();
+      for (const line of out.split("\n")) {
+        const m = line.trim().match(/\s+(\d+)\s*$/);
+        if (m) pids.add(m[1]);
+      }
+      for (const pid of pids) {
+        try {
+          execSync(`taskkill /PID ${pid} /F`, { stdio: "ignore" });
+        } catch (_) {
+          /* ignore */
+        }
+      }
+    } catch (_) {
+      /* nothing listening */
+    }
+    return;
+  }
+  try {
+    execSync(`fuser -k ${p}/tcp`, { stdio: "ignore", timeout: 8000 });
+  } catch (_) {
+    try {
+      const out = execSync(`ss -lptn 'sport = :${p}'`, {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+        timeout: 3000,
+      });
+      const seen = new Set();
+      for (const m of out.matchAll(/pid=(\d+)/g)) {
+        const pid = Number(m[1]);
+        if (!pid || seen.has(pid)) continue;
+        seen.add(pid);
+        try {
+          process.kill(pid, "SIGTERM");
+        } catch (_) {
+          /* ignore */
+        }
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+}
+
+/**
+ * @param {number} port
+ * @param {number} [timeoutMs]
+ * @returns {Promise<boolean>}
+ */
+async function waitForTcpPortFree(port, timeoutMs = 10_000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await isTcpPortFree(port)) {
+      return true;
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return isTcpPortFree(port);
+}
+
 function probeExistingLensesServer(port, expectedWorkspaceRoot) {
   const url = `http://127.0.0.1:${port}/api/workspace-state`;
   return new Promise((resolve) => {
@@ -454,33 +582,24 @@ function probeExistingLensesServer(port, expectedWorkspaceRoot) {
 }
 
 /**
- * Prefer :8080. If Lenses already serves this workspace, attach (no spawn). `LENSES_PORT` overrides 8080.
+ * Studio always uses :8080 (or ``LENSES_PORT``). Reuse Lenses when workspace matches;
+ * otherwise kill whatever holds the port and spawn fresh.
  * @param {string} workspaceRoot
  * @returns {Promise<{ attach: boolean; port: number }>}
  */
 async function resolvePortAndAttachMode(workspaceRoot) {
   const wr = path.resolve(workspaceRoot);
-  const raw = process.env.LENSES_PORT;
-  const envPort = raw && String(raw).trim() ? parseInt(String(raw).trim(), 10) : NaN;
+  const port = studioLensesPort();
 
-  if (Number.isFinite(envPort) && envPort > 0 && envPort < 65536) {
-    if (await probeExistingLensesServer(envPort, wr)) {
-      return { attach: true, port: envPort };
-    }
-    if (await isTcpPortFree(envPort)) {
-      return { attach: false, port: envPort };
-    }
-    const port = await getFreePort();
-    return { attach: false, port };
+  if (await probeExistingLensesServer(port, wr)) {
+    return { attach: true, port };
   }
 
-  if (await probeExistingLensesServer(DEFAULT_LENSES_PORT, wr)) {
-    return { attach: true, port: DEFAULT_LENSES_PORT };
+  if (!(await isTcpPortFree(port))) {
+    killListenersOnPort(port);
+    await waitForTcpPortFree(port);
   }
-  if (await isTcpPortFree(DEFAULT_LENSES_PORT)) {
-    return { attach: false, port: DEFAULT_LENSES_PORT };
-  }
-  const port = await getFreePort();
+
   return { attach: false, port };
 }
 
@@ -555,7 +674,7 @@ async function startLensesAndShowWindow() {
   await whenSplashDomReady();
   await setSplashPhase(
     "Preparing connection…",
-    "Prefer 127.0.0.1:8080 (CLI default). Reuse a running Lenses server if it matches this workspace, or start Python. Search FTS indexing runs in the background after a new server starts."
+    `Studio uses 127.0.0.1:${studioLensesPort()} only. Reuse Lenses when the workspace matches; otherwise the process on that port is stopped and Python is started. Search FTS indexing runs in the background after a new server starts.`
   );
 
   const { attach, port } = await resolvePortAndAttachMode(workspaceRoot);
@@ -574,15 +693,27 @@ async function startLensesAndShowWindow() {
       `${exe} -m lenses — 127.0.0.1:${port} · LENSES_SEARCH_REINDEX_ON_START=1 (HTML/Markdown search index in background)`
     );
 
+    const stickerboardPublicBase = resolveStickerboardPublicBase(workspaceRoot);
     const env = {
       ...process.env,
       PYTHONPATH: REPO_ROOT,
       LENSES_WORKSPACE_ROOT: workspaceRoot,
+      LENSES_PORT: String(port),
       LENSES_SEARCH_REINDEX_ON_START: "1",
+      LENSES_STICKERBOARD_PUBLIC_BASE: stickerboardPublicBase,
+      LENSES_STICKERBOARD_PORT: process.env.LENSES_STICKERBOARD_PORT ?? "9999",
+      LENSES_STICKERBOARD_LOOPBACK_DEV_AUTH:
+        process.env.LENSES_STICKERBOARD_LOOPBACK_DEV_AUTH ?? "1",
       // Blueprints Wizard session APIs + interpret/refine (same LLM stack as Chat). Opt out with LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=0 on the shell before launch.
       LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD:
         process.env.LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD ?? "1",
     };
+    const oidcFile = readDotEnvFile(
+      path.join(workspaceRoot, ".lenses-local", "lenses-oidc.env"),
+    );
+    for (const [key, val] of Object.entries(oidcFile)) {
+      if (val && !env[key]) env[key] = val;
+    }
 
     pythonChild = spawn(
       exe,

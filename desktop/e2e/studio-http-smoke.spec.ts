@@ -51,4 +51,12 @@ d("Lenses HTTP smoke (Sprint 10)", () => {
     expect("auth_provider" in j).toBe(true);
     expect("oidc_configured" in j).toBe(true);
   });
+
+  test("Sticker board registry GET (regression: json UnboundLocalError)", async ({ request }) => {
+    const res = await request.get(`${base}/api/sticker-board-registry`);
+    expect(res.ok()).toBeTruthy();
+    const j = (await res.json()) as Record<string, unknown>;
+    expect(j.version).toBe(1);
+    expect(typeof j.projects).toBe("object");
+  });
 });

@@ -69,6 +69,8 @@ Each panel highlights **high-level** context (not branch/SHA/origin on this page
 
 Single page per workspace child: **How code is stored** (parse **`.gitmodules`**, show **`git submodule status`** with timeout/line cap, workspace sibling hints when a submodule folder name matches another top-level repo, optional **inline SVG** sketch plus a kitchensink **SVG template** thumbnail from **`/__ks/assets/svg/`** when submodules exist or **`ks_diagram_asset`** is set in **`project_strategy`**), **Branching** (current branch, clean/dirty, best-effort **`origin/HEAD`**, optional **`branching`** / **`branching_notes`** from the registry), and **Maintenance rules** (registry **`maintenance`** / **`maintenance_notes`** or defaults, plus optional repo-root **`LENSES-REPO-STRATEGY.md`** rendered as HTML when **`markdown`** is available). Breadcrumb: Overview · Projects · project · **Repo & strategy**.
 
+**Lenses Studio** adds a dedicated **Branching** view at **`/studio/projects/<name>/branching`**: resolved Branch Steward policy, merge guardrails, prefix table, live scan hints, and optional fixture-backed branch/PR/protection rows. Maintainer contract: [Branching Studio page](../../website/branching-studio-page.md) (canonical copy under **`docs/website/`** for `build-lenses-docs.py`).
+
 ## Project dashboard (`/projects/<name>`)
 
 Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_vertical_hero_styles` / `lenses-site-hero-section` in `lenses/render.py`):
@@ -98,6 +100,8 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 **Board storage:** Registry **`sticker-board-registry.json`**. Per board: **`sticker-boards/<board_id>.json`** (local), or shared repo file + **`…-shared-local.json`** overlay + **`.marker.json`**. Legacy single **`sticker-board.json`** / **`sticker-board-shared-local.json`** is migrated on first access. Shared mode needs the same **expected GitHub login** resolution as PAT actions. **Local boards cannot contain shared-scope stickers** (validated on POST).
 
 **Saving:** **`POST /api/sticker-board?board_id=…`**; loopback unless **`LENSES_ALLOW_GIT_ACTIONS=1`**. **Last write wins** across tabs. Editor script: **`/__lenses/js/sticker-board.js`**.
+
+**Studio workshop boards (`/studio/board`, `/studio/board/<id>`)** — Same registry and APIs as Classic, with **session templates** (`roadmap_session`, `product_map_workshop`, etc.) on create via **`POST /api/sticker-board-registry`**. Board JSON **version 3** adds optional **`impact`** / **`effort`** (1–5), **`session_template`**, **`workshop_phase`**, and WBS trace fields **`source_node_id`** / **`source_kind`**. **Product map workshop** can **`prefill`** stickers from **`build_forge_work_model`** for the chosen project. Studio editor uses Kitchen Sink **`.fs-sticker-*`** styles, kanban drag-and-drop, and facilitator phases (Discover → Score → Prioritize → Capture). Handbook: **`docs/handbook-public/15-studio-boards-workshop.md`**. PDCA pack: **`scripts/studio-boards-workshop-pdca/`**.
 
 ## Websites (`/websites` and `/websites/browse`)
 

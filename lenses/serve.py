@@ -50,9 +50,11 @@ from lenses.git_actions import (
     run_git_action,
 )
 from lenses.serve_rbac import (
+    LOCAL_LOOPBACK_FACILITATOR_LOGIN,
     attach_git_identity,
     filter_sticker_registry_snapshot,
     project_access_bundle,
+    resolve_facilitator_login,
     session_login as rbac_session_login,
 )
 from lenses.sticker_board import (
@@ -71,7 +73,25 @@ from lenses.sticker_board import (
     registry_entry_acl,
     registry_snapshot,
     save_board,
+    share_add_guest_acl,
+    stamp_guest_score_attribution,
     validate_board,
+)
+from lenses.sticker_board_share import (
+    SHARE_SCOPE_COOKIE,
+    build_public_url,
+    is_valid_share_token,
+    load_share,
+    normalize_stickerboard_api_path,
+    resolve_share_scope,
+    share_join,
+    share_metadata,
+    share_revoke,
+    share_scope_allows_path,
+    share_public_config,
+    share_start,
+    stickerboard_loopback_dev_auth_enabled,
+    stickerboard_port_allows_path,
 )
 from lenses.project_stats import collect_project_stats
 from lenses.registry import load_registry
@@ -461,6 +481,141 @@ def _studio_spa_index_fallback(lenses_repo_root: Path, url_path: str) -> Path | 
     return None
 
 
+def _stickerboard_static_root(lenses_repo_root: Path) -> Path | None:
+    static_root = (lenses_repo_root / "lenses" / "static" / "stickerboard").resolve()
+    return static_root if static_root.is_dir() else None
+
+
+def _safe_stickerboard_static_at_root(lenses_repo_root: Path, url_path: str) -> Path | None:
+    """Map ``/`` and ``/assets/…`` to ``lenses/static/stickerboard/`` (local :9999)."""
+    static_root = _stickerboard_static_root(lenses_repo_root)
+    if static_root is None:
+        return None
+    path_only = url_path.split("?", 1)[0]
+    if path_only in ("", "/"):
+        for name in ("index.html", "stickerboard-index.html"):
+            candidate = (static_root / name).resolve()
+            try:
+                candidate.relative_to(static_root)
+            except ValueError:
+                continue
+            if candidate.is_file():
+                return candidate
+        return None
+    rest = path_only.lstrip("/").replace("\\", "/")
+    if not rest or ".." in rest.split("/"):
+        return None
+    if rest.startswith("api/") or rest.startswith("studio"):
+        return None
+    candidate = (static_root / rest).resolve()
+    try:
+        candidate.relative_to(static_root)
+    except ValueError:
+        return None
+    if candidate.is_file():
+        return candidate
+    return None
+
+
+def _stickerboard_spa_fallback_at_root(lenses_repo_root: Path, url_path: str) -> Path | None:
+    """SPA fallback for ``/<shareToken>`` on local :9999 (no ``/stickerboard`` prefix)."""
+    static_root = _stickerboard_static_root(lenses_repo_root)
+    if static_root is None:
+        return None
+    path_only = url_path.split("?", 1)[0].rstrip("/") or "/"
+    if path_only.startswith("/api/") or path_only.startswith("/__ks/") or path_only.startswith(
+        "/assets/"
+    ):
+        return None
+    if path_only.startswith("/studio"):
+        return None
+    if path_only not in ("/",) and "/" in path_only.lstrip("/"):
+        return None
+    for index_name in ("index.html", "stickerboard-index.html"):
+        index_html = (static_root / index_name).resolve()
+        try:
+            index_html.relative_to(static_root)
+        except ValueError:
+            continue
+        if index_html.is_file():
+            return index_html
+    return None
+
+
+def _read_stickerboard_static_file(path: Path) -> bytes:
+    """Serve stickerboard HTML with relative ``./assets/`` (fixes blank page behind ``/stickerboard``)."""
+    data = path.read_bytes()
+    if path.suffix.lower() != ".html":
+        return data
+    text = data.decode("utf-8", errors="replace")
+    if 'src="/assets/' in text or 'href="/assets/' in text:
+        text = text.replace('src="/assets/', 'src="./assets/').replace(
+            'href="/assets/', 'href="./assets/'
+        )
+        data = text.encode("utf-8")
+    return data
+
+
+def _safe_stickerboard_static_file(lenses_repo_root: Path, url_path: str) -> Path | None:
+    """Map ``/stickerboard/…`` to ``lenses/static/stickerboard/`` (production proxy on :8080)."""
+    path_only = url_path.split("?", 1)[0]
+    if path_only == "/stickerboard":
+        path_only = "/stickerboard/"
+    if not path_only.startswith("/stickerboard/"):
+        return None
+    rest = path_only[len("/stickerboard/") :].lstrip("/").replace("\\", "/")
+    if not rest:
+        rest = "stickerboard-index.html"
+    if ".." in rest.split("/"):
+        return None
+    static_root = (lenses_repo_root / "lenses" / "static" / "stickerboard").resolve()
+    if not static_root.is_dir():
+        return None
+    candidate = (static_root / rest).resolve()
+    try:
+        candidate.relative_to(static_root)
+    except ValueError:
+        return None
+    if not candidate.is_file():
+        return None
+    return candidate
+
+
+def _stickerboard_spa_index_fallback(lenses_repo_root: Path, url_path: str) -> Path | None:
+    path_only = url_path.split("?", 1)[0]
+    if path_only == "/stickerboard":
+        path_only = "/stickerboard/"
+    if not path_only.startswith("/stickerboard/"):
+        return None
+    rest = path_only[len("/stickerboard/") :].lstrip("/").replace("\\", "/")
+    if ".." in rest.split("/"):
+        return None
+    static_root = (lenses_repo_root / "lenses" / "static" / "stickerboard").resolve()
+    if not static_root.is_dir():
+        return None
+    if not rest:
+        return None
+    candidate = (static_root / rest).resolve()
+    try:
+        candidate.relative_to(static_root)
+    except ValueError:
+        return None
+    if candidate.is_file():
+        return None
+    suf = candidate.suffix.lower()
+    if suf in _STUDIO_STATIC_SUFFIXES:
+        return None
+    for index_name in ("stickerboard-index.html", "index.html"):
+        index_html = (static_root / index_name).resolve()
+        try:
+            index_html.relative_to(static_root)
+        except ValueError:
+            continue
+        if index_html.is_file():
+            return index_html
+    return None
+
+
 def _child_slugs_from_scan(state: dict) -> set[str]:
     slugs: set[str] = {UNASSIGNED_PROJECT_KEY}
     for c in state.get("children") or []:
@@ -571,6 +726,7 @@ class LensesHandler(BaseHTTPRequestHandler):
     registry: dict = {}
     expected_github_login: str | None = None
     session_manager: SessionManager | None = None
+    stickerboard_port_only: bool = False
 
     def log_message(self, fmt: str, *args: object) -> None:
         print(f"[lenses] {self.address_string()} - {fmt % args}")
@@ -578,16 +734,56 @@ class LensesHandler(BaseHTTPRequestHandler):
     def _session_login(self) -> str | None:
         return rbac_session_login(self.session_manager, self.headers.get("Cookie"))
 
+    def _session_profile(self) -> dict[str, str] | None:
+        sm = self.session_manager
+        if sm is None:
+            return None
+        sid = _cookie_value(self.headers.get("Cookie"), SESSION_COOKIE)
+        return sm.session_profile(sid)
+
+    def _share_scope(self) -> dict[str, str] | None:
+        return resolve_share_scope(self.workspace_root, self.headers.get("Cookie"))
+
+    def _stickerboard_port_only_active(self) -> bool:
+        return bool(getattr(self, "stickerboard_port_only", False))
+
+    def _route_access_blocked(self, path: str, method: str) -> bool:
+        """Return True when a 401 was sent and the request must stop."""
+        port_only = self._stickerboard_port_only_active()
+        scope = self._share_scope()
+        if port_only:
+            if not stickerboard_port_allows_path(path, method):
+                self._send_json(
+                    401,
+                    {"ok": False, "error": "stickerboard_port_forbidden"},
+                )
+                return True
+            return False
+        if scope and not port_only and not share_scope_allows_path(path, method):
+            self._send_json(
+                401,
+                {"ok": False, "error": "share_scope_forbidden"},
+            )
+            return True
+        if scope and path.rstrip("/") == "/api/sticker-board":
+            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query or "")
+            bid = str(qs.get("board_id", [""])[0]).strip()
+            if bid != scope.get("board_id"):
+                self._send_json(
+                    401,
+                    {"ok": False, "error": "share_scope_board_mismatch"},
+                )
+                return True
+        return False
+
     def _absolute_origin(self) -> str:
-        scheme = (
-            "https"
-            if (self.headers.get("X-Forwarded-Proto") or "")
-            .lower()
-            .startswith("https")
-            else "http"
+        from lenses.auth_oidc import public_request_origin
+
+        return public_request_origin(
+            host_header=self.headers.get("Host"),
+            forwarded_proto=self.headers.get("X-Forwarded-Proto"),
+            forwarded_host=self.headers.get("X-Forwarded-Host"),
         )
-        host = (self.headers.get("Host") or "").strip() or "127.0.0.1:8080"
-        return f"{scheme}://{host}"
 
     def _project_access(self, project_slug: str) -> dict[str, Any]:
         b = project_access_bundle(
@@ -734,6 +930,9 @@ class LensesHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path.startswith("/stickerboard/api"):
+            parsed = parsed._replace(path=normalize_stickerboard_api_path(parsed.path))
+            self.path = parsed.path + (f"?{parsed.query}" if parsed.query else "")
         path_only_early = parsed.path.split("?", 1)[0]
         # Legacy React shell paths -> Lenses Studio
         if path_only_early == "/enterprise" or path_only_early.startswith("/enterprise/"):
@@ -759,6 +958,49 @@ class LensesHandler(BaseHTTPRequestHandler):
         path = parsed.path.rstrip("/") or "/"
         if path != "/" and parsed.path.endswith("/") and not parsed.path.startswith("/docs"):
             path = parsed.path.rstrip("/") or "/"
+
+        if self._route_access_blocked(path, "GET"):
+            return
+
+        if self._stickerboard_port_only_active():
+            sb_root_file = _safe_stickerboard_static_at_root(LENSES_REPO_ROOT, parsed.path)
+            if sb_root_file is not None:
+                mime, _ = mimetypes.guess_type(str(sb_root_file))
+                ctype = mime or "application/octet-stream"
+                suf = sb_root_file.suffix.lower()
+                if suf == ".css":
+                    ctype = "text/css; charset=utf-8"
+                elif suf == ".js":
+                    ctype = "text/javascript; charset=utf-8"
+                elif suf == ".html":
+                    ctype = "text/html; charset=utf-8"
+                data = _read_stickerboard_static_file(sb_root_file)
+                self._send(200, data, ctype)
+                return
+            sb_root_fb = _stickerboard_spa_fallback_at_root(LENSES_REPO_ROOT, parsed.path)
+            if sb_root_fb is not None:
+                data = _read_stickerboard_static_file(sb_root_fb)
+                self._send(200, data, "text/html; charset=utf-8")
+                return
+            sb_proxy_file = _safe_stickerboard_static_file(LENSES_REPO_ROOT, parsed.path)
+            if sb_proxy_file is not None:
+                mime, _ = mimetypes.guess_type(str(sb_proxy_file))
+                ctype = mime or "application/octet-stream"
+                suf = sb_proxy_file.suffix.lower()
+                if suf == ".css":
+                    ctype = "text/css; charset=utf-8"
+                elif suf == ".js":
+                    ctype = "text/javascript; charset=utf-8"
+                elif suf == ".html":
+                    ctype = "text/html; charset=utf-8"
+                data = _read_stickerboard_static_file(sb_proxy_file)
+                self._send(200, data, ctype)
+                return
+            sb_proxy_fb = _stickerboard_spa_index_fallback(LENSES_REPO_ROOT, parsed.path)
+            if sb_proxy_fb is not None:
+                data = _read_stickerboard_static_file(sb_proxy_fb)
+                self._send(200, data, "text/html; charset=utf-8")
+                return
 
         eu = self.registry.get("external_urls") or {}
         handbook_url = str(eu.get("handbook", "https://blueprints.forgesdlc.com/"))
@@ -1411,6 +1653,37 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, data, "text/html; charset=utf-8")
             return
 
+        if not self._stickerboard_port_only_active():
+            stickerboard_file = _safe_stickerboard_static_file(LENSES_REPO_ROOT, parsed.path)
+        else:
+            stickerboard_file = None
+        if stickerboard_file is not None:
+            mime, _ = mimetypes.guess_type(str(stickerboard_file))
+            ctype = mime or "application/octet-stream"
+            suf = stickerboard_file.suffix.lower()
+            if suf == ".css":
+                ctype = "text/css; charset=utf-8"
+            elif suf == ".js":
+                ctype = "text/javascript; charset=utf-8"
+            elif suf == ".html":
+                ctype = "text/html; charset=utf-8"
+            elif suf == ".svg":
+                ctype = "image/svg+xml; charset=utf-8"
+            data = _read_stickerboard_static_file(stickerboard_file)
+            self._send(200, data, ctype)
+            return
+
+        if not self._stickerboard_port_only_active():
+            stickerboard_fallback = _stickerboard_spa_index_fallback(
+                LENSES_REPO_ROOT, parsed.path
+            )
+        else:
+            stickerboard_fallback = None
+        if stickerboard_fallback is not None:
+            data = _read_stickerboard_static_file(stickerboard_fallback)
+            self._send(200, data, "text/html; charset=utf-8")
+            return
+
         path_only_studio = parsed.path.split("?", 1)[0]
         if path_only_studio.startswith("/studio/"):
             rest_st = path_only_studio[len("/studio/") :].lstrip("/").replace("\\", "/")
@@ -1444,6 +1717,9 @@ class LensesHandler(BaseHTTPRequestHandler):
             qs = urllib.parse.parse_qs(parsed.query or "")
             bid_qs = qs.get("board_id", [])
             board_id = str(bid_qs[0]).strip() if bid_qs else ""
+            scope = self._share_scope()
+            if scope:
+                board_id = scope.get("board_id") or board_id
             if not is_valid_board_id(board_id):
                 self._send_json(
                     400,
@@ -1451,7 +1727,10 @@ class LensesHandler(BaseHTTPRequestHandler):
                 )
                 return
             board = load_board(
-                self.workspace_root, self.expected_github_login, board_id
+                self.workspace_root,
+                self.expected_github_login,
+                board_id,
+                share_guest=bool(scope),
             )
             if board.get("board_not_found"):
                 self._send_json(
@@ -1460,8 +1739,24 @@ class LensesHandler(BaseHTTPRequestHandler):
                 )
                 return
             board.pop("board_not_found", None)
+            from lenses.sticker_board import resolve_board_display_label
+
             reg = load_registry_raw(self.workspace_root)
             found = find_board_entry(reg, board_id)
+            if scope:
+                ent = found[1] if found else None
+                board["board_label"] = resolve_board_display_label(
+                    self.workspace_root,
+                    board_id,
+                    registry_entry=ent,
+                    board_payload=board,
+                )
+                if found:
+                    board["project"] = found[0]
+                board["guest_role"] = scope.get("guest_role")
+                raw = json.dumps(board, indent=2, sort_keys=True).encode("utf-8")
+                self._send(200, raw, "application/json; charset=utf-8")
+                return
             if found:
                 proj_slug, ent = found
                 bundle = self._project_access(proj_slug)
@@ -1479,8 +1774,29 @@ class LensesHandler(BaseHTTPRequestHandler):
                     )
                     return
                 board["board_acl"] = registry_entry_acl(ent)
+                board["board_label"] = resolve_board_display_label(
+                    self.workspace_root,
+                    board_id,
+                    registry_entry=ent,
+                    board_payload=board,
+                )
+                board["project"] = proj_slug
+            else:
+                board["board_label"] = resolve_board_display_label(
+                    self.workspace_root,
+                    board_id,
+                    board_payload=board,
+                )
             raw = json.dumps(board, indent=2, sort_keys=True).encode("utf-8")
             self._send(200, raw, "application/json; charset=utf-8")
+            return
+
+        if path == "/api/sticker-board-share/config":
+            self._send_json(200, share_public_config(self.workspace_root))
+            return
+
+        if path == "/api/sticker-board-share":
+            self._get_api_sticker_board_share(parsed)
             return
 
         if path == "/api/sticker-board-registry":
@@ -2012,6 +2328,7 @@ class LensesHandler(BaseHTTPRequestHandler):
                     "workspace_super_admin": is_sup,
                     "auth_provider": auth_provider,
                     "oidc_configured": _load_oidc() is not None,
+                    "stickerboard_loopback_dev_auth": stickerboard_loopback_dev_auth_enabled(),
                     "sites_with_allowlisted_actions": sites_with_actions,
                     "action_keys_by_site": action_keys_by_site,
                 },
@@ -2021,15 +2338,23 @@ class LensesHandler(BaseHTTPRequestHandler):
         if path == "/api/auth/oidc/status":
             from lenses.auth_oidc import oidc_status_payload
 
-            self._send_json(200, oidc_status_payload())
+            payload = oidc_status_payload()
+            payload["loopback_dev_auth"] = stickerboard_loopback_dev_auth_enabled()
+            self._send_json(200, payload)
+            return
+
+        if path == "/api/auth/loopback-dev-login":
+            self._send_json(405, {"ok": False, "error": "method_not_allowed"})
             return
 
         if path == "/api/auth/oidc/login":
+            from lenses.auth_oidc import client_may_use_oidc_auth
+
             client_ip = self.client_address[0]
-            if not client_may_run_shell_actions(client_ip):
+            if not client_may_use_oidc_auth(client_ip):
                 self._send_json(
                     403,
-                    {"ok": False, "error": "oidc_login_loopback_only"},
+                    {"ok": False, "error": "oidc_login_not_allowed"},
                 )
                 return
             from lenses.auth_oidc import load_oidc_config, start_authorize_url
@@ -2042,12 +2367,15 @@ class LensesHandler(BaseHTTPRequestHandler):
                 )
                 return
             redir = f"{self._absolute_origin()}{cfg.redirect_path}"
+            qs_oidc = urllib.parse.parse_qs(parsed.query or "")
+            return_to = str(qs_oidc.get("return_to", [""])[0]).strip()
             try:
                 url, _state, _ver = start_authorize_url(
                     issuer=cfg.issuer,
                     client_id=cfg.client_id,
                     redirect_uri=redir,
                     scopes=cfg.scopes,
+                    return_to=return_to or None,
                 )
             except RuntimeError as ex:
                 self._send_json(502, {"ok": False, "error": "oidc_start_failed", "detail": str(ex)})
@@ -2059,9 +2387,11 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/auth/oidc/callback":
+            from lenses.auth_oidc import client_may_use_oidc_auth
+
             client_ip = self.client_address[0]
-            if not client_may_run_shell_actions(client_ip):
-                self._send_json(403, {"ok": False, "error": "oidc_callback_loopback_only"})
+            if not client_may_use_oidc_auth(client_ip):
+                self._send_json(403, {"ok": False, "error": "oidc_callback_not_allowed"})
                 return
             from lenses.auth_oidc import (
                 exchange_code_for_tokens,
@@ -2088,7 +2418,7 @@ class LensesHandler(BaseHTTPRequestHandler):
             if not code or not state:
                 self._send_json(400, {"ok": False, "error": "missing_code_or_state"})
                 return
-            verifier = pop_verifier_for_state(state)
+            verifier, return_to = pop_verifier_for_state(state)
             if not verifier:
                 self._send_json(400, {"ok": False, "error": "invalid_or_expired_state"})
                 return
@@ -2118,10 +2448,13 @@ class LensesHandler(BaseHTTPRequestHandler):
             if not tokens:
                 self._send_json(401, {"ok": False, "error": "oidc_token_exchange_failed"})
                 return
-            login = resolve_oidc_login(tokens, userinfo_ep)
-            if not login:
+            from lenses.auth_oidc import resolve_oidc_profile
+
+            profile = resolve_oidc_profile(tokens, userinfo_ep)
+            if not profile or not profile.get("login"):
                 self._send_json(401, {"ok": False, "error": "oidc_no_subject"})
                 return
+            login = profile["login"]
             policy = bootstrap_on_first_auth(self.workspace_root, login)
             if not can_sign_in(policy, login):
                 self._send_json(
@@ -2133,12 +2466,17 @@ class LensesHandler(BaseHTTPRequestHandler):
             if sm is None:
                 self._send_json(500, {"ok": False, "error": "session_store_unavailable"})
                 return
-            sid = sm.create_session(login, auth_provider="oidc")
+            sid = sm.create_session(
+                login,
+                auth_provider="oidc",
+                display_name=profile.get("display_name"),
+                email=profile.get("email"),
+            )
             cookie = (
                 f"{SESSION_COOKIE}={sid}; HttpOnly; SameSite=Lax; Path=/; "
                 f"Max-Age={SESSION_MAX_AGE_SEC}"
             )
-            loc = "/studio/"
+            loc = return_to if return_to else "/studio/"
             self.send_response(302)
             self.send_header("Location", loc)
             self.send_header("Set-Cookie", cookie)
@@ -2379,9 +2717,6 @@ class LensesHandler(BaseHTTPRequestHandler):
                 self._send_json(200, payload)
                 return
             if tail == "docs-health-session-events":
-                import json
-                import time
-
                 from lenses.docs_health.feature_flag import docs_health_enabled
                 from lenses.docs_health.run_projection import merge_docs_health_session_view
 
@@ -3036,7 +3371,13 @@ class LensesHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path.startswith("/stickerboard/api"):
+            parsed = parsed._replace(path=normalize_stickerboard_api_path(parsed.path))
+            self.path = parsed.path + (f"?{parsed.query}" if parsed.query else "")
         post_path = parsed.path.rstrip("/") or "/"
+
+        if self._route_access_blocked(post_path, "POST"):
+            return
 
         if post_path.startswith("/api/agent-runtime"):
             client_ip = self.client_address[0]
@@ -4120,12 +4461,23 @@ class LensesHandler(BaseHTTPRequestHandler):
         if post_path == "/api/auth/logout":
             self._post_api_auth_logout()
             return
+        if post_path == "/api/auth/loopback-dev-login":
+            self._post_api_auth_loopback_dev_login()
+            return
         if post_path == "/api/access/set-member":
             self._post_api_access_set_member()
             return
         if post_path == "/api/actions/run":
             self._post_api_actions_run()
             return
+        if post_path == "/api/sticker-board-share/join":
+            self._post_api_sticker_board_share_join()
+            return
+
+        if post_path == "/api/sticker-board-share":
+            self._post_api_sticker_board_share()
+            return
+
         if post_path == "/api/sticker-board":
             self._post_api_sticker_board(parsed)
             return
@@ -4574,7 +4926,204 @@ class LensesHandler(BaseHTTPRequestHandler):
         )
         self._send_json(200, {"ok": result.get("ok"), **result})
 
+    def _get_api_sticker_board_share(self, parsed: urllib.parse.ParseResult) -> None:
+        qs = urllib.parse.parse_qs(parsed.query or "")
+        token = str(qs.get("token", [""])[0]).strip()
+        if not is_valid_share_token(token):
+            self._send_json(400, {"ok": False, "error": "invalid_share_token"})
+            return
+        meta, err = share_metadata(self.workspace_root, token)
+        if not meta:
+            self._send_json(404, {"ok": False, "error": err or "share_not_found"})
+            return
+        self._send_json(200, meta)
+
+    def _post_api_sticker_board_share(self) -> None:
+        scope = self._share_scope()
+        if scope:
+            self._send_json(403, {"ok": False, "error": "share_scope_forbidden"})
+            return
+        client_ip = self.client_address[0]
+        login = resolve_facilitator_login(
+            self._session_login(),
+            client_ip=client_ip,
+            workspace_root=self.workspace_root,
+        )
+        if not login:
+            self._send_json(401, {"ok": False, "error": "login_required"})
+            return
+        body = self._read_json_body(max_len=16_000)
+        act = str(body.get("action", "")).strip().lower()
+        if act == "start":
+            board_id = str(body.get("board_id", "")).strip()
+            if not is_valid_board_id(board_id):
+                self._send_json(400, {"ok": False, "error": "invalid_board_id"})
+                return
+            reg = load_registry_raw(self.workspace_root)
+            found = find_board_entry(reg, board_id)
+            if not found:
+                self._send_json(404, {"ok": False, "error": "board_not_found"})
+                return
+            proj_slug, ent = found
+            bundle = self._project_access(proj_slug)
+            if not can_edit_sticker_board(
+                login,
+                ent,
+                is_workspace_super_admin=bool(bundle.get("is_workspace_super_admin")),
+                can_write_project=bool(bundle.get("can_write_project")),
+            ):
+                self._send_json(403, {"ok": False, "error": "sticker_board_forbidden"})
+                return
+            guest_role = str(body.get("guest_role", "view")).strip().lower()
+            result, err = share_start(
+                self.workspace_root,
+                board_id=board_id,
+                guest_role=guest_role,
+                created_by_login=login,
+                request_origin=self._absolute_origin(),
+            )
+            if not result:
+                self._send_json(400, {"ok": False, "error": err})
+                return
+            self._send_json(200, result)
+            return
+        if act == "revoke":
+            token = str(body.get("share_token", "")).strip()
+            ok, err = share_revoke(
+                self.workspace_root,
+                share_token=token,
+                actor_login=login,
+            )
+            if not ok:
+                code = 404 if err == "share_not_found" else 403
+                self._send_json(code, {"ok": False, "error": err})
+                return
+            self._send_json(200, {"ok": True})
+            return
+        self._send_json(400, {"ok": False, "error": "unknown_action"})
+
+    def _client_is_loopback(self) -> bool:
+        ip = self.client_address[0]
+        if ip in ("127.0.0.1", "::1", "localhost"):
+            return True
+        try:
+            return ipaddress.ip_address(ip).is_loopback
+        except ValueError:
+            return False
+
+    def _post_api_auth_loopback_dev_login(self) -> None:
+        if not stickerboard_loopback_dev_auth_enabled():
+            self._send_json(403, {"ok": False, "error": "loopback_dev_auth_disabled"})
+            return
+        if not self._client_is_loopback():
+            self._send_json(403, {"ok": False, "error": "loopback_only"})
+            return
+        sm = self.session_manager
+        if sm is None:
+            self._send_json(500, {"ok": False, "error": "session_store_unavailable"})
+            return
+        login = LOCAL_LOOPBACK_FACILITATOR_LOGIN
+        policy = bootstrap_on_first_auth(self.workspace_root, login)
+        if not can_sign_in(policy, login):
+            self._send_json(403, {"ok": False, "error": "access_denied_not_invited"})
+            return
+        sid = sm.create_session(
+            login,
+            auth_provider="loopback_dev",
+            display_name="Local developer",
+        )
+        cookie = (
+            f"{SESSION_COOKIE}={sid}; HttpOnly; SameSite=Lax; Path=/; "
+            f"Max-Age={SESSION_MAX_AGE_SEC}"
+        )
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Set-Cookie", cookie)
+        payload = json.dumps(
+            {"ok": True, "session_login": login, "auth_provider": "loopback_dev"}
+        ).encode("utf-8")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def _post_api_sticker_board_share_join(self) -> None:
+        login = self._session_login()
+        session_cookie: str | None = None
+        if not login and stickerboard_loopback_dev_auth_enabled() and self._client_is_loopback():
+            sm = self.session_manager
+            if sm is None:
+                self._send_json(500, {"ok": False, "error": "session_store_unavailable"})
+                return
+            login = LOCAL_LOOPBACK_FACILITATOR_LOGIN
+            policy = bootstrap_on_first_auth(self.workspace_root, login)
+            if not can_sign_in(policy, login):
+                self._send_json(403, {"ok": False, "error": "access_denied_not_invited"})
+                return
+            sid = sm.create_session(
+                login,
+                auth_provider="loopback_dev",
+                display_name="Local developer",
+            )
+            session_cookie = (
+                f"{SESSION_COOKIE}={sid}; HttpOnly; SameSite=Lax; Path=/; "
+                f"Max-Age={SESSION_MAX_AGE_SEC}"
+            )
+        if not login:
+            self._send_json(401, {"ok": False, "error": "login_required"})
+            return
+        body = self._read_json_body(max_len=8_000)
+        token = str(body.get("share_token", "")).strip()
+        if not is_valid_share_token(token):
+            self._send_json(400, {"ok": False, "error": "invalid_share_token"})
+            return
+        prof = self._session_profile() or {}
+        display_name = prof.get("display_name") or login
+        email = prof.get("email")
+        result, err = share_join(
+            self.workspace_root,
+            share_token=token,
+            login=login,
+            display_name=display_name,
+            email=email,
+        )
+        if not result:
+            code = 404 if err in ("share_not_found", "share_revoked") else 400
+            self._send_json(code, {"ok": False, "error": err})
+            return
+        board_id = str(result.get("board_id") or "")
+        guest_role = str(result.get("guest_role") or "view")
+        share_add_guest_acl(
+            self.workspace_root,
+            board_id,
+            login,
+            guest_role,
+        )
+        scope_cookie = (
+            f"{SHARE_SCOPE_COOKIE}={token}; HttpOnly; SameSite=Lax; Path=/; "
+            f"Max-Age={SESSION_MAX_AGE_SEC}"
+        )
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        if session_cookie:
+            self.send_header("Set-Cookie", session_cookie)
+        self.send_header("Set-Cookie", scope_cookie)
+        payload = json.dumps(
+            {
+                **result,
+                "public_url": build_public_url(token, workspace_root=self.workspace_root),
+            }
+        ).encode(
+            "utf-8"
+        )
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
     def _post_api_sticker_board(self, parsed: urllib.parse.ParseResult) -> None:
+        scope = self._share_scope()
+        if scope and scope.get("guest_role") == "view":
+            self._send_json(403, {"ok": False, "error": "view_guest_read_only"})
+            return
         client_ip = self.client_address[0]
         if not client_may_write_sticker_board(client_ip):
             self._send_json(
@@ -4591,11 +5140,16 @@ class LensesHandler(BaseHTTPRequestHandler):
         qs = urllib.parse.parse_qs(parsed.query or "")
         bid_qs = qs.get("board_id", [])
         board_id = str(bid_qs[0]).strip() if bid_qs else ""
+        if scope:
+            board_id = scope.get("board_id") or board_id
         if not is_valid_board_id(board_id):
             self._send_json(
                 400,
                 {"ok": False, "error": "missing_or_invalid_board_id"},
             )
+            return
+        if scope and board_id != scope.get("board_id"):
+            self._send_json(401, {"ok": False, "error": "share_scope_board_mismatch"})
             return
         reg = load_registry_raw(self.workspace_root)
         found = find_board_entry(reg, board_id)
@@ -4606,8 +5160,13 @@ class LensesHandler(BaseHTTPRequestHandler):
         bundle = self._project_access(proj_slug)
         is_sup = bool(bundle.get("is_workspace_super_admin"))
         cw = bool(bundle.get("can_write_project"))
-        if not can_edit_sticker_board(
-            self._session_login(),
+        sess = self._session_login()
+        if scope:
+            if scope.get("guest_role") != "edit":
+                self._send_json(403, {"ok": False, "error": "sticker_board_forbidden"})
+                return
+        elif not can_edit_sticker_board(
+            sess,
             ent,
             is_workspace_super_admin=is_sup,
             can_write_project=cw,
@@ -4625,6 +5184,13 @@ class LensesHandler(BaseHTTPRequestHandler):
             )
             return
         body.pop("board_id", None)
+        if scope and sess:
+            prof = self._session_profile() or {}
+            body = stamp_guest_score_attribution(
+                body,
+                session_login=sess,
+                display_name=prof.get("display_name"),
+            )
         ok, err = validate_board(body, self.expected_github_login)
         if not ok:
             self._send_json(400, {"ok": False, "error": err})
@@ -4701,12 +5267,14 @@ class LensesHandler(BaseHTTPRequestHandler):
                     {"ok": False, "error": "project_forbidden"},
                 )
                 return
+            scan_payload = dict(payload)
+            scan_payload["_workspace_scan_state"] = state
             ok, err, extra = registry_apply(
                 self.workspace_root,
                 self.expected_github_login,
                 slugs,
                 action,
-                payload,
+                scan_payload,
                 creator_login=sess,
             )
         elif action == "acl":
@@ -4735,6 +5303,14 @@ class LensesHandler(BaseHTTPRequestHandler):
                     {"ok": False, "error": "sticker_board_acl_forbidden"},
                 )
                 return
+            ok, err, extra = registry_apply(
+                self.workspace_root,
+                self.expected_github_login,
+                slugs,
+                action,
+                payload,
+            )
+        elif action == "repair_registry":
             ok, err, extra = registry_apply(
                 self.workspace_root,
                 self.expected_github_login,
@@ -5108,6 +5684,15 @@ def main() -> None:
 
     env_root = os.environ.get("LENSES_WORKSPACE_ROOT")
     ws = resolve_workspace_root(LENSES_REPO_ROOT, args.workspace_root, env_root)
+    from lenses.auth_oidc import bootstrap_oidc_env_from_workspace
+    from lenses.sticker_board_share import (
+        bootstrap_stickerboard_env_from_workspace,
+        bootstrap_stickerboard_public_from_workspace,
+    )
+
+    bootstrap_oidc_env_from_workspace(ws)
+    bootstrap_stickerboard_env_from_workspace(ws)
+    bootstrap_stickerboard_public_from_workspace(ws)
     registry = load_registry(LENSES_REPO_ROOT, ws)
 
     if _host_needs_bind_all_ack(args.host):
@@ -5136,7 +5721,27 @@ def main() -> None:
     server = ThreadingHTTPServer((args.host, args.port), LensesHandler)
     _maybe_start_search_reindex_on_startup(ws, registry)
     _maybe_start_cursor_launch_staging_cleanup_thread(ws)
+
+    sb_port_raw = (os.environ.get("LENSES_STICKERBOARD_PORT") or "9999").strip()
+    try:
+        sb_port = int(sb_port_raw)
+    except ValueError:
+        sb_port = 0
+    sb_server: ThreadingHTTPServer | None = None
+    if sb_port > 0 and args.host in ("127.0.0.1", "localhost", "::1"):
+        class _StickerboardHandler(LensesHandler):
+            stickerboard_port_only = True
+
+        sb_server = ThreadingHTTPServer((args.host, sb_port), _StickerboardHandler)
+        threading.Thread(
+            target=sb_server.serve_forever,
+            daemon=True,
+            name="lenses-stickerboard-port",
+        ).start()
+
     print(f"[lenses] http://{args.host}:{args.port}/")
+    if sb_server is not None:
+        print(f"[lenses] stickerboard http://{args.host}:{sb_port}/")
     print(f"[lenses] workspace_root={ws}")
     if exp_login:
         print(

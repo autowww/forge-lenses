@@ -10,6 +10,7 @@
     "dev": "LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
     "build:enterprise": "cd ../lenses-enterprise && npm run build",
     "test:e2e": "playwright test",
+    "test:e2e:boards": "playwright test e2e/studio-boards-electron.spec.ts e2e/studio-http-smoke.spec.ts",
     "studio-explore": "node studio-explore/runner.mjs",
     "studio-explore:full": "node studio-explore/runner.mjs --tour studio-explore/tours/full-studio-ui/tour.yaml"
   },

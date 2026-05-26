@@ -9,6 +9,8 @@ variables:
     risk: critical
   - name: LENSES_PORT
     risk: medium
+  - name: LENSES_PUBLIC_ORIGIN
+    risk: high
   - name: LENSES_OIDC_ISSUER
     risk: high
   - name: LENSES_OIDC_CLIENT_ID

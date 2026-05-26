@@ -69,6 +69,8 @@ Each panel highlights **high-level** context (not branch/SHA/origin on this page
 
 Single page per workspace child: **How code is stored** (parse **`.gitmodules`**, show **`git submodule status`** with timeout/line cap, workspace sibling hints when a submodule folder name matches another top-level repo, optional **inline SVG** sketch plus a kitchensink **SVG template** thumbnail from **`/__ks/assets/svg/`** when submodules exist or **`ks_diagram_asset`** is set in **`project_strategy`**), **Branching** (current branch, clean/dirty, best-effort **`origin/HEAD`**, optional **`branching`** / **`branching_notes`** from the registry), and **Maintenance rules** (registry **`maintenance`** / **`maintenance_notes`** or defaults, plus optional repo-root **`LENSES-REPO-STRATEGY.md`** rendered as HTML when **`markdown`** is available). Breadcrumb: Overview · Projects · project · **Repo & strategy**.
 
+**Lenses Studio** adds a dedicated **Branching** view at **`/studio/projects/<name>/branching`**: resolved Branch Steward policy, merge guardrails, prefix table, live scan hints, and optional fixture-backed branch/PR/protection rows. Maintainer contract: [Branching Studio page](branching-studio-page.md).
+
 ## Project dashboard (`/projects/<name>`)
 
 Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_vertical_hero_styles` / `lenses-site-hero-section` in `lenses/render.py`):

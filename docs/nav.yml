@@ -80,6 +80,8 @@ sections:
       - path: docs/handbook-public/17-security-and-local-first.md
       - path: docs/handbook-public/enterprise-network-binding.md
       - path: docs/handbook-public/enterprise-oidc-sessions.md
+      - path: docs/handbook-public/16-stickerboard-sharing.md
+        nav_title: Stickerboard sharing
       - path: docs/handbook-public/enterprise-actions-allowlists.md
       - path: docs/handbook-public/enterprise-llm-boundaries.md
       - path: docs/handbook-public/enterprise-fleet-integration.md

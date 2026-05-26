@@ -181,6 +181,7 @@ Top navigation and sidebar (Classic): workspace pages (including **Tutorials** �
 ## See also
 
 - [Dashboard pages](dashboard-pages.md) — narrative description of each major screen.
+- [Lenses Studio — project Branching page](../../website/branching-studio-page.md) — **`GET /api/project/<name>/branching`** payload, policy resolution order, vs Classic **Repo & strategy**.
 - [Forge plan UI map (roadmap → evidence)](ui-map-workflow.md) — artifacts, tabs, and APIs for **`/plan`**.
 - [HTTP API and routes](https://github.com/autowww/forge-lenses/blob/main/lenses/website/http-api-and-routes.md) — bind safety, assets, JSON API, and POST contracts.
 - **Kitchen Sink — Lenses Studio shell** (engineering guideline, source repo): [`forgesdlc-kitchensink/docs/design/lenses-studio-shell.md`](https://github.com/autowww/forgesdlc-kitchensink/blob/main/docs/design/lenses-studio-shell.md) — Electron **`BrowserWindow`**, preload **`window.lensesElectron`**, **`/__ks/`** theme and shared CSS/JS, React **`WorkspaceLensControl`** sync; complements [ADR 001: Lenses Studio shell](https://github.com/autowww/forge-lenses/blob/main/docs/adr-001-lenses-studio-shell.md) and [Forge Enterprise UI](https://github.com/autowww/forgesdlc-kitchensink/blob/main/docs/design/forge-enterprise-ui.md) on GitHub.

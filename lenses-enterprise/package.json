@@ -1,7 +1,7 @@
 {
   "name": "lenses-enterprise",
   "private": true,
-  "version": "1.0.5",
+  "version": "1.0.20",
   "type": "module",
   "engines": {
     "node": ">=20.12.0"
@@ -12,6 +12,8 @@
     "dev": "vite",
     "watch": "vite build --watch",
     "build": "node scripts/bump-studio-patch-version.mjs && tsc -b && vite build",
+    "build:stickerboard": "tsc -b && vite build -c vite.stickerboard.config.ts",
+    "dev:stickerboard": "vite -c vite.stickerboard.config.ts",
     "build:museum": "node scripts/bump-studio-patch-version.mjs && VITE_STATIC_MUSEUM=true tsc -b && VITE_STATIC_MUSEUM=true vite build",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { apiGetJson, apiPostJson } from '../../api/http'
 import { useBoardRegistry } from '../../hooks/useBoardRegistry'
 import {
@@ -16,6 +16,7 @@ import {
 import { classifyBoardRegistryData, formatRegistrySnapshotLabel } from '../../lib/boardRegistrySurface'
 import { mergePlanningScopeIntoTo } from '../../lib/planningClusterScope'
 import { DELIVERY_LENS, FULL_WORKSPACE_UI, STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
+import { useWorkspace } from '../../context/WorkspaceContext'
 import { PageHeader, ResourceFetchStatus, StatePanel } from '../page'
 import { BoardPlanningShortcutStrip } from './BoardPlanningShortcutStrip'
 
@@ -24,22 +25,41 @@ type BoardPayload = {
   version?: number
 }
 
-const TEMPLATES: { title: string; hint: string; project?: string }[] = [
+const TEMPLATES: {
+  title: string
+  hint: string
+  sessionTemplate: string
+  project?: string
+}[] = [
   {
-    title: 'Executive review',
-    hint: 'Priorities, risks, and decisions visible on one surface.',
+    title: 'Product map workshop',
+    hint: 'Prefill from project WBS: actors, journey, capabilities, and systems.',
+    sessionTemplate: 'product_map_workshop',
+  },
+  {
+    title: 'Workshop kickoff (from Markdown)',
+    hint: 'Import a product kickoff .md: validation decisions, feature map, agenda, and journey stickers.',
+    sessionTemplate: 'workshop_kickoff',
   },
   {
     title: 'Roadmap session',
     hint: 'Horizons and dependencies; align to roadmap artifacts.',
+    sessionTemplate: 'roadmap_session',
+  },
+  {
+    title: 'Executive review',
+    hint: 'Priorities, risks, and decisions visible on one surface.',
+    sessionTemplate: 'executive_review',
   },
   {
     title: 'Dependency mapping',
     hint: 'Connect work across teams before locking commitments.',
+    sessionTemplate: 'dependency_mapping',
   },
   {
     title: 'Architecture decision',
     hint: 'Options and tradeoffs; link outcomes in charge or work logs.',
+    sessionTemplate: 'architecture_decision',
   },
 ]
 
@@ -73,8 +93,10 @@ function BoardsHubHeader({ variant }: { variant: BoardsHubVariant }) {
 }
 
 export function BoardsArtifactsHub({ variant = 'artifacts' }: BoardsArtifactsHubProps) {
+  const navigate = useNavigate()
   const { search } = useLocation()
   const [sp, setSp] = useSearchParams()
+  const { state: workspaceState } = useWorkspace()
   const filterParam = sp.get('filter')
   const projectFilter = sp.get('project') || ''
 
@@ -188,19 +210,111 @@ export function BoardsArtifactsHub({ variant = 'artifacts' }: BoardsArtifactsHub
 
   const kpiPending = !workspaceReady || (!hasDisplayPayload && (isHydrating || isFetching))
 
+  const projectOptions = useMemo(() => {
+    const children = workspaceState?.children ?? []
+    const names = children
+      .map((c) => (typeof c === 'object' && c && 'name' in c ? String((c as { name?: string }).name) : ''))
+      .filter(Boolean)
+    return ['_unassigned', ...names.sort((a, b) => a.localeCompare(b))]
+  }, [workspaceState])
+
+  const [productMapProject, setProductMapProject] = useState(projectFilter || '_unassigned')
+  const [workshopImportBusy, setWorkshopImportBusy] = useState(false)
+  const [workshopImportMessage, setWorkshopImportMessage] = useState<string | null>(null)
+  const workshopFileInputRef = useRef<HTMLInputElement>(null)
+
+  async function createBoardFromTemplate(
+    sessionTemplate: string,
+    opts?: {
+      label?: string
+      prefill?: boolean
+      projectKey?: string
+      workshopMdText?: string
+      workshopMdPath?: string
+    },
+  ) {
+    const proj = opts?.projectKey ?? project
+    const lab =
+      opts?.label?.trim() ||
+      label.trim() ||
+      TEMPLATES.find((t) => t.sessionTemplate === sessionTemplate)?.title ||
+      'New board'
+    const r = await apiPostJson<{
+      ok?: boolean
+      error?: string
+      board_id?: string
+      prefill_message?: string
+      prefill?: { sections?: string[]; stickers_added?: number; warnings?: string[] }
+    }>('/api/sticker-board-registry', {
+      action: 'create',
+      payload: {
+        project: proj,
+        label: lab,
+        storage,
+        session_template: sessionTemplate,
+        prefill: opts?.prefill,
+        workshop_md_text: opts?.workshopMdText,
+        workshop_md_path: opts?.workshopMdPath,
+      },
+    })
+    if (r.ok === false || r.error) {
+      setWorkshopImportMessage(r.error || 'Board create failed')
+      return null
+    }
+    const bid = r.board_id
+    if (bid) {
+      const q = new URLSearchParams({ phase: 'discover' })
+      const repoSlug = proj && proj !== '_unassigned' ? proj : ''
+      if (repoSlug) q.set('repo', repoSlug)
+      if (r.prefill_message && r.prefill_message !== 'ok') {
+        q.set('prefill', r.prefill_message)
+      } else if (r.prefill?.sections?.length) {
+        q.set(
+          'prefill',
+          `${r.prefill.stickers_added ?? 0} stickers · ${r.prefill.sections.join(', ')}`,
+        )
+      }
+      navigate(`/board/${encodeURIComponent(bid)}?${q.toString()}`)
+      return bid
+    }
+    void refresh()
+    return null
+  }
+
+  async function importWorkshopMarkdownFile(file: File) {
+    setWorkshopImportBusy(true)
+    setWorkshopImportMessage(null)
+    try {
+      const text = await file.text()
+      const base = file.name.replace(/\.md$/i, '').trim() || 'Workshop kickoff'
+      const bid = await createBoardFromTemplate('workshop_kickoff', {
+        label: base,
+        prefill: true,
+        projectKey: project,
+        workshopMdText: text,
+      })
+      if (bid) {
+        setWorkshopImportMessage(
+          `Created board from ${file.name}. Facilitate in Discover → Score → Prioritize → Capture.`,
+        )
+      }
+    } catch (e) {
+      setWorkshopImportMessage(e instanceof Error ? e.message : String(e))
+    } finally {
+      setWorkshopImportBusy(false)
+      if (workshopFileInputRef.current) workshopFileInputRef.current.value = ''
+    }
+  }
+
   async function createBoard(e: React.FormEvent) {
     e.preventDefault()
-    const r = await apiPostJson<{ ok?: boolean; error?: string }>(
-      '/api/sticker-board-registry',
-      {
-        action: 'create',
-        payload: { project, label: label.trim() || 'New board', storage },
-      },
-    )
-    if (r.ok !== false) {
-      setLabel('')
-      void refresh()
-    }
+    await createBoardFromTemplate('blank', { label: label.trim() || 'New board' })
+    setLabel('')
+  }
+
+  async function repairRegistry() {
+    await apiPostJson('/api/sticker-board-registry', { action: 'repair_registry', payload: {} })
+    void refresh()
   }
 
   function toggleSort(key: BoardSortKey) {
@@ -312,12 +426,17 @@ export function BoardsArtifactsHub({ variant = 'artifacts' }: BoardsArtifactsHub
           />
         ) : null}
         {issues.length > 0 ? (
-          <ul className="le-boards-issues">
-            {issues.slice(0, 8).map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-            {issues.length > 8 ? <li>…and {issues.length - 8} more</li> : null}
-          </ul>
+          <>
+            <ul className="le-boards-issues">
+              {issues.slice(0, 8).map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+              {issues.length > 8 ? <li>…and {issues.length - 8} more</li> : null}
+            </ul>
+            <button type="button" className="le-btn le-btn--primary" onClick={() => void repairRegistry()}>
+              Fix registry
+            </button>
+          </>
         ) : null}
       </section>
 
@@ -367,22 +486,75 @@ export function BoardsArtifactsHub({ variant = 'artifacts' }: BoardsArtifactsHub
           Templates by use case
         </h2>
         <p className="le-boards-section__lead">
-          Suggested patterns—create below, then shape columns in the editor. These are not separate registry objects
-          until you create them.
+          Each template creates a real board with workshop columns. Product map workshop can prefill stickers from the
+          project WBS. Workshop kickoff imports a structured product kickoff Markdown file.
         </p>
+        {workshopImportMessage ? (
+          <p className="forge-support" style={{ marginBottom: '0.75rem' }}>
+            {workshopImportMessage}
+          </p>
+        ) : null}
         <div className="le-boards-template-grid">
           {TEMPLATES.map((t) => (
-            <div key={t.title} className="le-boards-template-card">
+            <div key={t.sessionTemplate} className="le-boards-template-card">
               <h3 className="le-boards-template-card__title">{t.title}</h3>
               <p className="le-boards-template-card__hint">{t.hint}</p>
-              <button type="button" className="le-btn le-btn--primary" onClick={scrollToCreate}>
-                Use template (scroll to create)
-              </button>
-              {t.project ? (
-                <p className="forge-support">
-                  <Link to={`/board?project=${encodeURIComponent(t.project)}`}>Filter hub by project</Link>
-                </p>
+              {t.sessionTemplate === 'workshop_kickoff' ? (
+                <input
+                  ref={workshopFileInputRef}
+                  type="file"
+                  accept=".md,text/markdown,text/plain"
+                  hidden
+                  disabled={workshopImportBusy}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) void importWorkshopMarkdownFile(f)
+                  }}
+                />
               ) : null}
+              {t.sessionTemplate === 'product_map_workshop' ? (
+                <div className="le-form-row" style={{ flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                  <label className="forge-support">
+                    Project{' '}
+                    <select
+                      className="le-select"
+                      value={productMapProject}
+                      onChange={(e) => setProductMapProject(e.target.value)}
+                    >
+                      {projectOptions.map((p) => (
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                className="le-btn le-btn--primary"
+                disabled={t.sessionTemplate === 'workshop_kickoff' && workshopImportBusy}
+                onClick={() => {
+                  if (t.sessionTemplate === 'workshop_kickoff') {
+                    workshopFileInputRef.current?.click()
+                    return
+                  }
+                  void createBoardFromTemplate(t.sessionTemplate, {
+                    label: t.title,
+                    prefill: t.sessionTemplate === 'product_map_workshop',
+                    projectKey:
+                      t.sessionTemplate === 'product_map_workshop' ? productMapProject : project,
+                  })
+                }}
+              >
+                {t.sessionTemplate === 'product_map_workshop'
+                  ? 'Create from project'
+                  : t.sessionTemplate === 'workshop_kickoff'
+                    ? workshopImportBusy
+                      ? 'Importing…'
+                      : 'Import Markdown'
+                    : 'Use template'}
+              </button>
             </div>
           ))}
         </div>

@@ -5749,3 +5749,40 @@
 .le-llm-tryout-chat-modal__catalog-pick:hover {
   color: var(--le-fg, #fff);
 }
+
+.le-board-workshop-phases {
+  margin: 0.75rem 0 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.le-board-workshop-phases__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.le-board-workshop-phases__lead {
+  margin: 0.5rem 0 0;
+}
+
+.fl-stickerboard-guest-shell {
+  max-width: 96rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+  min-height: 100vh;
+  background: var(--le-bg, #0f172a);
+  color: var(--le-fg, #e2e8f0);
+}
+
+.fl-stickerboard-guest-shell__header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.le-board-share-panel {
+  margin: 0.75rem 0 1rem;
+}
