@@ -12,6 +12,8 @@ from lenses.sdlc_copilot.audit import log_chat_turn, new_audit_id
 from lenses.sdlc_copilot.drafts import build_tool_proposals, persist_proposals
 from lenses.sdlc_copilot.feature_flag import experimental_sdlc_copilot_enabled
 from lenses.sdlc_copilot.grounding import build_grounding_bundle
+from lenses.sdlc_copilot.intent import classify_copilot_strategy, map_reduce_enabled
+from lenses.sdlc_copilot.map_reduce import run_copilot_map_reduce
 from lenses.sdlc_copilot.turn_reflection import build_turn_reflection, reply_deflects_despite_sources
 
 EmitFn = Callable[[str, dict[str, Any]], None] | None
@@ -128,6 +130,63 @@ def _default_max_rounds(requested: int | None) -> int:
         if 1 <= v <= 5:
             return v
     return 3
+
+
+def _git_count_from_scan(scan_state: dict[str, Any]) -> int:
+    children = scan_state.get("children") if isinstance(scan_state, dict) else None
+    if not isinstance(children, list):
+        return 0
+    return sum(1 for ch in children if isinstance(ch, dict) and ch.get("is_git"))
+
+
+def _maybe_map_reduce(
+    *,
+    workspace_root: Path,
+    provider: str,
+    user_message: str,
+    model_override: str | None,
+    refine: bool,
+    tool_mode: str,
+    route: str,
+    project_slug: str | None,
+    entity_id: str | None,
+    scope_site: str,
+    login: str | None,
+    scan_state: dict[str, Any],
+    studio_task_id: str | None,
+    page_context_summary: str | None,
+    related_md_rel_paths: list[str] | None,
+    studio_chat_mode: str | None,
+    on_event: EmitFn = None,
+) -> dict[str, Any] | None:
+    strategy = classify_copilot_strategy(
+        user_message,
+        studio_route=route,
+        scan_state=scan_state,
+    )
+    git_n = _git_count_from_scan(scan_state)
+    if strategy == "single_shot" or not map_reduce_enabled(strategy, git_n):
+        return None
+    return run_copilot_map_reduce(
+        workspace_root=workspace_root,
+        provider=provider,
+        user_message=user_message,
+        model_override=model_override,
+        refine=refine,
+        tool_mode=tool_mode,
+        route=route,
+        project_slug=project_slug,
+        entity_id=entity_id,
+        scope_site=scope_site,
+        login=login,
+        scan_state=scan_state,
+        strategy=strategy,
+        studio_task_id=studio_task_id,
+        page_context_summary=page_context_summary,
+        related_md_rel_paths=related_md_rel_paths,
+        studio_chat_mode=studio_chat_mode,
+        on_event=on_event,
+    )
 
 
 def _run_copilot_chat_pass(
@@ -318,6 +377,26 @@ def run_copilot_chat(
     studio_chat_mode: str | None = None,
 ) -> dict[str, Any]:
     """One-shot grounded copilot (backward compatible)."""
+    mr = _maybe_map_reduce(
+        workspace_root=workspace_root,
+        provider=provider,
+        user_message=user_message,
+        model_override=model_override,
+        refine=refine,
+        tool_mode=tool_mode,
+        route=route,
+        project_slug=project_slug,
+        entity_id=entity_id,
+        scope_site=scope_site,
+        login=login,
+        scan_state=scan_state,
+        studio_task_id=studio_task_id,
+        page_context_summary=page_context_summary,
+        related_md_rel_paths=related_md_rel_paths,
+        studio_chat_mode=studio_chat_mode,
+    )
+    if mr is not None:
+        return mr
     out = _run_copilot_chat_pass(
         workspace_root=workspace_root,
         provider=provider,
@@ -369,6 +448,27 @@ def run_copilot_chat_multi(
     on_event: EmitFn = None,
 ) -> dict[str, Any]:
     """Up to N grounding+LLM rounds; widen context when the model deflects."""
+    mr = _maybe_map_reduce(
+        workspace_root=workspace_root,
+        provider=provider,
+        user_message=user_message,
+        model_override=model_override,
+        refine=refine,
+        tool_mode=tool_mode,
+        route=route,
+        project_slug=project_slug,
+        entity_id=entity_id,
+        scope_site=scope_site,
+        login=login,
+        scan_state=scan_state,
+        studio_task_id=studio_task_id,
+        page_context_summary=page_context_summary,
+        related_md_rel_paths=related_md_rel_paths,
+        studio_chat_mode=studio_chat_mode,
+        on_event=on_event,
+    )
+    if mr is not None:
+        return mr
     cap = _default_max_rounds(max_rounds)
     emit = on_event or (lambda _t, _p: None)
     cumulative: dict[str, int] = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}

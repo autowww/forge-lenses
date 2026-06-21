@@ -40,6 +40,13 @@ _VALID_PROVIDERS = frozenset(
 )
 
 
+def _openai_compat_runner_crashed(out: dict[str, Any]) -> bool:
+    if out.get("error") != "llm_provider_error":
+        return False
+    detail = str(out.get("detail") or "").lower()
+    return "runner" in detail and "terminated" in detail
+
+
 def chat(
     provider: str,
     message: str,
@@ -109,6 +116,29 @@ def chat(
     if (
         not out.get("ok")
         and workspace_root is not None
+        and pid == "openai_compatible"
+        and _openai_compat_runner_crashed(out)
+    ):
+        mm = raw.get("main_models") if isinstance(raw.get("main_models"), dict) else {}
+        main_m = str(mm.get("openai_compatible") or "").strip()
+        tried = str(eff_model or "").strip()
+        if main_m and main_m != tried:
+            out = complete_user_message(
+                pid,
+                msg,
+                main_m,
+                fk,
+                openai_compat_base_url=compat_base,
+            )
+            if out.get("ok"):
+                rdbg = dict(dbg) if isinstance(dbg, dict) else {}
+                rdbg["model_fallback_from"] = tried
+                dbg = rdbg
+                eff_model = main_m
+
+    if (
+        not out.get("ok")
+        and workspace_root is not None
         and studio_task_id
         and str(raw.get("routing_mode") or "").strip().lower() == "advanced"
     ):
@@ -149,6 +179,9 @@ def chat(
         out["routing"] = rdbg
         if eff_model:
             out["model"] = eff_model
+        fb_from = rdbg.get("model_fallback_from")
+        if fb_from:
+            out["model_fallback_from"] = fb_from
 
     if workspace_root is not None:
         from lenses.llm_usage_store import record_llm_chat_result

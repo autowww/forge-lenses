@@ -151,3 +151,74 @@ export function writeMirroredLlmSessionPrefs(
     writeFullChatSessionPrefs(workspaceRoot, fc)
   }
 }
+
+export type CopilotFailureFields = {
+  detail?: string | null
+  error?: string | null
+}
+
+/** Turn API failure fields into a user-facing Copilot error (gateway hints when recognizable). */
+export function formatCopilotFailureMessage(
+  res: CopilotFailureFields,
+  fallback: string,
+): string {
+  const parts = [res.detail, res.error].filter(
+    (x) => typeof x === 'string' && x.trim(),
+  ) as string[]
+  const raw = parts.length ? parts.join(' · ') : fallback
+  const lower = raw.toLowerCase()
+  if (
+    lower.includes('llama runner') ||
+    lower.includes('runner process has terminated') ||
+    (res.error === 'llm_provider_error' && lower.includes('terminated'))
+  ) {
+    return (
+      `${raw} — the custom gateway model runner crashed. ` +
+      'In Copilot settings (gear), clear Model to use your AI Setup default, or pick a stable id ' +
+      '(e.g. ctx-unlim-qwen3-1p7b:latest). ctx-unlim-granite41-3b:latest often fails on this gateway.'
+    )
+  }
+  if (res.error === 'stream_timeout' || lower.includes('stream timed out')) {
+    return (
+      `${raw} — the server stopped waiting for Copilot to finish. ` +
+      'Slow custom gateways may need several minutes on large workspace questions; retry or use a faster model.'
+    )
+  }
+  return raw
+}
+
+/** Gateway models that crash the Ollama runner on granite.forgedc.net (do not persist as Copilot override). */
+export function isKnownUnstableOpenAiCompatModel(modelId: string): boolean {
+  const id = modelId.trim().toLowerCase()
+  if (!id) return false
+  if (/granite41-3b/i.test(id)) return true
+  if (id === 'ctx-unlim-granite41-3b:latest') return true
+  return false
+}
+
+/**
+ * Normalize a saved Copilot model override: drop empty, known-crash ids, and redundant copies of AI Setup main.
+ */
+export function sanitizeStudioModelOverride(
+  model: string | undefined,
+  setupMainModel?: string,
+): string {
+  const m = (model ?? '').trim()
+  if (!m) return ''
+  if (isKnownUnstableOpenAiCompatModel(m)) return ''
+  const main = (setupMainModel ?? '').trim()
+  if (main && m === main) return ''
+  return m
+}
+
+/** Prefer qwen / non-granite ids when AI Setup has no main model for openai_compatible. */
+export function pickOpenAiCompatFallbackModel(modelIds: string[]): string | undefined {
+  const sorted = [...new Set(modelIds.map((x) => x.trim()).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b),
+  )
+  if (!sorted.length) return undefined
+  const qwen = sorted.find((id) => /qwen/i.test(id))
+  if (qwen) return qwen
+  const nonGranite = sorted.find((id) => !/granite/i.test(id))
+  return nonGranite ?? sorted[0]
+}

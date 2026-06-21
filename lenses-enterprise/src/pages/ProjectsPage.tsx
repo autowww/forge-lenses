@@ -6,10 +6,11 @@ import { StatePanel } from '../components/page'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useNavigationMode } from '../nav/useNavigationMode'
 import { ProjectsArtifactsPortfolio } from '../components/projects'
-import { PROJECT_OBJECT_HOME } from '../nav/studioVisibleCopy'
+import { PROJECT_OBJECT_HOME, PROJECT_PORTFOLIO_COPILOT_DEFAULT } from '../nav/studioVisibleCopy'
 import { filterPortfolioRows, parsePortfolioTableFilter } from '../lib/portfolioDrilldown'
 import { buildRepoPortfolioRows } from '../lib/workspacePortfolio'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
+import { chargeMdCandidates } from '../lib/copilotPageEvidence'
 
 function sortFlowCards(children: WorkspaceChild[]) {
   const list = [...children]
@@ -124,9 +125,25 @@ function ProjectsFlowCardGrid() {
 }
 
 export function ProjectsPage() {
-  useLensesCopilotPage({ route: 'projects' })
   const { mode } = useNavigationMode()
   const { state, loading, error, errorDescription, errorDetail } = useWorkspace()
+  const copilotScope = useMemo(() => {
+    const children = Array.isArray(state?.children) ? state.children : []
+    const gitN = children.filter((c) => c.is_git).length
+    const folderN = children.length - gitN
+    return {
+      pageContextSummary:
+        `Forge Studio · Projects · workspace portfolio (${gitN} git repos, ${folderN} folders, ${children.length} entries). ` +
+        'When asked for one-line summaries, cover each repository/folder from the workspace roster citation; cite sources and note gaps.',
+      relatedMdRelPaths: chargeMdCandidates(undefined),
+    }
+  }, [state?.children, state?.resolved_at])
+  useLensesCopilotPage({
+    route: 'projects',
+    pageContextSummary: copilotScope.pageContextSummary,
+    relatedMdRelPaths: copilotScope.relatedMdRelPaths,
+    defaultQuery: PROJECT_PORTFOLIO_COPILOT_DEFAULT,
+  })
 
   if (loading && !state) {
     return (

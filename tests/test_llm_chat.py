@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from lenses import llm_chat
@@ -131,3 +133,54 @@ def test_ollama_connection_refused_includes_hint(monkeypatch: pytest.MonkeyPatch
     assert r.get("error") == "llm_transport"
     assert "Ollama not listening" in str(r.get("detail", ""))
     assert "11434" in str(r.get("detail", ""))
+
+
+def test_openai_compat_runner_crash_falls_back_to_main_model(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from lenses.llm_settings_store import load_raw, merge_save, save_raw
+
+    cur = merge_save(
+        tmp_path,
+        {
+            "provider": "openai_compatible",
+            "openai_compatible_base_url": "https://example.test",
+            "keys": {"openai_compatible": "tok"},
+            "main_models": {"openai_compatible": "ctx-unlim-qwen3-1p7b:latest"},
+        },
+    )
+    save_raw(tmp_path, cur)
+    assert load_raw(tmp_path)["main_models"]["openai_compatible"] == "ctx-unlim-qwen3-1p7b:latest"
+
+    calls: list[str | None] = []
+
+    def fake_complete(
+        pid: str,
+        msg: str,
+        model: str | None,
+        fk: dict,
+        *,
+        openai_compat_base_url: str | None = None,
+    ) -> dict:
+        calls.append(model)
+        if model == "ctx-unlim-granite41-3b:latest":
+            return {
+                "ok": False,
+                "error": "llm_provider_error",
+                "detail": "llama runner process has terminated: %!w(<nil>)",
+            }
+        return {"ok": True, "text": "OK"}
+
+    monkeypatch.setattr(llm_chat, "complete_user_message", fake_complete)
+
+    r = llm_chat.chat(
+        "openai_compatible",
+        "hello",
+        model_override="ctx-unlim-granite41-3b:latest",
+        workspace_root=tmp_path,
+    )
+    assert r["ok"] is True
+    assert r["model"] == "ctx-unlim-qwen3-1p7b:latest"
+    assert r["model_fallback_from"] == "ctx-unlim-granite41-3b:latest"
+    assert calls == ["ctx-unlim-granite41-3b:latest", "ctx-unlim-qwen3-1p7b:latest"]

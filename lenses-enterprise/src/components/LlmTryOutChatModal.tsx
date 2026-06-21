@@ -1,15 +1,18 @@
 import type { FormEvent } from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useHref } from 'react-router-dom'
 import { ApiError, apiPostJson } from '../api/http'
 import { resolveUxFailure } from '../lib/uxPageState'
+import { ModelIdComboboxField } from './ai-setup/ModelIdComboboxField'
 import { ChatRequestPendingRow } from './chat/ChatRequestPendingRow'
 
 type ChatRes = {
   ok?: boolean
   text?: string
   model?: string
+  error?: string
+  detail?: string
   usage?: {
     prompt_tokens?: number
     completion_tokens?: number
@@ -31,6 +34,12 @@ function effectiveModelOverride(raw: string): string | undefined {
   const lower = t.toLowerCase()
   if (lower === 'optional' || lower === 'n/a' || lower === '—' || lower === '-') return undefined
   return t
+}
+
+function chatFailureMessage(res: ChatRes): string {
+  const parts = [res.detail, res.error].filter((x) => typeof x === 'string' && x.trim())
+  if (parts.length) return parts.join(' · ')
+  return 'That request did not succeed. Confirm keys or Ollama are reachable from the Lenses server.'
 }
 
 function mergeModelOptions(catalog: string[], current: string): string[] {
@@ -77,6 +86,7 @@ export function LlmTryOutChatModal({
   onOpenPopout,
 }: LlmTryOutChatModalProps) {
   const chatHref = useHref('/chat')
+  const modelFieldBaseId = useId()
   const [selectedModel, setSelectedModel] = useState('')
   const [catalogStatus, setCatalogStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('loading')
   const [catalogModels, setCatalogModels] = useState<string[]>([])
@@ -161,8 +171,6 @@ export function LlmTryOutChatModal({
       }
       setPendingSince(Date.now())
       setLoading(true)
-      const failBody =
-        'That request did not succeed. Confirm keys or Ollama are reachable from the Lenses server.'
       try {
         const body: { provider: string; message: string; model?: string; studio_task_id?: string } = {
           provider: providerId,
@@ -181,8 +189,9 @@ export function LlmTryOutChatModal({
               : ''
           setMessages((m) => [...m, { role: 'assistant', text: res.text! + meta + useLine }])
         } else {
+          const failText = chatFailureMessage(res)
           setBanner('That message could not be completed. Check this source on AI Setup, then try again.')
-          setMessages((m) => [...m, { role: 'assistant', text: failBody, failed: true, retryPrompt: text }])
+          setMessages((m) => [...m, { role: 'assistant', text: failText, failed: true, retryPrompt: text }])
         }
       } catch (err) {
         let assistantText = 'That request failed before a response arrived.'
@@ -247,47 +256,29 @@ export function LlmTryOutChatModal({
         </p>
       ) : null}
       <div className="le-llm-tryout-chat-modal__model-picker">
-        <label className="forge-support le-llm-tryout-chat-modal__model-label">
-          Model for this try-out
-          {catalogStatus === 'loading' ? (
-            <select className="le-input le-llm-tryout-chat-modal__model-select" disabled value="">
-              <option value="">Loading catalog…</option>
-            </select>
-          ) : catalogStatus === 'ok' && selectOptions.length > 0 ? (
-            <select
-              className="le-input le-llm-tryout-chat-modal__model-select"
-              value={selectedModel.trim() === '' ? '' : selectedModel.trim()}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              aria-describedby="le-llm-tryout-model-hint"
-            >
-              <option value="">Server / routing default</option>
-              {selectOptions.map((id) => (
-                <option key={id} value={id}>
-                  {id}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              className="le-input le-llm-tryout-chat-modal__model-select"
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              placeholder="Model id (optional — uses routing default if empty)"
-              aria-describedby="le-llm-tryout-model-hint"
-            />
-          )}
-        </label>
-        <p id="le-llm-tryout-model-hint" className="forge-support le-llm-tryout-chat-modal__model-hint">
-          {catalogStatus === 'loading'
-            ? 'Fetching models from this source…'
-            : catalogStatus === 'ok' && catalogModels.length > 0
-              ? `${catalogModels.length} model id${catalogModels.length === 1 ? '' : 's'} available from the server.`
-              : catalogStatus === 'ok'
-                ? catalogHint || 'No model ids returned — type one above or leave blank for the server default.'
-                : catalogHint
-                  ? `Catalog unavailable (${catalogHint}). Type a model id or leave blank for the default.`
-                  : null}
-        </p>
+        <ModelIdComboboxField
+          inputId={`${modelFieldBaseId}-model-in`}
+          listId={`${modelFieldBaseId}-model-list`}
+          label="Model for this try-out"
+          hint={
+            catalogStatus === 'loading'
+              ? 'Fetching models from this source…'
+              : catalogStatus === 'ok' && catalogModels.length > 0
+                ? `${catalogModels.length} model id${catalogModels.length === 1 ? '' : 's'} available from the server.`
+                : catalogStatus === 'ok'
+                  ? catalogHint || 'No model ids returned — type one or leave blank for the server default.'
+                  : catalogHint
+                    ? `Catalog unavailable (${catalogHint}). Type a model id or leave blank for the default.`
+                    : null
+          }
+          value={selectedModel}
+          onChange={setSelectedModel}
+          optionIds={selectOptions}
+          disabled={loading || catalogStatus === 'loading'}
+          catalogBusy={catalogStatus === 'loading'}
+          placeholder="Search or leave empty for server default…"
+          className="le-llm-tryout-chat-modal__model-combo"
+        />
         {catalogStatus === 'ok' && catalogModels.length > 0 ? (
           <details className="le-llm-tryout-chat-modal__catalog">
             <summary className="forge-support">Browse all ids</summary>

@@ -1,0 +1,130 @@
+# Copilot question bank — representative Studio operator prompts.
+# Run headless: pytest tests/test_copilot_question_bank.py -q
+# Live + optional LLM judge: LENSES_COPILOT_LIVE=1 pytest tests/test_copilot_question_bank.py -q -k live
+
+version: 1
+
+cases:
+  - id: focused_repo_what_about
+    description: Project dashboard — short identity question (should not ask to shorten)
+    route: projects
+    scope_site: alpha
+    project_slug: alpha
+    page_context_summary: "Forge Studio · Project dashboard · repository alpha"
+    related_md_rel_paths:
+      - alpha/forge/charge.md
+    message: "what is this repository about?"
+    expect:
+      orchestration:
+        strategy: single_shot
+        min_citations: 1
+        skip_roster: true
+        citation_kinds_any:
+          - studio_page_context
+          - repo_identity_md
+      quality:
+        must_mention: [alpha, payments]
+        must_not_mention: [beta]
+        min_response_chars: 30
+        rubric: >
+          Answer describes only the alpha repository (payments demo).
+          Must not summarize the whole workspace portfolio unless asked.
+
+  - id: focused_repo_plain_english
+    description: Same scope, colloquial wording
+    route: projects
+    scope_site: beta
+    project_slug: beta
+    page_context_summary: "Forge Studio · Project dashboard · repository beta"
+    related_md_rel_paths:
+      - beta/forge/charge.md
+    message: "what this repo is about?"
+    expect:
+      orchestration:
+        strategy: single_shot
+        min_citations: 1
+        skip_roster: true
+      quality:
+        must_mention: [beta, documentation]
+        must_not_mention: [alpha, payments]
+        min_response_chars: 30
+        rubric: >
+          Answer is about beta (documentation tooling) only.
+
+  - id: portfolio_one_sentence_each
+    description: Projects list — map-reduce portfolio enumeration
+    route: projects
+    page_context_summary: "Forge Studio · Projects"
+    message: "describe each project in one sentence"
+    expect:
+      orchestration:
+        strategy: portfolio_map_reduce
+        min_subtasks: 2
+        min_citations: 1
+      quality:
+        must_mention: [alpha, beta]
+        min_response_chars: 40
+        rubric: >
+          One line per workspace project (alpha and beta at minimum).
+          Names must match fixture repos; do not invent projects.
+
+  - id: portfolio_list_repos
+    description: Explicit list wording on Projects route
+    route: projects
+    page_context_summary: "Forge Studio · Projects"
+    message: "list each repository in this workspace"
+    expect:
+      orchestration:
+        strategy: portfolio_map_reduce
+        min_subtasks: 2
+      quality:
+        must_mention: [alpha, beta]
+        rubric: >
+          Lists workspace git repositories from the scan roster or map summaries.
+
+  - id: home_workspace_overview
+    description: Home / overview — single-shot workspace question
+    route: overview
+    page_context_summary: "Forge Studio · Home"
+    message: "what projects are in this workspace?"
+    expect:
+      orchestration:
+        strategy: single_shot
+        min_citations: 1
+      quality:
+        must_mention: [alpha, beta]
+        rubric: >
+          Mentions alpha and beta as workspace children without inventing extra product names.
+
+  - id: search_charge_logs
+    description: Search route — factual lookup
+    route: search
+    scope_site: alpha
+    page_context_summary: "Forge Studio · Search"
+    message: "where is the charge log for alpha?"
+    expect:
+      orchestration:
+        strategy: single_shot
+        min_citations: 1
+      quality:
+        must_mention: [charge]
+        rubric: >
+          Points to alpha/forge/charge.md or equivalent charge log path in citations.
+
+  - id: focused_health_style
+    description: Vague screen question while scoped to one repo (not docs-health route)
+    route: projects
+    scope_site: alpha
+    project_slug: alpha
+    page_context_summary: "Forge Studio · Project dashboard · repository alpha"
+    message: "what should I look at here?"
+    expect:
+      orchestration:
+        strategy: single_shot
+        min_citations: 1
+        skip_roster: true
+      quality:
+        must_mention: [alpha]
+        must_not_mention: [describe each project]
+        rubric: >
+          Stays on the alpha project dashboard context; does not pivot to portfolio enumeration.

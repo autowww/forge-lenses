@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ApiError, apiGetJson, apiPostJson, lensesJsonApiOrigin, qs } from '../api/http'
-import { isTransientCopilotTransportError } from '../lib/classifyFetchError'
+import {
+  CopilotAttemptFailure,
+  copilotAttemptFailureFromUnknown,
+  formatCopilotExhaustedAttemptsMessage,
+  isRetriableCopilotFailure,
+} from '../lib/classifyFetchError'
 import { resolveUxFailure } from '../lib/uxPageState'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLensesCopilotPageScope } from '../context/LensesCopilotPageScopeContext'
 import {
+  formatCopilotFailureMessage,
+  pickOpenAiCompatFallbackModel,
   readStudioLlmPrefsForHydration,
+  sanitizeStudioModelOverride,
   writeMirroredLlmSessionPrefs,
 } from '../lib/copilotSessionPrefs'
 import { compactRelatedMdPathsForApi } from '../lib/copilotPageEvidence'
@@ -55,6 +63,7 @@ type CopilotChatRes = {
   error?: string
   detail?: string
   model?: string
+  model_fallback_from?: string
   usage?: {
     prompt_tokens?: number
     completion_tokens?: number
@@ -66,6 +75,13 @@ type CopilotChatRes = {
   write_proposals?: WriteProposal[]
   tool_mode?: string
   turn_reflection?: TurnReflection
+  copilot_trace?: {
+    strategy?: string
+    stopped_reason?: string
+    map_results_count?: number
+    subtask_count?: number
+    truncated?: boolean
+  }
 }
 
 type CopilotRailMessage = {
@@ -79,6 +95,7 @@ type CopilotRailMessage = {
   retryPrompt?: string
   usage?: CopilotChatRes['usage']
   reflection?: TurnReflection
+  copilotTrace?: CopilotChatRes['copilot_trace']
 }
 
 const STATIC_MUSEUM = import.meta.env.VITE_STATIC_MUSEUM === 'true'
@@ -107,8 +124,13 @@ const COPILOT_THINKING_MESSAGES = [
   'Calling the model (token totals update when this turn completes)…',
 ] as const
 
-/** Transient transport failures (e.g. flaky EventSource); same prompt is retried before showing an error. */
+/** Transient / model failures; same prompt is retried automatically before showing an error. */
 const MAX_TRANSIENT_COPILOT_ATTEMPTS = 3
+
+const COPILOT_RETRY_BACKOFF_MS = (attempt: number) => 400 + attempt * 350
+
+/** SSE wait budget — must exceed slow custom gateways and multi-step Copilot (see LENSES_COPILOT_SSE_MAX_WAIT_SEC). */
+const COPILOT_SSE_TIMEOUT_MS = 600_000
 
 function effectiveModelOverride(raw: string): string | undefined {
   const t = raw.trim()
@@ -169,6 +191,7 @@ export function LensesCopilotRail() {
     total_tokens: number
   } | null>(null)
   const [thinkingIdx, setThinkingIdx] = useState(0)
+  const [streamProgress, setStreamProgress] = useState<string | null>(null)
   const [pendingSince, setPendingSince] = useState<number | null>(null)
   const [banner, setBanner] = useState<string | null>(null)
   const [proposalReadyId, setProposalReadyId] = useState<string | null>(null)
@@ -238,8 +261,23 @@ export function LensesCopilotRail() {
       .then(([en, prov, st]) => {
         if (cancel) return
         setCopilotOn(en.enabled === true && en.ok === true)
+        const mainModels =
+          st.settings?.main_models && typeof st.settings.main_models === 'object'
+            ? (st.settings.main_models as Record<string, string>)
+            : {}
         const saved = readStudioLlmPrefsForHydration(workspaceRoot || undefined)
-        if (saved && typeof saved.model === 'string') setModelOverride(saved.model)
+        if (saved && typeof saved.model === 'string') {
+          const preferredProvider = (
+            saved.provider ||
+            (st.settings?.provider || '').trim().toLowerCase() ||
+            'openai_compatible'
+          ).trim().toLowerCase()
+          const cleaned = sanitizeStudioModelOverride(saved.model, mainModels[preferredProvider])
+          setModelOverride(cleaned)
+          if (cleaned !== saved.model.trim()) {
+            writeMirroredLlmSessionPrefs(workspaceRoot || undefined, { model: cleaned })
+          }
+        }
         if (saved?.toolMode === 'propose_writes' || saved?.toolMode === 'read_only') setToolMode(saved.toolMode)
 
         const pmap = prov.providers
@@ -304,22 +342,20 @@ export function LensesCopilotRail() {
     })
   }, [provider, modelOverride, toolMode, providers, ws.state?.workspace_root, llmSessionHydrated])
 
-  /** If AI Setup’s main id is not on this gateway, pick a catalog id so requests don’t use a bogus default. */
+  /** When AI Setup has a main model, keep override empty so the server uses that default. */
   useEffect(() => {
     if (!llmSessionHydrated) return
     if (provider !== 'openai_compatible' || !providers?.['openai_compatible']) return
     if (modelOverride.trim()) return
     const hint = (mainModelsHint['openai_compatible'] || '').trim()
+    if (hint) return
     let cancelled = false
     void apiPostJson<{ ok?: boolean; models?: string[] }>('/api/llm/provider-probe', {
       provider: 'openai_compatible',
       action: 'models',
     }).then((out) => {
       if (cancelled || !out.ok || !Array.isArray(out.models) || out.models.length === 0) return
-      const ids = new Set(out.models.map((x) => String(x).trim()).filter(Boolean))
-      if (hint && ids.has(hint)) return
-      const sorted = [...ids].sort((a, b) => a.localeCompare(b))
-      const pick = sorted[0]
+      const pick = pickOpenAiCompatFallbackModel(out.models.map((x) => String(x)))
       if (pick) setModelOverride(pick)
     })
     return () => {
@@ -401,10 +437,10 @@ export function LensesCopilotRail() {
         setMessages((m) => [...m, { role: 'user', text }])
       }
       setThinkingIdx(0)
+      setStreamProgress(null)
       setStreamUsage(null)
       setPendingSince(Date.now())
       setLoading(true)
-      const hadModelOverride = Boolean(effectiveModelOverride(modelOverride))
       const failBody =
         'Something blocked that response. Retry with a shorter question or confirm your provider is configured.'
 
@@ -431,53 +467,54 @@ export function LensesCopilotRail() {
       body.stream = copilotUseSseTransport()
 
       try {
+        let lastFailureMessage = failBody
         attemptLoop: for (let attempt = 1; attempt <= MAX_TRANSIENT_COPILOT_ATTEMPTS; attempt++) {
           if (attempt > 1) {
             setStreamUsage(null)
-          }
-          let delivered = false
-          const applyRes = (res: CopilotChatRes) => {
-            delivered = true
-            if (res.ok && res.text) {
-              if (!hadModelOverride && provider === 'openai_compatible' && res.model?.trim()) {
-                setModelOverride(res.model.trim())
-              }
-              const u = res.usage
-              if (
-                u &&
-                (typeof u.total_tokens === 'number' ||
-                  typeof u.prompt_tokens === 'number' ||
-                  typeof u.completion_tokens === 'number')
-              ) {
-                setLastReplyUsage(u)
-              }
-              setMessages((m) => [
-                ...m,
-                {
-                  role: 'assistant',
-                  text: res.text!,
-                  citations: res.citations,
-                  proposals: res.write_proposals,
-                  auditId: res.audit_id,
-                  truncated: res.grounding_truncated,
-                  usage: res.usage,
-                  reflection: res.turn_reflection,
-                },
-              ])
-            } else {
-              setBanner('That turn did not complete. Try read-only mode or check AI Setup.')
-              setMessages((m) => [
-                ...m,
-                {
-                  role: 'assistant',
-                  text: failBody,
-                  failed: true,
-                  retryPrompt: text,
-                },
-              ])
-            }
+            setStreamProgress(`Retrying (${attempt}/${MAX_TRANSIENT_COPILOT_ATTEMPTS})…`)
+            await new Promise<void>((r) => window.setTimeout(r, COPILOT_RETRY_BACKOFF_MS(attempt - 1)))
           }
           try {
+            const applyRes = (res: CopilotChatRes) => {
+              if (res.ok && res.text?.trim()) {
+                const fbFrom = (res.model_fallback_from || '').trim()
+                if (fbFrom) {
+                  setModelOverride('')
+                  const root = ws.state?.workspace_root?.trim() || ''
+                  writeMirroredLlmSessionPrefs(root || undefined, { model: '' })
+                  setBanner(
+                    `Model ${fbFrom} crashed on the gateway; used AI Setup default${res.model ? ` (${res.model})` : ''} instead.`,
+                  )
+                }
+                const u = res.usage
+                if (
+                  u &&
+                  (typeof u.total_tokens === 'number' ||
+                    typeof u.prompt_tokens === 'number' ||
+                    typeof u.completion_tokens === 'number')
+                ) {
+                  setLastReplyUsage(u)
+                }
+                setMessages((m) => [
+                  ...m,
+                  {
+                    role: 'assistant',
+                    text: res.text!,
+                    citations: res.citations,
+                    proposals: res.write_proposals,
+                    auditId: res.audit_id,
+                    truncated: res.grounding_truncated,
+                    usage: res.usage,
+                    reflection: res.turn_reflection,
+                    copilotTrace: res.copilot_trace,
+                  },
+                ])
+                return
+              }
+              const msg = formatCopilotFailureMessage(res, failBody)
+              throw new CopilotAttemptFailure(msg, isRetriableCopilotFailure(res))
+            }
+
             if (STATIC_MUSEUM) {
               const res = await apiPostJson<CopilotChatRes>('/api/sdlc-copilot/chat', body)
               applyRes(res)
@@ -493,13 +530,7 @@ export function LensesCopilotRail() {
               body,
             )
             if (!start.ok || !start.session_id) {
-              delivered = true
-              setBanner('Copilot async session could not be started. Try again or use AI Setup.')
-              setMessages((m) => [
-                ...m,
-                { role: 'assistant', text: failBody, failed: true, retryPrompt: text },
-              ])
-              return
+              throw new CopilotAttemptFailure(failBody, true)
             }
             const origin = lensesJsonApiOrigin()
             const streamPath = `/api/sdlc-copilot/chat-stream${qs({ session_id: start.session_id })}`
@@ -511,12 +542,19 @@ export function LensesCopilotRail() {
                 settled = true
                 resolve()
               }
-              const fail = (msg: string) => {
+              const fail = (msg: string, retriable = true) => {
                 if (settled) return
                 settled = true
-                reject(new Error(msg))
+                reject(new CopilotAttemptFailure(msg, retriable))
               }
-              const to = window.setTimeout(() => fail('Copilot stream timed out.'), 125_000)
+              const to = window.setTimeout(
+                () =>
+                  fail(
+                    'Copilot stream timed out — slow models may need up to a few minutes.',
+                    true,
+                  ),
+                COPILOT_SSE_TIMEOUT_MS,
+              )
               const es = new EventSource(streamUrl, { withCredentials: true } as EventSourceInit)
               copilotEsRef.current = es
               es.onmessage = (ev) => {
@@ -533,7 +571,15 @@ export function LensesCopilotRail() {
                     window.clearTimeout(to)
                     es.close()
                     copilotEsRef.current = null
-                    fail(String(row.error || 'stream_error'))
+                    const errPayload = {
+                      ok: false,
+                      error: String(row.error || 'stream_error'),
+                      detail: typeof row.detail === 'string' ? row.detail : undefined,
+                    }
+                    fail(
+                      formatCopilotFailureMessage(errPayload, failBody),
+                      isRetriableCopilotFailure(errPayload),
+                    )
                     return
                   }
                   const event = row.event as Record<string, unknown> | undefined
@@ -551,27 +597,62 @@ export function LensesCopilotRail() {
                     }
                     return
                   }
+                  if (typ === 'plan') {
+                    const n = Number(payload.subtask_count) || 0
+                    setStreamProgress(
+                      n > 0
+                        ? `Planning ${n} scoped lookups (${String(payload.strategy || 'map-reduce')})…`
+                        : 'Planning scoped lookups…',
+                    )
+                    return
+                  }
+                  if (typ === 'subtask_start') {
+                    setStreamProgress(
+                      `Summarizing ${payload.index}/${payload.total}: ${String(payload.label || 'entry')}…`,
+                    )
+                    return
+                  }
+                  if (typ === 'subtask_end') {
+                    return
+                  }
+                  if (typ === 'thought') {
+                    const msg = String(payload.message || '').trim()
+                    if (msg) setStreamProgress(msg)
+                    return
+                  }
                   if (typ === 'final') {
-                    const res = payload.result as CopilotChatRes
-                    applyRes(res)
                     window.clearTimeout(to)
                     es.close()
                     copilotEsRef.current = null
-                    settle()
+                    const res = payload.result as CopilotChatRes
+                    try {
+                      applyRes(res)
+                      settle()
+                    } catch (e) {
+                      fail(
+                        e instanceof CopilotAttemptFailure
+                          ? e.userMessage
+                          : formatCopilotFailureMessage(res, failBody),
+                        e instanceof CopilotAttemptFailure
+                          ? e.retriable
+                          : isRetriableCopilotFailure(res),
+                      )
+                    }
                     return
                   }
                   if (typ === 'error') {
-                    delivered = true
                     window.clearTimeout(to)
                     es.close()
                     copilotEsRef.current = null
-                    const msg = String(payload.message || 'Copilot error')
-                    setBanner(msg)
-                    setMessages((m) => [
-                      ...m,
-                      { role: 'assistant', text: msg, failed: true, retryPrompt: text },
-                    ])
-                    settle()
+                    const errPayload = {
+                      ok: false,
+                      error: 'llm_provider_error',
+                      detail: String(payload.message || 'Copilot error'),
+                    }
+                    fail(
+                      formatCopilotFailureMessage(errPayload, failBody),
+                      isRetriableCopilotFailure(errPayload),
+                    )
                   }
                 } catch {
                   /* ignore malformed chunk */
@@ -582,32 +663,30 @@ export function LensesCopilotRail() {
                 es.close()
                 copilotEsRef.current = null
                 if (!settled) {
-                  settled = true
-                  reject(new Error('SSE connection lost'))
+                  fail('SSE connection lost', true)
                 }
               }
             })
             return
           } catch (err) {
-            if (delivered) {
-              return
-            }
-            if (attempt < MAX_TRANSIENT_COPILOT_ATTEMPTS && isTransientCopilotTransportError(err)) {
-              await new Promise<void>((r) => window.setTimeout(r, 280 + attempt * 120))
+            const failure = copilotAttemptFailureFromUnknown(err, failBody)
+            lastFailureMessage = failure.userMessage
+            if (failure.retriable && attempt < MAX_TRANSIENT_COPILOT_ATTEMPTS) {
               continue attemptLoop
             }
-            let assistantText = 'That request failed before a response arrived.'
+            let assistantText = failure.userMessage
             if (err instanceof ApiError && err.status === 403) {
               assistantText =
                 toolMode === 'propose_writes'
                   ? 'Write proposals need a signed-in session with project access. Try read-only or open a project dashboard.'
                   : 'This endpoint is not available from how you opened Lenses.'
-              setBanner(assistantText)
-            } else {
-              const ux = resolveUxFailure(err)
-              assistantText = ux.description
-              setBanner(ux.description)
+            } else if (failure.retriable && attempt >= MAX_TRANSIENT_COPILOT_ATTEMPTS) {
+              assistantText = formatCopilotExhaustedAttemptsMessage(
+                lastFailureMessage,
+                MAX_TRANSIENT_COPILOT_ATTEMPTS,
+              )
             }
+            setBanner(assistantText)
             setMessages((m) => [
               ...m,
               { role: 'assistant', text: assistantText, failed: true, retryPrompt: text },
@@ -619,6 +698,7 @@ export function LensesCopilotRail() {
         copilotEsRef.current?.close()
         copilotEsRef.current = null
         setStreamUsage(null)
+        setStreamProgress(null)
         setLoading(false)
         setPendingSince(null)
       }
@@ -955,6 +1035,15 @@ export function LensesCopilotRail() {
                   <p className="le-copilot-rail__bubble-meta">
                     Audit <code className="le-mono">{m.auditId}</code>
                     {m.truncated ? ' · grounding trimmed' : null}
+                    {m.copilotTrace?.strategy ? (
+                      <>
+                        {' '}
+                        · {m.copilotTrace.strategy}
+                        {typeof m.copilotTrace.subtask_count === 'number'
+                          ? ` (${m.copilotTrace.subtask_count} slices)`
+                          : ''}
+                      </>
+                    ) : null}
                   </p>
                 ) : null}
                 {m.role === 'assistant' &&
@@ -1061,7 +1150,8 @@ export function LensesCopilotRail() {
                 ) : null}
                 <div className="le-copilot-rail__thinking-blade" aria-live="polite">
                   <span className="le-copilot-rail__thinking-blade-text">
-                    {COPILOT_THINKING_MESSAGES[thinkingIdx % COPILOT_THINKING_MESSAGES.length]}
+                    {streamProgress ||
+                      COPILOT_THINKING_MESSAGES[thinkingIdx % COPILOT_THINKING_MESSAGES.length]}
                   </span>
                 </div>
                 <ChatRequestPendingRow

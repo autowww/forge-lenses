@@ -66,7 +66,124 @@ export function isTransientCopilotTransportError(err: unknown): boolean {
   if (err instanceof Error) {
     const m = err.message
     if (m === 'SSE connection lost') return true
-    if (m === 'Copilot stream timed out.') return true
+    if (/stream timed out/i.test(m)) return true
   }
   return false
+}
+
+export type CopilotFailureLike = {
+  ok?: boolean
+  error?: string | null
+  detail?: string | null
+  text?: string | null
+  message?: string | null
+}
+
+const NON_RETRIABLE_COPILOT_CODES = new Set([
+  'feature_disabled',
+  'invalid_tool_mode',
+  'missing_message',
+  'forbidden',
+  'permission_denied',
+])
+
+/**
+ * True when repeating the same Copilot turn may succeed (gateway runner crash, timeout, flaky SSE, etc.).
+ * Used by Lenses Copilot auto-retry; auth/validation failures are not retried.
+ */
+export function isRetriableCopilotFailure(err: unknown): boolean {
+  if (err instanceof ApiError) {
+    if (err.status === 403 || err.status === 404 || err.status === 401) return false
+    return isTransientCopilotTransportError(err)
+  }
+  if (isTransientCopilotTransportError(err)) return true
+
+  if (typeof err === 'object' && err !== null) {
+    const o = err as CopilotFailureLike
+    if (o.ok === true && (o.text || '').trim()) return false
+
+    const code = String(o.error || '')
+      .trim()
+      .toLowerCase()
+    if (code && NON_RETRIABLE_COPILOT_CODES.has(code)) return false
+
+    const parts = [o.detail, o.error, o.message].filter(
+      (x) => typeof x === 'string' && x.trim(),
+    ) as string[]
+    const raw = parts.join(' ').toLowerCase()
+
+    if (
+      raw.includes('llama runner') ||
+      raw.includes('runner process') ||
+      raw.includes('terminated') ||
+      raw.includes('out of memory') ||
+      /\boom\b/.test(raw)
+    ) {
+      return true
+    }
+    if (code === 'llm_provider_error' || code === 'stream_timeout' || code === 'stream_error') {
+      return true
+    }
+    if (/timed out|timeout|connection reset|econnreset|bad gateway|service unavailable/i.test(raw)) {
+      return true
+    }
+    if (o.ok === false || !(o.text || '').trim()) return true
+    return false
+  }
+
+  if (err instanceof Error) {
+    const m = err.message.toLowerCase()
+    if (m === 'sse connection lost') return true
+    if (/stream timed out|llama runner|runner process|terminated|out of memory|timed out/i.test(m)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/** User-facing message after automatic retries are exhausted. */
+export function formatCopilotExhaustedAttemptsMessage(reason: string, attempts: number): string {
+  const body = reason.trim() || 'The model did not return a response.'
+  const lower = body.toLowerCase()
+  let hint =
+    'You can tap Retry, or pick a stable model in Copilot settings (gear).'
+  if (lower.includes('sse connection') || lower.includes('stream timed out')) {
+    hint =
+      'The connection dropped while waiting for the model — Retry usually works. For long portfolio questions, use AI Setup default model or read-only mode.'
+  } else if (
+    lower.includes('llama runner') ||
+    lower.includes('runner process') ||
+    lower.includes('terminated') ||
+    lower.includes('out of memory')
+  ) {
+    hint =
+      'The gateway model crashed — clear the Model override in Copilot settings (gear) to use your AI Setup default.'
+  }
+  return (
+    `Failed after ${attempts} attempts in a row.\n\n${body}\n\n${hint}`
+  )
+}
+
+/** Thrown inside Copilot send loops to signal a failed attempt (may auto-retry). */
+export class CopilotAttemptFailure extends Error {
+  readonly userMessage: string
+  readonly retriable: boolean
+
+  constructor(userMessage: string, retriable: boolean) {
+    super(userMessage)
+    this.name = 'CopilotAttemptFailure'
+    this.userMessage = userMessage
+    this.retriable = retriable
+  }
+}
+
+export function copilotAttemptFailureFromUnknown(err: unknown, fallback: string): CopilotAttemptFailure {
+  if (err instanceof CopilotAttemptFailure) return err
+  if (err instanceof ApiError && err.status === 403) {
+    return new CopilotAttemptFailure(err.message, false)
+  }
+  const ux = classifyFetchError(err)
+  const msg = ux.detail && ux.detail !== ux.summary ? `${ux.summary} ${ux.detail}` : ux.summary
+  return new CopilotAttemptFailure(msg || fallback, isRetriableCopilotFailure(err))
 }

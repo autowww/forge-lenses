@@ -484,6 +484,10 @@ export const PROJECT_OBJECT_HOME = {
 /** Embedded copilot default on project dashboard (plain-language health). */
 export const PROJECT_COPILOT_DEFAULT = EVIDENCE_IA.copilotProjectHealth
 
+/** Projects portfolio view — batched map-reduce friendly prompt. */
+export const PROJECT_PORTFOLIO_COPILOT_DEFAULT =
+  'Describe each git repository in this workspace in one sentence, using grounded sources. Note gaps where context is missing.'
+
 /** Sprint UX7 — admin / inspect / automation surfaces (gear menu, page framing, copilot defaults). */
 export const ADMIN_INSPECT_COPY = {
   settingsSectionPreferences: 'Preferences',

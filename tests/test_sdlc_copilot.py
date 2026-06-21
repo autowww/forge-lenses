@@ -11,7 +11,11 @@ from lenses.sdlc_copilot import commit_stored_proposal, experimental_sdlc_copilo
 from lenses.sdlc_copilot.chat import run_copilot_chat
 from lenses.sdlc_copilot.drafts import build_tool_proposals, persist_proposals
 from lenses.sdlc_copilot.feature_flag import experimental_sdlc_copilot_enabled as flag_fn
-from lenses.sdlc_copilot.grounding import build_grounding_bundle, search_query_for_grounding
+from lenses.sdlc_copilot.grounding import (
+    build_grounding_bundle,
+    build_scoped_grounding_for_subtask,
+    search_query_for_grounding,
+)
 from lenses.sdlc_copilot.permissions import may_use_propose_writes
 
 
@@ -76,6 +80,80 @@ def test_grounding_docs_health_skips_workspace_rollups(tmp_path: Path) -> None:
     assert "Context: the operator is on a Forge Studio **Docs health** view" in block
 
 
+def test_grounding_projects_focused_repo_skips_roster_and_loads_readme(tmp_path: Path) -> None:
+    repo = tmp_path / "blueprints"
+    repo.mkdir()
+    (repo / "README.md").write_text(
+        "# Blueprints\nReusable software-delivery documentation framework.\n",
+        encoding="utf-8",
+    )
+    scan = {
+        "children": [
+            {"name": "blueprints", "is_git": True, "git_branch": "main"},
+            {"name": "forgesdlc", "is_git": True, "git_branch": "main"},
+        ],
+        "resolved_at": None,
+    }
+    block, citations, trunc = build_grounding_bundle(
+        tmp_path,
+        "what is this repository?",
+        scan_state=scan,
+        max_citations=40,
+        studio_route="projects",
+        scope_site="blueprints",
+        page_context_summary="Forge Studio · Project dashboard · repository blueprints",
+    )
+    kinds = [c.get("kind") for c in citations]
+    assert "workspace_projects_roster" not in kinds
+    assert "repo_identity_md" in kinds
+    assert "Reusable software-delivery" in block
+    assert "project dashboard** for repository **blueprints**" in block
+    assert trunc is False
+
+
+def test_search_query_projects_focused_vague_uses_repo_anchor() -> None:
+    q = search_query_for_grounding(
+        "what is this repository?",
+        studio_route="projects",
+        scope_site="blueprints",
+    )
+    assert q.startswith("blueprints")
+    assert "readme" in q.lower()
+
+
+def test_grounding_projects_includes_workspace_roster(tmp_path: Path) -> None:
+    scan = {
+        "children": [
+            {"name": "forgesdlc", "is_git": True, "git_branch": "main"},
+            {"name": "notes", "is_git": False},
+        ],
+        "resolved_at": None,
+    }
+    block, citations, trunc = build_grounding_bundle(
+        tmp_path,
+        "describe each project in one sentence",
+        scan_state=scan,
+        max_citations=40,
+        studio_route="projects",
+        page_context_summary="Forge Studio · Projects",
+    )
+    kinds = [c.get("kind") for c in citations]
+    assert "workspace_projects_roster" in kinds
+    assert "test_quality" not in kinds
+    assert "forgesdlc" in block
+    assert "Forge Studio **Projects**" in block
+    assert trunc is False
+
+
+def test_search_query_projects_route_uses_anchor() -> None:
+    q = search_query_for_grounding(
+        "describe each project",
+        studio_route="projects",
+    )
+    assert "project" in q.lower()
+    assert "repository" in q.lower()
+
+
 def test_grounding_bundle_page_context_and_related_md(tmp_path: Path) -> None:
     md_dir = tmp_path / "forge"
     md_dir.mkdir(parents=True)
@@ -96,6 +174,23 @@ def test_grounding_bundle_page_context_and_related_md(tmp_path: Path) -> None:
     md_cits = [c for c in citations if c.get("kind") == "related_workspace_md"]
     assert md_cits and "Hello from charge" in (md_cits[0].get("snippet") or "")
     assert citations[0].get("kind") == "studio_page_context"
+
+
+def test_scoped_grounding_omits_rollups(tmp_path: Path) -> None:
+    block, citations, trunc = build_scoped_grounding_for_subtask(
+        tmp_path,
+        scan_state={"children": [], "resolved_at": None},
+        scope_site="forgesdlc",
+        related_md_rel_paths=None,
+        fts_query="forgesdlc readme project",
+        max_citations=8,
+        studio_route="projects",
+    )
+    kinds = [c.get("kind") for c in citations]
+    assert "test_quality" not in kinds
+    assert "workspace_projects_roster" not in kinds
+    assert "scoped Forge Lenses copilot slice" in block
+    assert trunc is False
 
 
 def test_propose_writes_policy_enforced_requires_project(tmp_path: Path) -> None:

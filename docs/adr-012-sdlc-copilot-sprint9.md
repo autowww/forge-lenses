@@ -22,3 +22,4 @@ Studio **Search** and **Chat** were useful but disconnected from the canonical o
 - **Positive** — Grounding is explainable via citations; writes are explicit, permissioned, and export-shaped for human review.
 - **Negative** — Large workspaces may hit **`MAX_MESSAGE_CHARS`**; grounding may truncate (flagged in the response). Heuristic proposals may misfire; operators must confirm exports.
 - **Follow-up** — Optional multi-message chat in `llm_completions`; stronger intent routing for drafts; project-scoped grounding filters on aggregates.
+- **Follow-up (2026-06)** — **Map-reduce Copilot** for portfolio / broad workspace asks: intent router + scoped FTS subtasks + reduce synthesis (`lenses/sdlc_copilot/map_reduce.py`). Supplements deflect-retry for “describe each project” style questions; gated by `LENSES_COPILOT_MAP_REDUCE` (default on when git repo count > 8 on portfolio route). **Algorithm doc:** [copilot-map-reduce-retrieval.md](copilot-map-reduce-retrieval.md).

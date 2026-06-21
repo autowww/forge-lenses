@@ -51,6 +51,83 @@ def _route_is_docs_health(studio_route: str | None) -> bool:
     return r == "docs-health" or r.startswith("docs-health-")
 
 
+def _route_is_projects(studio_route: str | None) -> bool:
+    r = (studio_route or "").strip().lower()
+    return r == "projects"
+
+
+def _focused_project_scope(scope_site: str) -> bool:
+    """True when Copilot should answer about one workspace child, not the whole portfolio."""
+    return bool((scope_site or "").strip())
+
+
+def _safe_repo_child_md(workspace_root: Path, scope_site: str, rel: str) -> Path | None:
+    """Resolve ``rel`` under a direct workspace child folder (``scope_site``) when it is markdown."""
+    site = (scope_site or "").strip()
+    if not site or ".." in site or "/" in site or "\\" in site:
+        return None
+    rel_norm = rel.replace("\\", "/").strip("/")
+    if not rel_norm or ".." in rel_norm.split("/"):
+        return None
+    wr = workspace_root.resolve()
+    repo_root = (wr / site).resolve()
+    try:
+        repo_root.relative_to(wr)
+    except ValueError:
+        return None
+    if repo_root.parent != wr or not repo_root.is_dir():
+        return None
+    candidate = (repo_root / rel_norm).resolve()
+    try:
+        candidate.relative_to(repo_root)
+    except ValueError:
+        return None
+    if not candidate.is_file() or candidate.suffix.lower() != ".md":
+        return None
+    return candidate
+
+
+def _repo_identity_md_snippets(workspace_root: Path, scope_site: str) -> list[tuple[str, str]]:
+    """README / charge excerpts for a focused repository dashboard."""
+    out: list[tuple[str, str]] = []
+    for rel in ("README.md", "forge/charge.md", "sdlc/README.md"):
+        spath = _safe_repo_child_md(workspace_root, scope_site, rel)
+        if spath is None:
+            continue
+        try:
+            body = spath.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if body.strip():
+            out.append((f"{scope_site.strip()}/{rel}", body))
+    return out
+
+
+def _workspace_children_roster_snippet(scan_state: dict[str, Any], *, limit: int = 80) -> str:
+    children = scan_state.get("children") if isinstance(scan_state, dict) else None
+    if not isinstance(children, list):
+        return ""
+    lines: list[str] = []
+    for ch in children[:limit]:
+        if not isinstance(ch, dict):
+            continue
+        name = str(ch.get("name") or "").strip()
+        if not name:
+            continue
+        kind = "git repo" if ch.get("is_git") else "folder"
+        branch = str(ch.get("git_branch") or "").strip()
+        dirty = ch.get("git_dirty")
+        meta: list[str] = [kind]
+        if branch:
+            meta.append(f"branch={branch}")
+        if dirty is True:
+            meta.append("dirty")
+        lines.append(f"- {name} ({', '.join(meta)})")
+    if len(children) > limit:
+        lines.append(f"- … and {len(children) - limit} more entries (truncated)")
+    return "\n".join(lines)
+
+
 def build_grounding_bundle(
     workspace_root: Path,
     user_message: str,
@@ -62,6 +139,8 @@ def build_grounding_bundle(
     page_context_summary: str | None = None,
     related_md_rel_paths: list[str] | None = None,
     studio_route: str | None = None,
+    fts_query_override: str | None = None,
+    skip_sections: frozenset[str] | None = None,
 ) -> tuple[str, list[dict[str, Any]], bool]:
     """
     Returns (prompt_block, citations, truncated_flag).
@@ -80,6 +159,15 @@ def build_grounding_bundle(
     cid = 0
     truncated = False
     docs_health = _route_is_docs_health(studio_route)
+    projects_route = _route_is_projects(studio_route)
+    focused_repo = _focused_project_scope(scope_site)
+    skip = skip_sections or frozenset()
+    skip_workspace_rollups = docs_health or projects_route or "rollups" in skip
+    skip_page_context = "page_context" in skip
+    skip_related_md = "related_md" in skip
+    skip_roster = "roster" in skip or (projects_route and focused_repo)
+    skip_search = "search" in skip
+    skip_orchestration = "orchestration" in skip
 
     def add(c: dict[str, Any]) -> None:
         nonlocal cid, truncated
@@ -93,7 +181,7 @@ def build_grounding_bundle(
 
     # --- Studio page context (client-provided; what the operator is looking at) ---
     pcs = _trunc((page_context_summary or "").strip(), 2200)
-    if pcs:
+    if pcs and not skip_page_context:
         add(
             {
                 "kind": "studio_page_context",
@@ -103,106 +191,135 @@ def build_grounding_bundle(
             }
         )
 
+    # --- Repository identity (README / charge) for a focused project dashboard ---
+    if focused_repo and not skip_related_md:
+        for rel, body in _repo_identity_md_snippets(workspace_root, scope_site):
+            add(
+                {
+                    "kind": "repo_identity_md",
+                    "title": _trunc(rel, 200),
+                    "ref": workspace_md_view_link(rel),
+                    "snippet": _trunc(body, 2800),
+                    "source": "repo_readme",
+                }
+            )
+
     # --- Related workspace markdown (allowlisted paths only; early in bundle) ---
-    for rel in _norm_related_md_paths(related_md_rel_paths):
-        spath = safe_forge_workspace_file(workspace_root, rel)
-        if spath is None:
-            continue
-        try:
-            body = spath.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        cat = workspace_md_path_pattern_category(rel) or "workspace_md"
-        add(
-            {
-                "kind": "related_workspace_md",
-                "title": _trunc(rel, 200),
-                "ref": workspace_md_view_link(rel),
-                "snippet": _trunc(body, 2200),
-                "source": cat,
-            }
-        )
+    if not skip_related_md:
+        for rel in _norm_related_md_paths(related_md_rel_paths):
+            spath = safe_forge_workspace_file(workspace_root, rel)
+            if spath is None:
+                continue
+            try:
+                body = spath.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            cat = workspace_md_path_pattern_category(rel) or "workspace_md"
+            add(
+                {
+                    "kind": "related_workspace_md",
+                    "title": _trunc(rel, 200),
+                    "ref": workspace_md_view_link(rel),
+                    "snippet": _trunc(body, 2200),
+                    "source": cat,
+                }
+            )
+
+    # --- Workspace project roster (Projects route; enumerate repos/folders) ---
+    if projects_route and not skip_roster:
+        roster = _workspace_children_roster_snippet(scan_state)
+        if roster.strip():
+            add(
+                {
+                    "kind": "workspace_projects_roster",
+                    "title": "Workspace repositories and folders (from scan)",
+                    "ref": "workspace:children",
+                    "snippet": _trunc(roster, 4800),
+                }
+            )
 
     # --- Local search (docs / site / ingested) ---
-    q = search_query_for_grounding(
-        user_message, studio_route=studio_route, scope_site=scope_site
-    )
-    try:
-        sconn = search_db.connect(workspace_root)
+    if not skip_search:
+        q = (fts_query_override or "").strip() or search_query_for_grounding(
+            user_message, studio_route=studio_route, scope_site=scope_site
+        )
         try:
-            res = search_db.search(
-                sconn,
-                q,
-                limit=14 if docs_health else 10,
-                offset=0,
-                scope_site=(scope_site or "").strip(),
-            )
-            for h in res.get("hits") or []:
-                if not isinstance(h, dict):
-                    continue
-                title = str(h.get("title") or h.get("path_key") or "hit")
-                url = str(h.get("url") or "")
-                snip = str(h.get("snippet") or "")
-                add(
-                    {
-                        "kind": "search_hit",
-                        "title": _trunc(title, 200),
-                        "ref": url or str(h.get("path_key") or ""),
-                        "snippet": _trunc(snip, 400),
-                        "source": str(h.get("source") or ""),
-                    }
+            sconn = search_db.connect(workspace_root)
+            try:
+                res = search_db.search(
+                    sconn,
+                    q,
+                    limit=14 if docs_health else (16 if projects_route else 10),
+                    offset=0,
+                    scope_site=(scope_site or "").strip(),
                 )
-        finally:
-            sconn.close()
-    except OSError:
-        pass
-
-    # --- Orchestration graph ---
-    ogs = ogs_connect(workspace_root)
-    if ogs is not None:
-        try:
-            if not docs_health:
-                rows = ogs.execute(
-                    """
-                    SELECT id, kind, display_name, summary
-                    FROM ogs_entity
-                    WHERE id NOT LIKE 'ogs:demo:%'
-                    ORDER BY updated_at DESC
-                    LIMIT 14
-                    """
-                ).fetchall()
-                for r in rows:
+                for h in res.get("hits") or []:
+                    if not isinstance(h, dict):
+                        continue
+                    title = str(h.get("title") or h.get("path_key") or "hit")
+                    url = str(h.get("url") or "")
+                    snip = str(h.get("snippet") or "")
                     add(
                         {
-                            "kind": "orchestration_entity",
-                            "title": f"{r['kind']}: {r['display_name']}",
-                            "ref": str(r["id"]),
-                            "snippet": _trunc(str(r["summary"] or ""), 500),
+                            "kind": "search_hit",
+                            "title": _trunc(title, 200),
+                            "ref": url or str(h.get("path_key") or ""),
+                            "snippet": _trunc(snip, 400),
+                            "source": str(h.get("source") or ""),
                         }
                     )
-            root_trace = (focus_entity_id or "").strip()
-            if root_trace:
-                sub = trace_subgraph(ogs, root_trace, direction="both", max_depth=3, max_nodes=80)
-                if sub.get("ok"):
-                    for n in (sub.get("nodes") or [])[:12]:
-                        if not isinstance(n, dict):
-                            continue
-                        nid = str(n.get("id") or "")
-                        if nid.startswith("ogs:demo:"):
-                            continue
+            finally:
+                sconn.close()
+        except OSError:
+            pass
+
+    # --- Orchestration graph ---
+    if not skip_orchestration:
+        ogs = ogs_connect(workspace_root)
+        if ogs is not None:
+            try:
+                if not skip_workspace_rollups:
+                    rows = ogs.execute(
+                        """
+                        SELECT id, kind, display_name, summary
+                        FROM ogs_entity
+                        WHERE id NOT LIKE 'ogs:demo:%'
+                        ORDER BY updated_at DESC
+                        LIMIT 14
+                        """
+                    ).fetchall()
+                    for r in rows:
                         add(
                             {
-                                "kind": "orchestration_trace",
-                                "title": f"{n.get('kind')}: {n.get('display_name')}",
-                                "ref": nid,
-                                "snippet": _trunc(str(n.get("summary") or ""), 400),
+                                "kind": "orchestration_entity",
+                                "title": f"{r['kind']}: {r['display_name']}",
+                                "ref": str(r["id"]),
+                                "snippet": _trunc(str(r["summary"] or ""), 500),
                             }
                         )
-        finally:
-            ogs.close()
+                root_trace = (focus_entity_id or "").strip()
+                if root_trace:
+                    sub = trace_subgraph(ogs, root_trace, direction="both", max_depth=3, max_nodes=80)
+                    if sub.get("ok"):
+                        for n in (sub.get("nodes") or [])[:12]:
+                            if not isinstance(n, dict):
+                                continue
+                            nid = str(n.get("id") or "")
+                            if nid.startswith("ogs:demo:"):
+                                continue
+                            add(
+                                {
+                                    "kind": "orchestration_trace",
+                                    "title": f"{n.get('kind')}: {n.get('display_name')}",
+                                    "ref": nid,
+                                    "snippet": _trunc(str(n.get("summary") or ""), 400),
+                                }
+                            )
+            finally:
+                ogs.close()
 
     # --- Cross-team release (go/no-go, change requests) ---
-    if not docs_health:
+    if not skip_workspace_rollups:
         try:
             ctr = build_cross_team_release_overview(
                 workspace_root=workspace_root, scan_state=scan_state
@@ -250,7 +367,7 @@ def build_grounding_bundle(
             pass
 
     # --- Test quality summary ---
-    if not docs_health:
+    if not skip_workspace_rollups:
         try:
             qov = build_quality_overview_payload(
                 workspace_root=workspace_root, scan_state=scan_state
@@ -280,7 +397,7 @@ def build_grounding_bundle(
             pass
 
     # --- DevSecOps rollups / risk ---
-    if not docs_health:
+    if not skip_workspace_rollups:
         try:
             d = build_devsecops_overview_payload(
                 workspace_root=workspace_root, scan_state=scan_state
@@ -306,7 +423,7 @@ def build_grounding_bundle(
             pass
 
     # --- Ops / incidents (for postmortem / rollback context) ---
-    if not docs_health:
+    if not skip_workspace_rollups:
         try:
             ops = build_ops_delivery_overview(workspace_root=workspace_root, scan_state=scan_state)
             inc = ops.get("incidents") if isinstance(ops, dict) else []
@@ -329,7 +446,7 @@ def build_grounding_bundle(
             pass
 
     # --- Recent LLM execution events (not prompts) ---
-    if not docs_health:
+    if not skip_workspace_rollups:
         try:
             usage = get_usage_summary(workspace_root)
             rev = usage.get("recent_events") or []
@@ -363,6 +480,22 @@ def build_grounding_bundle(
             "studio_page_context and repository-scoped search hits; do not invent SDLC process detail "
             "from generic handbook pages unless the context explicitly supports it."
         )
+    elif projects_route and focused_repo:
+        site = (scope_site or "").strip()
+        lines_out.append(
+            f"Context: the operator is on a Forge Studio **project dashboard** for repository "
+            f"**{site}**. Answer only about **{site}** using studio_page_context, "
+            "**repo_identity_md**, related markdown, and repository-scoped search hits. "
+            "Do not list or summarize other workspace repositories unless the user explicitly "
+            "asks for the whole portfolio."
+        )
+    elif projects_route:
+        lines_out.append(
+            "Context: the operator is on Forge Studio **Projects** — list or summarize workspace "
+            "repositories using **workspace_projects_roster** and search hits. Give one line per project "
+            "when asked; cite [n] for each factual claim. Say which projects lack enough context instead "
+            "of inventing descriptions."
+        )
     lines_out.extend(["", "--- CONTEXT ---"])
     for c in citations:
         n = c["id"]
@@ -377,6 +510,42 @@ def build_grounding_bundle(
         lines_out.append("")
     lines_out.append("--- END CONTEXT ---")
     return "\n".join(lines_out), citations, truncated
+
+
+_MAP_SKIP = frozenset({"page_context", "roster", "orchestration", "rollups"})
+
+
+def build_scoped_grounding_for_subtask(
+    workspace_root: Path,
+    *,
+    scan_state: dict[str, Any],
+    scope_site: str,
+    related_md_rel_paths: list[str] | None,
+    fts_query: str,
+    max_citations: int = 8,
+    studio_route: str | None = None,
+) -> tuple[str, list[dict[str, Any]], bool]:
+    """Slim grounding bundle for one map-reduce subtask (~search + charge.md only)."""
+    block, citations, truncated = build_grounding_bundle(
+        workspace_root,
+        fts_query,
+        scan_state=scan_state,
+        scope_site=scope_site,
+        max_citations=max(4, min(max_citations, 12)),
+        related_md_rel_paths=related_md_rel_paths,
+        studio_route=studio_route,
+        fts_query_override=fts_query,
+        skip_sections=_MAP_SKIP,
+    )
+    slim_header = [
+        "You are a scoped Forge Lenses copilot slice. Answer ONLY from the numbered context.",
+        "Cite [n] for each factual claim. If insufficient, say what is missing for this entry.",
+        "",
+    ]
+    if "--- CONTEXT ---" in block:
+        ctx_part = block[block.index("--- CONTEXT ---") :]
+        return "\n".join(slim_header) + ctx_part, citations, truncated
+    return block, citations, truncated
 
 
 def search_query_for_grounding(
@@ -418,6 +587,23 @@ def search_query_for_grounding(
             return merged if merged else anchor
         merged2 = f"{anchor} {tail}".strip()
         return _trunc(merged2, 220) if len(merged2) > 220 else merged2
+
+    if _route_is_projects(studio_route):
+        site = (scope_site or "").strip()
+        anchor_bits = ["repository", "project", "readme", "forge", "charge", "workspace"]
+        if site:
+            anchor_bits = [site, "readme", "repository", "overview", "forge", "charge"]
+        anchor = " ".join(anchor_bits)
+        tail = " ".join(parts[:10])
+        merged = f"{anchor} {tail}".strip()
+        vague_this_repo = frozenset(
+            """
+            this that here repository repo project folder workspace
+            """.split()
+        )
+        if site and len(meaningful) < 2 and all(p.lower() in vague_this_repo for p in parts):
+            merged = f"{site} readme overview repository adoption purpose".strip()
+        return _trunc(merged, 220) if len(merged) > 220 else merged
 
     if not raw:
         return "workspace"

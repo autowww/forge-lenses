@@ -11,6 +11,25 @@ from typing import Any
 
 SessionEvent = dict[str, Any]
 
+# Up to 3 Copilot rounds × slow custom-gateway chat timeout (see LENSES_OPENAI_COMPAT_HTTP_TIMEOUT_SEC).
+DEFAULT_COPILOT_SSE_MAX_WAIT_SEC = 600.0
+
+
+def _env_float(key: str, default: float) -> float:
+    raw = (os.environ.get(key) or "").strip()
+    if raw:
+        try:
+            v = float(raw)
+            if v > 0:
+                return v
+        except ValueError:
+            pass
+    return default
+
+
+def copilot_sse_max_wait_sec() -> float:
+    return _env_float("LENSES_COPILOT_SSE_MAX_WAIT_SEC", DEFAULT_COPILOT_SSE_MAX_WAIT_SEC)
+
 
 def _event_seq(ev: dict) -> int | None:
     raw = ev.get("seq")
@@ -143,7 +162,7 @@ def write_copilot_chat_sse(
     workspace_root: Path,
     session_id: str,
     *,
-    max_wait_sec: float = 120.0,
+    max_wait_sec: float | None = None,
     poll_sec: float = 0.35,
 ) -> None:
     """Stream session events as SSE until final, error, done, or timeout."""
@@ -156,7 +175,8 @@ def write_copilot_chat_sse(
     handler.send_header("X-Accel-Buffering", "no")
     handler.end_headers()
     last_seq = -1
-    deadline = time.monotonic() + max_wait_sec
+    wait_budget = copilot_sse_max_wait_sec() if max_wait_sec is None else max_wait_sec
+    deadline = time.monotonic() + wait_budget
     try:
         while time.monotonic() < deadline:
             if load_session(workspace_root, session_id) is None:

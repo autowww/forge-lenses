@@ -17,6 +17,8 @@ def http_post_json(
     url: str,
     payload: dict[str, Any],
     headers: dict[str, str],
+    *,
+    timeout: float = HTTP_TIMEOUT_SEC,
 ) -> dict[str, Any]:
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
@@ -27,7 +29,7 @@ def http_post_json(
     )
     ctx = ssl.create_default_context()
     try:
-        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SEC, context=ctx) as resp:
+        with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
             raw = resp.read()
     except urllib.error.HTTPError as e:
         raw = e.read()
@@ -49,6 +51,8 @@ def http_post_json_plain(
     url: str,
     payload: dict[str, Any],
     extra_headers: dict[str, str] | None = None,
+    *,
+    timeout: float = HTTP_TIMEOUT_SEC,
 ) -> dict[str, Any]:
     data = json.dumps(payload).encode("utf-8")
     hdrs = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -56,7 +60,7 @@ def http_post_json_plain(
         hdrs.update(extra_headers)
     req = urllib.request.Request(url, data=data, method="POST", headers=hdrs)
     try:
-        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SEC) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             raw = resp.read()
     except urllib.error.HTTPError as e:
         raw = e.read()

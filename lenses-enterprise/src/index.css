@@ -2747,6 +2747,81 @@ textarea.le-input:focus-visible {
   outline-offset: 1px;
 }
 
+/* Searchable combobox (AI Setup model picker, etc.) */
+.le-search-combo {
+  position: relative;
+}
+
+.le-search-combo__field {
+  display: flex;
+  gap: 0.25rem;
+  align-items: stretch;
+}
+
+.le-search-combo__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.le-search-combo__toggle {
+  flex: none;
+  padding: 0.25rem 0.45rem;
+  min-width: 2rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.le-search-combo__list {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  right: 0;
+  margin: 0.2rem 0 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  max-height: 14rem;
+  overflow-y: auto;
+  border-radius: 0.35rem;
+  border: 1px solid var(--le-border, rgba(255, 255, 255, 0.14));
+  background: var(--le-bg-elevated, #232830);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+.le-search-combo__option {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  border: none;
+  background: transparent;
+  color: var(--le-text, #e6e9ef);
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+  word-break: break-all;
+}
+
+.le-search-combo__option:hover,
+.le-search-combo__option--active {
+  background: color-mix(in srgb, var(--le-accent, #6b9fff) 16%, transparent);
+}
+
+.le-search-combo__empty {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  right: 0;
+  margin: 0.2rem 0 0;
+  padding: 0.5rem 0.55rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--le-border, rgba(255, 255, 255, 0.14));
+  background: var(--le-bg-elevated, #232830);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 .le-btn {
   padding: 0.4rem 0.85rem;
   font-size: 0.8rem;

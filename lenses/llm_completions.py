@@ -17,10 +17,31 @@ DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
 DEFAULT_OLLAMA_MODEL = "llama3.2"
 DEFAULT_COMPAT_MODEL = "gpt-4o-mini"
+DEFAULT_LOCAL_CHAT_TIMEOUT_SEC = 180.0
 
 
 def _env_trim(key: str) -> str:
     return (os.environ.get(key) or "").strip()
+
+
+def _chat_timeout_sec(env_key: str, default: float) -> float:
+    raw = _env_trim(env_key)
+    if raw:
+        try:
+            v = float(raw)
+            if v > 0:
+                return v
+        except ValueError:
+            pass
+    return default
+
+
+def _ollama_chat_timeout_sec() -> float:
+    return _chat_timeout_sec("LENSES_OLLAMA_HTTP_TIMEOUT_SEC", DEFAULT_LOCAL_CHAT_TIMEOUT_SEC)
+
+
+def _openai_compat_chat_timeout_sec() -> float:
+    return _chat_timeout_sec("LENSES_OPENAI_COMPAT_HTTP_TIMEOUT_SEC", DEFAULT_LOCAL_CHAT_TIMEOUT_SEC)
 
 
 OLLAMA_HEALTH_TIMEOUT_SEC = 2.0
@@ -280,7 +301,7 @@ def _ollama(
         "messages": [{"role": "user", "content": message}],
         "stream": False,
     }
-    out = http_post_json_plain(url, payload, None)
+    out = http_post_json_plain(url, payload, None, timeout=_ollama_chat_timeout_sec())
     if out.get("_transport_error"):
         raw = str(out["_transport_error"])
         return {"ok": False, "error": "llm_transport", "detail": _ollama_transport_detail(base, raw)}
@@ -323,9 +344,14 @@ def _openai_compatible(
             "Accept": "application/json",
             **auth_headers,
         }
-        out = http_post_json(url, payload, full_headers)
+        out = http_post_json(url, payload, full_headers, timeout=_openai_compat_chat_timeout_sec())
     else:
-        out = http_post_json_plain(url, payload, auth_headers or None)
+        out = http_post_json_plain(
+            url,
+            payload,
+            auth_headers or None,
+            timeout=_openai_compat_chat_timeout_sec(),
+        )
     if out.get("_transport_error"):
         return {"ok": False, "error": "llm_transport", "detail": str(out["_transport_error"])}
     choices = out.get("choices")

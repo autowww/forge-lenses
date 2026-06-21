@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError } from '../api/http'
-import { classifyFetchError, isTransientCopilotTransportError } from './classifyFetchError'
+import { classifyFetchError, isRetriableCopilotFailure, isTransientCopilotTransportError } from './classifyFetchError'
 
 describe('classifyFetchError', () => {
   it('maps 403 to permission', () => {
@@ -45,5 +45,26 @@ describe('isTransientCopilotTransportError', () => {
     expect(isTransientCopilotTransportError(new ApiError('no', 403))).toBe(false)
     expect(isTransientCopilotTransportError(new ApiError('no', 404))).toBe(false)
     expect(isTransientCopilotTransportError(new Error('stream_error'))).toBe(false)
+  })
+})
+
+describe('isRetriableCopilotFailure', () => {
+  it('is true for llama runner crashes and llm_provider_error', () => {
+    expect(
+      isRetriableCopilotFailure({
+        ok: false,
+        error: 'llm_provider_error',
+        detail: 'llama runner process has terminated',
+      }),
+    ).toBe(true)
+  })
+
+  it('is false for permission and feature flags', () => {
+    expect(isRetriableCopilotFailure({ ok: false, error: 'feature_disabled' })).toBe(false)
+    expect(isRetriableCopilotFailure(new ApiError('no', 403))).toBe(false)
+  })
+
+  it('is true for empty failed responses', () => {
+    expect(isRetriableCopilotFailure({ ok: false, text: '' })).toBe(true)
   })
 })

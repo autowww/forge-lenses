@@ -39,7 +39,7 @@ function applySlotChange(stack: string[], index: number, value: string): string[
 }
 
 /**
- * Per-task model stack: editable comboboxes (input + datalist) fed by a cached ``/api/llm/provider-probe`` catalog
+ * Per-task model stack: searchable model comboboxes fed by a cached ``/api/llm/provider-probe`` catalog
  * plus task-aware suggestions.
  */
 export function TaskRouteModelStackField({

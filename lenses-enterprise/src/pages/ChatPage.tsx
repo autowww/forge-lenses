@@ -3,7 +3,10 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { ApiError, apiGetJson, apiPostJson } from '../api/http'
 import { useWorkspace } from '../context/WorkspaceContext'
 import {
+  formatCopilotFailureMessage,
+  pickOpenAiCompatFallbackModel,
   readStudioLlmPrefsForHydration,
+  sanitizeStudioModelOverride,
   writeMirroredLlmSessionPrefs,
 } from '../lib/copilotSessionPrefs'
 import { resolveUxFailure } from '../lib/uxPageState'
@@ -37,7 +40,7 @@ type ProvidersRes = {
 
 type LlmSettingsBrief = {
   ok?: boolean
-  settings?: { main_models?: Record<string, string> }
+  settings?: { provider?: string; main_models?: Record<string, string> }
 }
 
 const EMPTY_MAIN_MODELS: Record<string, string> = {}
@@ -250,12 +253,26 @@ export function ChatPage() {
     ])
       .then(([data, st]) => {
         if (cancelled) return
+        const mainModels =
+          st.settings?.main_models && typeof st.settings.main_models === 'object'
+            ? (st.settings.main_models as Record<string, string>)
+            : {}
         const saved = readStudioLlmPrefsForHydration(workspaceRoot || undefined)
-        if (st.settings?.main_models && typeof st.settings.main_models === 'object') {
-          setMainModelsHint(st.settings.main_models as Record<string, string>)
+        if (Object.keys(mainModels).length) {
+          setMainModelsHint(mainModels)
+        }
+        const resolveModel = (raw: string | undefined, prov: string) => {
+          const cleaned = sanitizeStudioModelOverride(raw, mainModels[prov])
+          setModelOverride(cleaned)
+          if (raw && cleaned !== raw.trim()) {
+            writeMirroredLlmSessionPrefs(workspaceRoot || undefined, { model: cleaned })
+          }
         }
         if (!data.providers) {
-          if (saved && typeof saved.model === 'string') setModelOverride(saved.model)
+          if (saved && typeof saved.model === 'string') {
+            const prov = (saved.provider || st.settings?.provider || 'openai_compatible').trim().toLowerCase()
+            resolveModel(saved.model, prov)
+          }
           setLlmSessionHydrated(true)
           return
         }
@@ -263,6 +280,7 @@ export function ChatPage() {
         const qp = sp.get('provider')?.trim().toLowerCase()
         const fromQuery =
           qp && (PROVIDER_IDS as readonly string[]).includes(qp) && data.providers[qp] ? qp : null
+        let activeProvider = fromQuery || 'openai_compatible'
         if (fromQuery) {
           setProvider(fromQuery)
         } else {
@@ -271,20 +289,26 @@ export function ChatPage() {
             Boolean(spv) && (PROVIDER_IDS as readonly string[]).includes(spv)
           if (savedIsKnown) {
             setProvider(spv)
+            activeProvider = spv
           } else {
             const first = PROVIDER_IDS.find((id) => data.providers![id])
-            if (first) setProvider(first)
+            if (first) {
+              setProvider(first)
+              activeProvider = first
+            }
           }
         }
         const qm = sp.get('model')?.trim()
         if (qm) {
+          let decoded = qm
           try {
-            setModelOverride(decodeURIComponent(qm))
+            decoded = decodeURIComponent(qm)
           } catch {
-            setModelOverride(qm)
+            decoded = qm
           }
+          resolveModel(decoded, activeProvider)
         } else if (!fromQuery) {
-          if (saved && typeof saved.model === 'string') setModelOverride(saved.model)
+          if (saved && typeof saved.model === 'string') resolveModel(saved.model, activeProvider)
         } else {
           setModelOverride('')
         }
@@ -311,22 +335,20 @@ export function ChatPage() {
     writeMirroredLlmSessionPrefs(root || undefined, { provider, model: modelOverride })
   }, [provider, modelOverride, providers, ws.state?.workspace_root, llmSessionHydrated])
 
-  /** If AI Setup’s main id is not on this gateway, pick a catalog id so requests don’t use a bogus default. */
+  /** When AI Setup has a main model, keep override empty so the server uses that default. */
   useEffect(() => {
     if (!llmSessionHydrated) return
     if (provider !== 'openai_compatible' || !providers?.['openai_compatible']) return
     if (modelOverride.trim()) return
     const hint = (mainModelsHint['openai_compatible'] || '').trim()
+    if (hint) return
     let cancelled = false
     void apiPostJson<{ ok?: boolean; models?: string[] }>('/api/llm/provider-probe', {
       provider: 'openai_compatible',
       action: 'models',
     }).then((out) => {
       if (cancelled || !out.ok || !Array.isArray(out.models) || out.models.length === 0) return
-      const ids = new Set(out.models.map((x) => String(x).trim()).filter(Boolean))
-      if (hint && ids.has(hint)) return
-      const sorted = [...ids].sort((a, b) => a.localeCompare(b))
-      const pick = sorted[0]
+      const pick = pickOpenAiCompatFallbackModel(out.models.map((x) => String(x)))
       if (pick) setModelOverride(pick)
     })
     return () => {
@@ -351,7 +373,6 @@ export function ChatPage() {
       }
       setPendingSince(Date.now())
       setLoading(true)
-      const hadModelOverride = Boolean(effectiveModelOverride(modelOverride))
       const failBody =
         'That request did not succeed. If it keeps happening, open AI Setup and expand “Show technical details” after a failed save or load.'
       try {
@@ -366,9 +387,6 @@ export function ChatPage() {
         if (mo) body.model = mo
         const res = await apiPostJson<ChatRes>('/api/llm/chat', body)
         if (res.ok && res.text) {
-          if (!hadModelOverride && provider === 'openai_compatible' && res.model?.trim()) {
-            setModelOverride(res.model.trim())
-          }
           const meta = res.model ? `\n\n— model: ${res.model}` : ''
           const ut = res.usage
           const useLine =
@@ -383,7 +401,15 @@ export function ChatPage() {
           setBanner(
             'That message could not be completed. Check AI Setup and provider availability, then try again.',
           )
-          setMessages((m) => [...m, { role: 'assistant', text: failBody, failed: true, retryPrompt: text }])
+          setMessages((m) => [
+            ...m,
+            {
+              role: 'assistant',
+              text: formatCopilotFailureMessage(res, failBody),
+              failed: true,
+              retryPrompt: text,
+            },
+          ])
         }
       } catch (err) {
         let assistantText = 'That request failed before a response arrived.'

@@ -1,7 +1,7 @@
 {
   "name": "lenses-enterprise",
   "private": true,
-  "version": "1.0.20",
+  "version": "1.0.29",
   "type": "module",
   "engines": {
     "node": ">=20.12.0"

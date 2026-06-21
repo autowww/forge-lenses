@@ -8,7 +8,12 @@ import pytest
 
 from lenses import llm_chat
 from lenses.sdlc_copilot.chat import run_copilot_chat_multi
-from lenses.sdlc_copilot.copilot_async_session import append_event, create_session, list_events_since
+from lenses.sdlc_copilot.copilot_async_session import (
+    append_event,
+    copilot_sse_max_wait_sec,
+    create_session,
+    list_events_since,
+)
 
 
 def test_multi_retries_after_deflection(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -111,3 +116,46 @@ def test_copilot_async_session_events(tmp_path: Path) -> None:
     types = [e.get("type") for e in evs]
     assert "queued" in types
     assert "usage" in types
+
+
+def test_copilot_sse_max_wait_default(monkeypatch) -> None:
+    monkeypatch.delenv("LENSES_COPILOT_SSE_MAX_WAIT_SEC", raising=False)
+    assert copilot_sse_max_wait_sec() >= 600.0
+
+
+def test_copilot_sse_max_wait_env(monkeypatch) -> None:
+    monkeypatch.setenv("LENSES_COPILOT_SSE_MAX_WAIT_SEC", "900")
+    assert copilot_sse_max_wait_sec() == 900.0
+
+
+def test_multi_routes_portfolio_to_map_reduce(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LENSES_COPILOT_MAP_REDUCE", "1")
+
+    def fake_chat(provider: str, message: str, model_override=None, **kwargs) -> dict:
+        if "--- MAP TASK ---" in message:
+            return {"ok": True, "text": "repo: one line summary."}
+        if "--- MAP SUMMARIES ---" in message:
+            return {"ok": True, "text": "Portfolio summary.", "usage": {"total_tokens": 5}}
+        return {"ok": True, "text": "fallback"}
+
+    monkeypatch.setattr(llm_chat, "chat", fake_chat)
+    git_children = [{"name": f"repo{i}", "is_git": True} for i in range(10)]
+    scan = {"children": git_children, "resolved_at": None}
+    out = run_copilot_chat_multi(
+        workspace_root=tmp_path,
+        provider="openai_compatible",
+        user_message="describe each project in one sentence",
+        model_override=None,
+        refine=False,
+        tool_mode="read_only",
+        route="projects",
+        project_slug=None,
+        entity_id=None,
+        scope_site="",
+        login=None,
+        scan_state=scan,
+    )
+    assert out.get("ok") is True
+    trace = out.get("copilot_trace") or {}
+    assert trace.get("strategy") == "portfolio_map_reduce"
+    assert trace.get("stopped_reason") == "map_reduce"

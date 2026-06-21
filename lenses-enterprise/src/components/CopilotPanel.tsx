@@ -2,10 +2,19 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError, apiGetJson, apiPostJson } from '../api/http'
 import { useWorkspaceOptional } from '../context/WorkspaceContext'
+import {
+  CopilotAttemptFailure,
+  copilotAttemptFailureFromUnknown,
+  formatCopilotExhaustedAttemptsMessage,
+  isRetriableCopilotFailure,
+} from '../lib/classifyFetchError'
 import { resolveUxFailure } from '../lib/uxPageState'
 import { compactRelatedMdPathsForApi } from '../lib/copilotPageEvidence'
 import {
+  formatCopilotFailureMessage,
+  pickOpenAiCompatFallbackModel,
   readStudioLlmPrefsForHydration,
+  sanitizeStudioModelOverride,
   writeMirroredLlmSessionPrefs,
 } from '../lib/copilotSessionPrefs'
 import { ChatRequestPendingRow } from './chat/ChatRequestPendingRow'
@@ -92,6 +101,9 @@ const PROVIDER_IDS = [
 
 const EMPTY_MAIN_MODELS: Record<string, string> = {}
 
+const MAX_COPILOT_AUTO_RETRIES = 3
+const COPILOT_RETRY_BACKOFF_MS = (attempt: number) => 400 + attempt * 350
+
 function effectiveModelOverride(raw: string): string | undefined {
   const t = raw.trim()
   if (!t) return undefined
@@ -154,8 +166,23 @@ export function CopilotPanel({
       .then(([en, prov, st]) => {
         if (cancel) return
         setCopilotOn(en.enabled === true && en.ok === true)
+        const mainModels =
+          st.settings?.main_models && typeof st.settings.main_models === 'object'
+            ? (st.settings.main_models as Record<string, string>)
+            : {}
         const saved = readStudioLlmPrefsForHydration(workspaceRoot || undefined)
-        if (saved && typeof saved.model === 'string') setModelOverride(saved.model)
+        if (saved && typeof saved.model === 'string') {
+          const preferredProvider = (
+            saved.provider ||
+            (st.settings?.provider || '').trim().toLowerCase() ||
+            'openai_compatible'
+          ).trim().toLowerCase()
+          const cleaned = sanitizeStudioModelOverride(saved.model, mainModels[preferredProvider])
+          setModelOverride(cleaned)
+          if (cleaned !== saved.model.trim()) {
+            writeMirroredLlmSessionPrefs(workspaceRoot || undefined, { model: cleaned })
+          }
+        }
         if (saved?.toolMode === 'propose_writes' || saved?.toolMode === 'read_only') setToolMode(saved.toolMode)
 
         const pmap = prov.providers
@@ -199,22 +226,20 @@ export function CopilotPanel({
     })
   }, [provider, modelOverride, toolMode, providers, wsOpt?.state?.workspace_root, llmSessionHydrated])
 
-  /** If AI Setup’s main id is not on this gateway, pick a catalog id so requests don’t use a bogus default. */
+  /** When AI Setup has a main model, keep override empty so the server uses that default. */
   useEffect(() => {
     if (!llmSessionHydrated) return
     if (provider !== 'openai_compatible' || !providers?.['openai_compatible']) return
     if (modelOverride.trim()) return
     const hint = (mainModelsHint['openai_compatible'] || '').trim()
+    if (hint) return
     let cancelled = false
     void apiPostJson<{ ok?: boolean; models?: string[] }>('/api/llm/provider-probe', {
       provider: 'openai_compatible',
       action: 'models',
     }).then((out) => {
       if (cancelled || !out.ok || !Array.isArray(out.models) || out.models.length === 0) return
-      const ids = new Set(out.models.map((x) => String(x).trim()).filter(Boolean))
-      if (hint && ids.has(hint)) return
-      const sorted = [...ids].sort((a, b) => a.localeCompare(b))
-      const pick = sorted[0]
+      const pick = pickOpenAiCompatFallbackModel(out.models.map((x) => String(x)))
       if (pick) setModelOverride(pick)
     })
     return () => {
@@ -232,65 +257,79 @@ export function CopilotPanel({
       }
       setPendingSince(Date.now())
       setLoading(true)
-      const hadModelOverride = Boolean(effectiveModelOverride(modelOverride))
       const failBody =
         'Something blocked that copilot response. Retry with a shorter question or confirm your provider is configured.'
+      const body: Record<string, unknown> = {
+        provider,
+        message: text,
+        refine: false,
+        tool_mode: toolMode,
+        route,
+        studio_task_id: 'search_knowledge',
+        project_slug: projectSlug || undefined,
+        entity_id: entityId || undefined,
+        scope_site: scopeSite || undefined,
+      }
+      const pcs = pageContextSummary?.trim()
+      if (pcs) body.page_context_summary = pcs
+      const mdApi = compactRelatedMdPathsForApi(relatedMdRelPaths)
+      if (mdApi) body.related_md_rel_paths = mdApi
+      const mo = effectiveModelOverride(modelOverride)
+      if (mo) body.model = mo
       try {
-        const body: Record<string, unknown> = {
-          provider,
-          message: text,
-          refine: false,
-          tool_mode: toolMode,
-          route,
-          studio_task_id: 'search_knowledge',
-          project_slug: projectSlug || undefined,
-          entity_id: entityId || undefined,
-          scope_site: scopeSite || undefined,
-        }
-        const pcs = pageContextSummary?.trim()
-        if (pcs) body.page_context_summary = pcs
-        const mdApi = compactRelatedMdPathsForApi(relatedMdRelPaths)
-        if (mdApi) body.related_md_rel_paths = mdApi
-        const mo = effectiveModelOverride(modelOverride)
-        if (mo) body.model = mo
-        const res = await apiPostJson<CopilotChatRes>('/api/sdlc-copilot/chat', body)
-        if (res.ok && res.text) {
-          if (!hadModelOverride && provider === 'openai_compatible' && res.model?.trim()) {
-            setModelOverride(res.model.trim())
+        let lastFailureMessage = failBody
+        for (let attempt = 1; attempt <= MAX_COPILOT_AUTO_RETRIES; attempt++) {
+          if (attempt > 1) {
+            await new Promise<void>((r) => window.setTimeout(r, COPILOT_RETRY_BACKOFF_MS(attempt - 1)))
           }
-          setMessages((m) => [
-            ...m,
-            {
-              role: 'assistant',
-              text: res.text!,
-              citations: res.citations,
-              proposals: res.write_proposals,
-              auditId: res.audit_id,
-              truncated: res.grounding_truncated,
-              usage: res.usage,
-            },
-          ])
-        } else {
-          setBanner('The copilot could not answer that turn. Try again, switch to read-only, or check LLM settings.')
-          setMessages((m) => [...m, { role: 'assistant', text: failBody, failed: true, retryPrompt: text }])
+          try {
+            const res = await apiPostJson<CopilotChatRes>('/api/sdlc-copilot/chat', body)
+            if (res.ok && res.text) {
+              setMessages((m) => [
+                ...m,
+                {
+                  role: 'assistant',
+                  text: res.text!,
+                  citations: res.citations,
+                  proposals: res.write_proposals,
+                  auditId: res.audit_id,
+                  truncated: res.grounding_truncated,
+                  usage: res.usage,
+                },
+              ])
+              return
+            }
+            const msg = formatCopilotFailureMessage(res, failBody)
+            throw new CopilotAttemptFailure(msg, isRetriableCopilotFailure(res))
+          } catch (err) {
+            const failure = copilotAttemptFailureFromUnknown(err, failBody)
+            lastFailureMessage = failure.userMessage
+            if (failure.retriable && attempt < MAX_COPILOT_AUTO_RETRIES) {
+              continue
+            }
+            let assistantText = failure.userMessage
+            if (err instanceof ApiError && err.status === 403) {
+              assistantText =
+                toolMode === 'propose_writes'
+                  ? 'Write proposals need a signed-in session with access to the selected project. Try read-only, or open this page from a project dashboard.'
+                  : 'This copilot endpoint isn’t available from how you opened Lenses. Use your local Studio URL or ask an admin.'
+            } else if (failure.retriable && attempt >= MAX_COPILOT_AUTO_RETRIES) {
+              assistantText = formatCopilotExhaustedAttemptsMessage(
+                lastFailureMessage,
+                MAX_COPILOT_AUTO_RETRIES,
+              )
+            } else if (!(err instanceof CopilotAttemptFailure)) {
+              const ux = resolveUxFailure(err)
+              assistantText = ux.description
+            }
+            setBanner(assistantText)
+            setMessages((m) => [
+              ...m,
+              { role: 'assistant', text: assistantText, failed: true, retryPrompt: text },
+            ])
+            return
+          }
         }
-      } catch (err) {
-        let assistantText = 'That request failed before a response arrived.'
-        if (err instanceof ApiError && err.status === 403) {
-          assistantText =
-            toolMode === 'propose_writes'
-              ? 'Write proposals need a signed-in session with access to the selected project. Try read-only, or open this page from a project dashboard.'
-              : 'This copilot endpoint isn’t available from how you opened Lenses. Use your local Studio URL or ask an admin.'
-          setBanner(assistantText)
-        } else {
-          const ux = resolveUxFailure(err)
-          assistantText = ux.description
-          setBanner(ux.description)
-        }
-        setMessages((m) => [
-          ...m,
-          { role: 'assistant', text: assistantText, failed: true, retryPrompt: text },
-        ])
       } finally {
         setLoading(false)
         setPendingSince(null)
