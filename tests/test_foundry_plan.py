@@ -16,12 +16,17 @@ def ws(tmp_path):
     return root
 
 
-def test_build_plan_multiply(ws: Path):
+def test_build_plan_project_and_file_path(ws: Path):
     from lenses.foundry.plan import build_plan
 
     target = ws / "proj"
     out = build_plan(
-        {"goal": "fix failing multiply", "target": str(target), "level": "L1"},
+        {
+            "goal": "fix failing multiply",
+            "project": "proj",
+            "target": "src/dfcalc/engine.py",
+            "level": "L1",
+        },
         ws,
     )
     assert out["ok"] is True

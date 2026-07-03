@@ -42,7 +42,7 @@ async function mockHub(page: Page) {
 test('Foundry plan card — propose plan shows units', async ({ page }) => {
   await mockHub(page)
   await mockPlanApi(page)
-  await page.goto('/foundry')
+  await page.goto('/studio/foundry')
   await page.getByRole('button', { name: /Propose plan/i }).click()
   await expect(page.getByText(/Proposed plan/i).first()).toBeVisible({ timeout: 120_000 })
   await expect(page.getByText(/Fix engine.multiply/i).first()).toBeVisible()

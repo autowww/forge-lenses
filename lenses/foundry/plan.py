@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from lenses.foundry.target_resolve import allowed_files_for_body, resolve_foundry_target
+
 
 def _default_allowed_files(target: Path, goal: str) -> list[str]:
     g = goal.lower()
@@ -39,17 +41,21 @@ def build_plan(body: dict[str, Any], workspace_root: Path) -> dict[str, Any]:
 
     target_raw = str(body.get("target") or body.get("target_path") or "").strip()
     project = str(body.get("project") or "").strip()
-    target = Path(target_raw) if target_raw else workspace_root
-    if not target.is_absolute():
-        target = (workspace_root / target).resolve()
-    if not target.is_dir():
-        return {"ok": False, "error": "target_not_found", "target": str(target)}
+    target, file_hint = resolve_foundry_target(workspace_root, body)
+    if target is None or not target.is_dir():
+        guess = target_raw or project or str(workspace_root)
+        p = Path(guess)
+        if not p.is_absolute():
+            p = (workspace_root / guess).resolve()
+        return {"ok": False, "error": "target_not_found", "target": str(p)}
 
-    allowed = body.get("allowed_files")
-    if isinstance(allowed, list) and allowed:
-        allowed_files = [str(x) for x in allowed]
-    else:
-        allowed_files = _default_allowed_files(target, goal)
+    allowed_files = allowed_files_for_body(
+        body,
+        repo_dir=target,
+        goal=goal,
+        file_hint=file_hint,
+        default_fn=_default_allowed_files,
+    )
 
     patch_id = re.sub(r"[^a-zA-Z0-9]+", "-", goal.lower())[:40].strip("-") or "unit-1"
     unit = {

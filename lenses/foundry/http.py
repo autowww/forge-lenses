@@ -12,6 +12,7 @@ from lenses.foundry.launcher import launch_run_async
 from lenses.foundry.payload import capabilities_payload, normalize_run_dir
 from lenses.foundry.plan import build_plan
 from lenses.foundry.promote import promote_from_run_dir
+from lenses.foundry.target_resolve import resolve_foundry_target
 from lenses.foundry.store import (
     create_run_record,
     list_runs,
@@ -31,16 +32,8 @@ def _disabled() -> dict[str, Any]:
 
 
 def _resolve_target(workspace_root: Path, body: dict[str, Any]) -> Path | None:
-    raw = str(body.get("target") or body.get("target_path") or "").strip()
-    project = str(body.get("project") or "").strip()
-    if raw:
-        p = Path(raw)
-        return p.resolve() if p.is_absolute() else (workspace_root / raw).resolve()
-    if project:
-        cand = workspace_root / project
-        if cand.is_dir():
-            return cand.resolve()
-    return None
+    repo, _hint = resolve_foundry_target(workspace_root, body)
+    return repo
 
 
 def _run_public(record: dict[str, Any]) -> dict[str, Any]:

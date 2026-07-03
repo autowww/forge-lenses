@@ -40,6 +40,10 @@ export default defineConfig({
     env: {
       ...process.env,
       E2E_LENSES_PORT: port,
+      LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH: process.env.LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH ?? '1',
+      LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3: process.env.LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3 ?? '1',
+      LENSES_EXPERIMENTAL_FOUNDRY: process.env.LENSES_EXPERIMENTAL_FOUNDRY ?? '1',
+      FOUNDRY_DARK_FACTORY_ROOT: process.env.FOUNDRY_DARK_FACTORY_ROOT ?? path.join(__dirname, '..', '..', '..', 'forge-dark-factory'),
     },
   },
 })

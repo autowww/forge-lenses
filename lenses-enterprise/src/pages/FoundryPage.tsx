@@ -37,6 +37,7 @@ export function FoundryPage() {
   const [plan, setPlan] = useState<FoundryPlan | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const loadMeta = useCallback(async () => {
     try {
@@ -50,10 +51,17 @@ export function FoundryPage() {
       setRuns(list.runs ?? [])
       setError(null)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load Foundry')
+      const msg = e instanceof Error ? e.message : 'Failed to load Foundry'
+      setError(msg)
       setEnabled(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (projects.length && !projects.includes(project)) {
+      setProject(projects[0])
+    }
+  }, [projects, project])
 
   useEffect(() => {
     void loadMeta()
@@ -78,16 +86,24 @@ export function FoundryPage() {
 
   const onProposePlan = async () => {
     setBusy(true)
+    setActionError(null)
     try {
       const body = {
         goal,
         project,
-        target,
+        target_path: target,
         level,
         execution_mode: 'draft',
       }
       const p = await apiPostJson<FoundryPlan>('/api/foundry/plan', body)
+      if (!p.ok) {
+        setActionError(p.error ?? p.reason ?? 'Plan request failed')
+        setPlan(p)
+        return
+      }
       setPlan(p)
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : 'Plan request failed')
     } finally {
       setBusy(false)
     }
@@ -95,19 +111,26 @@ export function FoundryPage() {
 
   const onRunDraft = async () => {
     setBusy(true)
+    setActionError(null)
     try {
       const body = {
         goal,
         project,
-        target,
+        target_path: target,
         level,
         execution_mode: 'draft',
         worker: 'fake',
         plan: plan ?? undefined,
       }
       const created = await apiPostJson<FoundryRun>('/api/foundry/runs', body)
-      if (created.id) navigate(`/foundry/runs/${encodeURIComponent(created.id)}`)
+      if (!created.id) {
+        setActionError(created.error ?? 'Run did not start — check project exists in workspace scan')
+        return
+      }
+      navigate(`/foundry/runs/${encodeURIComponent(created.id)}`)
       await loadMeta()
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : 'Run request failed')
     } finally {
       setBusy(false)
     }
@@ -130,6 +153,9 @@ export function FoundryPage() {
     <>
       <PageHeader title={STUDIO_VOCAB.foundry} subtitle={<>{ROUTE_SUBTITLE.foundry}</>} />
       {error ? <StatePanel variant="error" title="Load error" technicalDetail={error} /> : null}
+      {actionError ? (
+        <StatePanel variant="error" title="Action failed" technicalDetail={actionError} />
+      ) : null}
       <section className="le-stack" style={{ marginTop: '1rem' }}>
         <FoundryCapabilitiesCard capabilities={capabilities} />
 

@@ -56,9 +56,9 @@ async function mockExecuteFlow(page: Page) {
 
 test('Foundry execute draft — navigates to run with assay', async ({ page }) => {
   await mockExecuteFlow(page)
-  await page.goto('/foundry')
+  await page.goto('/studio/foundry')
   await page.getByRole('button', { name: /Propose plan/i }).click()
   await page.getByRole('button', { name: /Run L1 draft/i }).click()
-  await expect(page).toHaveURL(/\/foundry\/runs\//, { timeout: 120_000 })
+  await expect(page).toHaveURL(/\/studio\/foundry\/runs\//, { timeout: 120_000 })
   await expect(page.getByText(/Assay passed/i).first()).toBeVisible()
 })

@@ -707,6 +707,11 @@ async function startLensesAndShowWindow() {
       // Blueprints Wizard session APIs + interpret/refine (same LLM stack as Chat). Opt out with LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=0 on the shell before launch.
       LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD:
         process.env.LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD ?? "1",
+      LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH:
+        process.env.LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH ?? "1",
+      LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3:
+        process.env.LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3 ?? "1",
+      LENSES_EXPERIMENTAL_FOUNDRY: process.env.LENSES_EXPERIMENTAL_FOUNDRY ?? "1",
     };
     const oidcFile = readDotEnvFile(
       path.join(workspaceRoot, ".lenses-local", "lenses-oidc.env"),

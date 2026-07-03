@@ -36,11 +36,11 @@ async function mockHub(page: Page) {
 
 test('Foundry chat intake — parses into composer fields', async ({ page }) => {
   await mockHub(page)
-  await page.goto('/foundry')
+  await page.goto('/studio/foundry')
   await page.getByPlaceholder(/fix failing multiply/i).fill(
     'fix failing multiply for @forge-df-test-project #src/dfcalc/engine.py L1',
   )
   await page.getByRole('button', { name: /Parse into composer/i }).click()
-  await expect(page.getByDisplayValue('fix failing multiply')).toBeVisible({ timeout: 120_000 })
-  await expect(page.getByDisplayValue('src/dfcalc/engine.py')).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'goal' })).toHaveValue('fix failing multiply', { timeout: 120_000 })
+  await expect(page.getByRole('textbox', { name: '#target' })).toHaveValue('src/dfcalc/engine.py')
 })

@@ -52,7 +52,7 @@ function mockFoundryApis(page: Page) {
 
 test('Foundry hub — capabilities ladder and recent runs', async ({ page }) => {
   await mockFoundryApis(page)
-  await page.goto('/foundry')
+  await page.goto('/studio/foundry')
   await expect(page.getByText(/Autonomy ladder/i).first()).toBeVisible({ timeout: 120_000 })
   await expect(page.getByText(/L1/i).first()).toBeVisible()
   await expect(page.getByText(/fix failing multiply/i).first()).toBeVisible()
@@ -60,7 +60,7 @@ test('Foundry hub — capabilities ladder and recent runs', async ({ page }) => 
 
 test('Foundry run viewer — stage bar and assay card', async ({ page }) => {
   await mockFoundryApis(page)
-  await page.goto('/foundry/runs/frun_e2e_mock')
+  await page.goto('/studio/foundry/runs/frun_e2e_mock')
   await expect(page.getByText(/fix failing multiply/i).first()).toBeVisible({ timeout: 120_000 })
   await expect(page.getByLabel(/Dark Factory workflow stages/i)).toBeVisible()
   await expect(page.getByText(/Assay passed/i).first()).toBeVisible()

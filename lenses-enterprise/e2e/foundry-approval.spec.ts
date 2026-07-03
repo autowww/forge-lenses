@@ -31,7 +31,7 @@ async function mockApprovalRun(page: Page) {
 
 test('Foundry approval — checkbox gates promote button', async ({ page }) => {
   await mockApprovalRun(page)
-  await page.goto(`/foundry/runs/${RUN_ID}`)
+  await page.goto(`/studio/foundry/runs/${RUN_ID}`)
   await expect(page.getByText(/Review before apply/i).first()).toBeVisible({ timeout: 120_000 })
   const btn = page.getByRole('button', { name: /Approve and promote/i })
   await expect(btn).toBeDisabled()
