@@ -41,7 +41,7 @@ import { FeatureShowcaseDemoPage } from './pages/FeatureShowcaseDemoPage'
 import { BlogPage } from './pages/BlogPage'
 import { BlogPostPage } from './pages/BlogPostPage'
 import { StaticEmbedPage } from './pages/StaticEmbedPage'
-import { blueprintsWizardFeatureEnabled } from './util/experimentalFlags'
+import { autonomyMaturityFeatureEnabled, blueprintsWizardFeatureEnabled } from './util/experimentalFlags'
 
 const OverviewChartsPage = lazy(() =>
   import('./pages/OverviewChartsPage').then((m) => ({ default: m.OverviewChartsPage })),
@@ -86,6 +86,12 @@ const AgenticBridgePage = lazy(() =>
 const FoundryPage = lazy(() => import('./pages/FoundryPage').then((m) => ({ default: m.FoundryPage })))
 const FoundryRunPage = lazy(() =>
   import('./pages/FoundryRunPage').then((m) => ({ default: m.FoundryRunPage })),
+)
+const AutonomyMaturityPage = lazy(() =>
+  import('./pages/AutonomyMaturityPage').then((m) => ({ default: m.AutonomyMaturityPage })),
+)
+const ProjectAutonomyMaturityPage = lazy(() =>
+  import('./pages/ProjectAutonomyMaturityPage').then((m) => ({ default: m.ProjectAutonomyMaturityPage })),
 )
 
 function RouteFallback() {
@@ -158,6 +164,12 @@ export default function App() {
               <Route path="knowledge/agentic-bridge" element={<AgenticBridgePage />} />
               <Route path="foundry" element={<FoundryPage />} />
               <Route path="foundry/runs/:runId" element={<FoundryRunPage />} />
+              {autonomyMaturityFeatureEnabled() ? (
+                <>
+                  <Route path="autonomy-maturity" element={<AutonomyMaturityPage />} />
+                  <Route path="projects/:name/autonomy-maturity" element={<ProjectAutonomyMaturityPage />} />
+                </>
+              ) : null}
               <Route path="roadmap-section" element={<RoadmapSectionPage />} />
               <Route path="feature-showcase" element={<FeatureShowcaseDemoPage />} />
               {/* Blueprints Wizard: hub is primary UX; `session/:sessionId` is a probe/deep-link surface

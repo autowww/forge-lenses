@@ -9,7 +9,7 @@ import {
 } from './studioVisibleCopy'
 import { SR, studioRouteSidebarLabel as lbl } from './studioRouteRegistry'
 import { STUDIO_DOCS_HOME } from '../util/staticPreviewUrl'
-import { blueprintsWizardFeatureEnabled } from '../util/experimentalFlags'
+import { autonomyMaturityFeatureEnabled, blueprintsWizardFeatureEnabled } from '../util/experimentalFlags'
 import { flowArtifactsHelpHomeTo } from './studioHelpQuery'
 
 const HOME_LABEL = V.home
@@ -137,6 +137,15 @@ function sideNavForSection(
           to: '/foundry',
           sidebarGroup: 'knowledge_govern' as const,
         },
+        ...(autonomyMaturityFeatureEnabled()
+          ? [
+              {
+                label: lbl(SR.autonomyMaturity, mode, 'knowledge'),
+                to: '/autonomy-maturity',
+                sidebarGroup: 'knowledge_govern' as const,
+              },
+            ]
+          : []),
         ...(blueprintsWizardFeatureEnabled()
           ? [
               {

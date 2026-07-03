@@ -69,6 +69,8 @@ Paths below are **relative to `/ studio /`** (spaces added to avoid accidental l
 | Embedded | `view/docs/*`, `view/local-site/*`, `workspace-md`, `workspace-md/view` | static file proxies | `local-site` serves selected static previews. |
 | Content | `blog`, `blog/post/:slug` | blog feeds | `post` segment is static in the router. |
 | Knowledge | `knowledge/methodology/evidence`, `knowledge/methodology/decisions`, `knowledge/methodology/record/:entityId`, `knowledge/methodology/readiness`, `knowledge/agentic-bridge` | methodology registries | Includes **evidence**, **decisions**, **record**, **readiness**, and **agentic-bridge**. |
+| Foundry | `foundry`, `foundry/runs/:runId` | Dark Factory bounded runs | Bounded L1 draft runs with human promote; `runs/:runId` is a probe/deep-link surface. |
+| Autonomy | `autonomy-maturity`, `projects/:name/autonomy-maturity` | `/api/autonomy-maturity/*`, `/api/project/:name/autonomy-maturity` | Experimental (flag-gated, default off): observed autonomy level+grade and 0-100 maturity score per project. See [Autonomy maturity](studio-autonomy-maturity.md). |
 | Labs | `roadmap-section`, `feature-showcase` | experimental panes | treat as optional / flag-gated. |
 | Wizard | `blueprints/wizard`, `blueprints/wizard/session/:sessionId` | `/api/blueprints/wizard/*` | Session deep links for debugging. |
 

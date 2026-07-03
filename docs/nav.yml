@@ -68,6 +68,7 @@ sections:
       - path: docs/handbook-public/studio-navigation-and-shell.md
       - path: docs/handbook-public/studio-workspace-and-projects.md
       - path: docs/handbook-public/studio-docs-health-ui.md
+      - path: docs/handbook-public/studio-autonomy-maturity.md
       - path: docs/handbook-public/studio-settings-llm-fleet.md
       - path: docs/handbook-public/studio-troubleshooting.md
       - path: docs/handbook-public/15-docs-health.md

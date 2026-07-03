@@ -135,6 +135,8 @@ export const SR = {
   agenticBridge: 'sr.knowledge.agenticBridge',
   foundry: 'sr.knowledge.foundry',
   foundryRun: 'sr.knowledge.foundryRun',
+  autonomyMaturity: 'sr.knowledge.autonomyMaturity',
+  projectAutonomyMaturity: 'sr.projects.autonomyMaturity',
   fallback: 'sr.fallback',
 } as const
 
@@ -673,6 +675,34 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     artifacts: bundle('knowledge', [V.knowledge, V.foundry, V.foundryRun], ['/tutorials', '/foundry', null]),
     defaultSidebarLabel: V.foundryRun,
     probeKind: 'foundry_run',
+  },
+  {
+    id: SR.autonomyMaturity,
+    pattern: '/autonomy-maturity',
+    kind: 'canonical',
+    canonicalTitle: V.autonomyMaturity,
+    subtitle: SUB.autonomyMaturity,
+    objectType: 'knowledge',
+    lensVisibility: PRIMARY,
+    flow: bundle('knowledge', [V.knowledge, V.autonomyMaturity], ['/tutorials', null]),
+    artifacts: bundle('knowledge', [V.knowledge, V.autonomyMaturity], ['/tutorials', null]),
+    sidebar: {
+      flow: { knowledge: R.autonomyMaturitySidebar },
+      artifacts: { knowledge: R.autonomyMaturitySidebar },
+    },
+    defaultSidebarLabel: R.autonomyMaturitySidebar,
+  },
+  {
+    id: SR.projectAutonomyMaturity,
+    pattern: '/projects/:name/autonomy-maturity',
+    kind: 'canonical',
+    canonicalTitle: V.projectAutonomyMaturity,
+    subtitle: SUB.projectAutonomyMaturity,
+    objectType: 'project',
+    lensVisibility: PRIMARY,
+    flow: bundle('projects', [V.projects, V.autonomyMaturity], ['/projects', null]),
+    artifacts: bundle('projects', [V.projects, V.autonomyMaturity], ['/projects', null]),
+    defaultSidebarLabel: V.autonomyMaturity,
   },
   {
     id: SR.search,

@@ -101,6 +101,9 @@ export const STUDIO_VOCAB = {
   /** Dark Factory Studio — bounded L1 draft runs with human promote. */
   foundry: 'Foundry',
   foundryRun: 'Foundry run',
+  /** Autonomy maturity — observed level/grade + 0-100 score per project (experimental). */
+  autonomyMaturity: 'Autonomy maturity',
+  projectAutonomyMaturity: 'Project autonomy maturity',
 } as const
 
 /** Sprint UX7 — standard framing for advanced / admin routes (who / blast radius / when / safety / return). */
@@ -214,6 +217,7 @@ export const REGISTRY = {
   methodologyReadinessSidebar: 'Release readiness (gaps)',
   agenticBridgeSidebar: 'Agentic bridge',
   foundrySidebar: 'Foundry (Dark Factory)',
+  autonomyMaturitySidebar: 'Autonomy maturity (experimental)',
 } as const
 
 /**
@@ -558,6 +562,10 @@ export const ROUTE_SUBTITLE = {
     'Bounded Dark Factory L1: propose a plan, run a draft against a workspace project, review assay, then promote changed files with human approval.',
   foundryRun:
     'Live workflow stages for one Foundry run—poll until assay completes, then approve promote before committing on a feature branch.',
+  autonomyMaturity:
+    'Observed autonomy maturity per project — level and grade claim, 0-100 score, weakest first. Read-only signals; Wizard intent is never counted.',
+  projectAutonomyMaturity:
+    'One project against the autonomy maturity framework: observed claim, score components, gate signals, and the cheapest next promotion.',
   connectorHealth: ADMIN_INSPECT_COPY.connectorHealthSubtitle,
   governanceAudit: ADMIN_INSPECT_COPY.auditLogSubtitle,
   toolsetAdvanced: ADMIN_INSPECT_COPY.toolsetPurpose,

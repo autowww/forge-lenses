@@ -1,0 +1,1 @@
+import{M as e}from"./page-C6pZ9opl.js";function t(){return e(`/api/autonomy-maturity/overview`)}function n(t){return e(`/api/project/${encodeURIComponent(t)}/autonomy-maturity`)}export{n,t};
