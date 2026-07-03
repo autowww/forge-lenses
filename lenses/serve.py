@@ -1266,6 +1266,26 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "enabled": experimental_test_quality_enabled()})
             return
 
+        if path == "/api/autonomy-maturity/enabled":
+            from lenses.autonomy_maturity import experimental_autonomy_maturity_enabled
+
+            self._send_json(200, {"ok": True, "enabled": experimental_autonomy_maturity_enabled()})
+            return
+
+        if path == "/api/autonomy-maturity/overview":
+            from lenses.autonomy_maturity import (
+                build_overview_payload,
+                experimental_autonomy_maturity_enabled,
+            )
+
+            if not experimental_autonomy_maturity_enabled():
+                self._send_json(404, {"ok": False, "error": "disabled"})
+                return
+            state = self._scan(force_refresh=force_refresh)
+            payload = build_overview_payload(self.workspace_root, state)
+            self._send_json(200, payload)
+            return
+
         if path == "/api/quality/overview":
             from lenses.test_quality import build_quality_overview_payload
 
@@ -2804,6 +2824,27 @@ class LensesHandler(BaseHTTPRequestHandler):
                     send_json=self._send_json,
                     query=parsed.query or "",
                 )
+                return
+            if tail == "autonomy-maturity":
+                from lenses.autonomy_maturity import (
+                    build_project_payload,
+                    experimental_autonomy_maturity_enabled,
+                )
+
+                if not experimental_autonomy_maturity_enabled():
+                    self._send_json(404, {"ok": False, "error": "disabled"})
+                    return
+                child_path = resolve_workspace_child_dir(
+                    self.workspace_root, name, self.registry
+                )
+                if child_path is None:
+                    self._send_json(404, {"ok": False, "error": "not_found"})
+                    return
+                bundle = self._project_access(name)
+                if not bundle.get("can_read_project"):
+                    self._send_json(403, {"ok": False, "error": "project_forbidden"})
+                    return
+                self._send_json(200, build_project_payload(child_path, name))
                 return
             err = json.dumps({"error": "not_found"}).encode("utf-8")
             self._send(404, err, "application/json; charset=utf-8")

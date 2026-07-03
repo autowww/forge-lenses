@@ -1,5 +1,4 @@
 ---
-
 audience: public
 section: builders
 learning_level: reference
@@ -10,7 +9,6 @@ handbook_area: builders
 public_publish: true
 description: Machine-generated inventory of HTTP routes parsed from lenses/serve.py.
 nav_title: HTTP API route catalog
-page_type: reference
 ---
 
 # HTTP API route inventory
@@ -24,10 +22,13 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | Method | Family | Audience | Signature |
 |--------|--------|----------|-----------|
 | GET | `/api/access` | general | `/api/access/policy` |
+| GET | `/api/auth` | auth | `/api/auth/loopback-dev-login` |
 | GET | `/api/auth` | auth | `/api/auth/oidc/callback` |
 | GET | `/api/auth` | auth | `/api/auth/oidc/login` |
 | GET | `/api/auth` | auth | `/api/auth/oidc/status` |
 | GET | `/api/auth` | auth | `/api/auth/status` |
+| GET | `/api/autonomy-maturity` | general | `/api/autonomy-maturity/enabled` |
+| GET | `/api/autonomy-maturity` | general | `/api/autonomy-maturity/overview` |
 | GET | `/api/blueprints` | wizard | `/api/blueprints/wizard/enabled` |
 | GET | `/api/blueprints` | wizard | `/api/blueprints/wizard/sessions` |
 | GET | `/api/chart-data` | general | `/api/chart-data/overview` |
@@ -77,6 +78,8 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/search` | general | `/api/search/reindex` |
 | GET | `/api/sticker-board` | general | `/api/sticker-board` |
 | GET | `/api/sticker-board-registry` | general | `/api/sticker-board-registry` |
+| GET | `/api/sticker-board-share` | general | `/api/sticker-board-share` |
+| GET | `/api/sticker-board-share` | general | `/api/sticker-board-share/config` |
 | GET | `/api/story-hub` | general | `/api/story-hub` |
 | GET | `/api/timeline-context` | general | `/api/timeline-context` |
 | GET | `/api/today-charge` | general | `/api/today-charge` |
@@ -97,6 +100,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/decisions` | general | `PREFIX:/api/decisions` |
 | GET | `/api/evidence` | general | `PREFIX:/api/evidence` |
 | GET | `/api/execution-sessions` | general | `PREFIX:/api/execution-sessions` |
+| GET | `/api/foundry` | general | `PREFIX:/api/foundry` |
 | GET | `/api/handoffs` | general | `PREFIX:/api/handoffs` |
 | GET | `/api/launches` | general | `PREFIX:/api/launches` |
 | GET | `/api/methodology` | general | `PREFIX:/api/methodology` |
@@ -108,6 +112,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | POST | `/api/assay-packets` | general | `/api/assay-packets` |
 | POST | `/api/auth` | auth | `/api/auth/github` |
 | POST | `/api/auth` | auth | `/api/auth/logout` |
+| POST | `/api/auth` | auth | `/api/auth/loopback-dev-login` |
 | POST | `/api/blueprints` | wizard | `/api/blueprints/wizard/session` |
 | POST | `/api/blueprints` | wizard | `/api/blueprints/wizard/session/<id>/artifact-export` |
 | POST | `/api/blueprints` | wizard | `/api/blueprints/wizard/session/<id>/artifact-recheck` |
@@ -143,6 +148,8 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | POST | `/api/search` | general | `/api/search/reindex` |
 | POST | `/api/sticker-board` | general | `/api/sticker-board` |
 | POST | `/api/sticker-board-registry` | general | `/api/sticker-board-registry` |
+| POST | `/api/sticker-board-share` | general | `/api/sticker-board-share` |
+| POST | `/api/sticker-board-share` | general | `/api/sticker-board-share/join` |
 | POST | `/api/toolset` | general | `/api/toolset/run` |
 | POST | `/api/wbs` | general | `/api/wbs/create` |
 | POST | `/api/agent-runtime` | general | `PREFIX:/api/agent-runtime` |
@@ -152,6 +159,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | POST | `/api/ceremonies` | general | `PREFIX:/api/ceremonies` |
 | POST | `/api/decisions` | general | `PREFIX:/api/decisions` |
 | POST | `/api/execution-sessions` | general | `PREFIX:/api/execution-sessions` |
+| POST | `/api/foundry` | general | `PREFIX:/api/foundry` |
 | POST | `/api/handoffs` | general | `PREFIX:/api/handoffs` |
 | POST | `/api/launches` | general | `PREFIX:/api/launches` |
 | POST | `/api/outcomes` | general | `PREFIX:/api/outcomes` |
@@ -229,21 +237,34 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | general | `PREFIX:/api/assay-packets` |
 | POST | general | `/api/assay-packets` |
 
-### `/api/auth` — 6 route(s)
+### `/api/auth` — 8 route(s)
 
 | Method | Count |
 |--------|-------|
-| GET | 4 |
-| POST | 2 |
+| GET | 5 |
+| POST | 3 |
 
 | Method | Audience | Signature |
 |--------|----------|-----------|
+| GET | auth | `/api/auth/loopback-dev-login` |
 | GET | auth | `/api/auth/oidc/callback` |
 | GET | auth | `/api/auth/oidc/login` |
 | GET | auth | `/api/auth/oidc/status` |
 | GET | auth | `/api/auth/status` |
 | POST | auth | `/api/auth/github` |
 | POST | auth | `/api/auth/logout` |
+| POST | auth | `/api/auth/loopback-dev-login` |
+
+### `/api/autonomy-maturity` — 2 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 2 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/autonomy-maturity/enabled` |
+| GET | general | `/api/autonomy-maturity/overview` |
 
 ### `/api/blueprints` — 17 route(s)
 
@@ -446,6 +467,18 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | general | `/api/forgesdlc-blog` |
 | GET | general | `/api/forgesdlc-blog/content` |
 | POST | general | `/api/forgesdlc-blog/sync` |
+
+### `/api/foundry` — 2 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 1 |
+| POST | 1 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `PREFIX:/api/foundry` |
+| POST | general | `PREFIX:/api/foundry` |
 
 ### `/api/governance` — 2 route(s)
 
@@ -690,6 +723,20 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 |--------|----------|-----------|
 | GET | general | `/api/sticker-board-registry` |
 | POST | general | `/api/sticker-board-registry` |
+
+### `/api/sticker-board-share` — 4 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 2 |
+| POST | 2 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/sticker-board-share` |
+| GET | general | `/api/sticker-board-share/config` |
+| POST | general | `/api/sticker-board-share` |
+| POST | general | `/api/sticker-board-share/join` |
 
 ### `/api/story-hub` — 1 route(s)
 

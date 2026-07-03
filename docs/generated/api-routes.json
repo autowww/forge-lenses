@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "route_count": 133,
+  "route_count": 143,
   "families": {
     "/api/access": {
       "GET": 1,
@@ -26,8 +26,11 @@
       "POST": 1
     },
     "/api/auth": {
-      "GET": 4,
-      "POST": 2
+      "GET": 5,
+      "POST": 3
+    },
+    "/api/autonomy-maturity": {
+      "GET": 2
     },
     "/api/blueprints": {
       "GET": 3,
@@ -83,6 +86,10 @@
     },
     "/api/forgesdlc-blog": {
       "GET": 2,
+      "POST": 1
+    },
+    "/api/foundry": {
+      "GET": 1,
       "POST": 1
     },
     "/api/governance": {
@@ -155,6 +162,10 @@
       "GET": 1,
       "POST": 1
     },
+    "/api/sticker-board-share": {
+      "GET": 2,
+      "POST": 2
+    },
     "/api/story-hub": {
       "GET": 1
     },
@@ -201,6 +212,12 @@
     },
     {
       "method": "GET",
+      "signature": "/api/auth/loopback-dev-login",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "GET",
       "signature": "/api/auth/oidc/callback",
       "family": "/api/auth",
       "audience": "auth"
@@ -222,6 +239,18 @@
       "signature": "/api/auth/status",
       "family": "/api/auth",
       "audience": "auth"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/autonomy-maturity/enabled",
+      "family": "/api/autonomy-maturity",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/autonomy-maturity/overview",
+      "family": "/api/autonomy-maturity",
+      "audience": "general"
     },
     {
       "method": "GET",
@@ -519,6 +548,18 @@
     },
     {
       "method": "GET",
+      "signature": "/api/sticker-board-share",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sticker-board-share/config",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
       "signature": "/api/story-hub",
       "family": "/api/story-hub",
       "audience": "general"
@@ -639,6 +680,12 @@
     },
     {
       "method": "GET",
+      "signature": "PREFIX:/api/foundry",
+      "family": "/api/foundry",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
       "signature": "PREFIX:/api/handoffs",
       "family": "/api/handoffs",
       "audience": "general"
@@ -700,6 +747,12 @@
     {
       "method": "POST",
       "signature": "/api/auth/logout",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/auth/loopback-dev-login",
       "family": "/api/auth",
       "audience": "auth"
     },
@@ -915,6 +968,18 @@
     },
     {
       "method": "POST",
+      "signature": "/api/sticker-board-share",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sticker-board-share/join",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
       "signature": "/api/toolset/run",
       "family": "/api/toolset",
       "audience": "general"
@@ -965,6 +1030,12 @@
       "method": "POST",
       "signature": "PREFIX:/api/execution-sessions",
       "family": "/api/execution-sessions",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/foundry",
+      "family": "/api/foundry",
       "audience": "general"
     },
     {
