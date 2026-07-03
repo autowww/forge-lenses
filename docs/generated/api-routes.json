@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "route_count": 143,
+  "route_count": 145,
   "families": {
     "/api/access": {
       "GET": 1,
@@ -65,6 +65,9 @@
       "GET": 2
     },
     "/api/devsecops": {
+      "GET": 2
+    },
+    "/api/doc-hydration": {
       "GET": 2
     },
     "/api/docs-health": {
@@ -322,6 +325,12 @@
       "method": "GET",
       "signature": "/api/devsecops/overview",
       "family": "/api/devsecops",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-hydration/review-packs",
+      "family": "/api/doc-hydration",
       "audience": "general"
     },
     {
@@ -664,6 +673,12 @@
       "method": "GET",
       "signature": "PREFIX:/api/decisions",
       "family": "/api/decisions",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/doc-hydration/review-packs",
+      "family": "/api/doc-hydration",
       "audience": "general"
     },
     {

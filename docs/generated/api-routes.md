@@ -41,6 +41,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/delivery` | general | `/api/delivery/overview` |
 | GET | `/api/devsecops` | general | `/api/devsecops/enabled` |
 | GET | `/api/devsecops` | general | `/api/devsecops/overview` |
+| GET | `/api/doc-hydration` | general | `/api/doc-hydration/review-packs` |
 | GET | `/api/docs-health` | docs-health | `/api/docs-health/live-sessions` |
 | GET | `/api/docs-health` | docs-health | `/api/docs-health/summary` |
 | GET | `/api/docs-health` | docs-health | `/api/docs-health/work-items` |
@@ -98,6 +99,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/bridge` | general | `PREFIX:/api/bridge` |
 | GET | `/api/ceremonies` | general | `PREFIX:/api/ceremonies` |
 | GET | `/api/decisions` | general | `PREFIX:/api/decisions` |
+| GET | `/api/doc-hydration` | general | `PREFIX:/api/doc-hydration/review-packs` |
 | GET | `/api/evidence` | general | `PREFIX:/api/evidence` |
 | GET | `/api/execution-sessions` | general | `PREFIX:/api/execution-sessions` |
 | GET | `/api/foundry` | general | `PREFIX:/api/foundry` |
@@ -393,6 +395,17 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 |--------|----------|-----------|
 | GET | general | `/api/devsecops/enabled` |
 | GET | general | `/api/devsecops/overview` |
+
+### `/api/doc-hydration` — 2 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 2 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/doc-hydration/review-packs` |
+| GET | general | `PREFIX:/api/doc-hydration/review-packs` |
 
 ### `/api/docs-health` — 3 route(s)
 

@@ -267,6 +267,8 @@ Feature flag **`LENSES_EXPERIMENTAL_SDLC_COPILOT`** — on by default; set to **
 | `GET` | `/api/review-packs` | List **`review_pack`** summaries. |
 | `GET` | `/api/review-packs/<id>` | Aggregated view: work units, linked code, evidence, decisions, **`source_inputs`**, payload sections. |
 | `POST` | `/api/review-packs` | Create **`review_pack`**. **`201`**. |
+| `GET` | `/api/doc-hydration/review-packs` | Read-only list of doc-hydration review packs (hydration briefs, claim inventories, reviewer decision manifests, workcell results) scanned from `forge-platform/docs/hydration-runs/` and `workbench/doc-hydration-runs/`. |
+| `GET` | `/api/doc-hydration/review-packs/<id>` | Read-only detail for one doc-hydration review pack: brief Markdown, claim inventory, hydration plans, workcell result, and the reviewer decision manifest as an approval record. |
 | `GET` | `/api/assay-packets` | List **`assay_packet`** summaries. |
 | `GET` | `/api/assay-packets/<id>` | View plus **`readiness_gaps`** for **`primary_release_id`**. |
 | `POST` | `/api/assay-packets` | Create **`assay_packet`**. **`201`**. |

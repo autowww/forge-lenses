@@ -2126,6 +2126,19 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, raw, "application/json; charset=utf-8")
             return
 
+        if path == "/api/doc-hydration/review-packs":
+            from lenses.doc_hydration_review import get_review_packs
+
+            get_review_packs(self.workspace_root, send_json=self._send_json)
+            return
+
+        if path.startswith("/api/doc-hydration/review-packs/"):
+            from lenses.doc_hydration_review import get_review_pack_detail
+
+            pack_id = urllib.parse.unquote(path[len("/api/doc-hydration/review-packs/"):])
+            get_review_pack_detail(self.workspace_root, pack_id, send_json=self._send_json)
+            return
+
         if path == "/api/docs-health/summary":
             from lenses.docs_health.api_handlers import get_workspace_summary
 
