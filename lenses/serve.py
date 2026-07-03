@@ -1471,6 +1471,16 @@ class LensesHandler(BaseHTTPRequestHandler):
             ):
                 return
 
+        if path.startswith("/api/foundry"):
+            from lenses.foundry.http import handle_foundry_get
+
+            if handle_foundry_get(
+                workspace_root=self.workspace_root,
+                path=path,
+                send_json=self._send_json,
+            ):
+                return
+
         if path.startswith("/api/ceremonies"):
             from lenses.bridge.ceremony_http import handle_ceremony_b4_get
 
@@ -3440,6 +3450,20 @@ class LensesHandler(BaseHTTPRequestHandler):
                 send_json=self._send_json,
                 client_ip=self.client_address[0],
                 may_run_actions=client_may_run_shell_actions,
+            ):
+                return
+
+        if post_path.startswith("/api/foundry"):
+            from lenses.foundry.http import handle_foundry_post
+
+            body = self._read_json_body(max_len=512_000)
+            if handle_foundry_post(
+                workspace_root=self.workspace_root,
+                post_path=post_path,
+                body=body,
+                send_json=self._send_json,
+                may_run_actions=client_may_run_shell_actions,
+                client_ip=self.client_address[0],
             ):
                 return
 

@@ -1,0 +1,8 @@
+{
+  "goal": "fix failing multiply",
+  "target": "/tmp/target",
+  "level": "L1",
+  "final_status": "pass",
+  "status": "pass",
+  "tier": "fake"
+}

@@ -98,6 +98,9 @@ export const STUDIO_VOCAB = {
   methodologyReadiness: 'Release readiness',
   /** Sprint B3 — agent registry, drift, runs (orchestration graph). */
   agenticBridge: 'Agentic bridge',
+  /** Dark Factory Studio — bounded L1 draft runs with human promote. */
+  foundry: 'Foundry',
+  foundryRun: 'Foundry run',
 } as const
 
 /** Sprint UX7 — standard framing for advanced / admin routes (who / blast radius / when / safety / return). */
@@ -210,6 +213,7 @@ export const REGISTRY = {
   methodologyDecisionsSidebar: 'Decisions (graph)',
   methodologyReadinessSidebar: 'Release readiness (gaps)',
   agenticBridgeSidebar: 'Agentic bridge',
+  foundrySidebar: 'Foundry (Dark Factory)',
 } as const
 
 /**
@@ -278,6 +282,8 @@ export const KNOWLEDGE_PUBLISH_COPILOT = {
     'Explain this readiness view for a release manager: what the gaps mean, what evidence to pull, and what to verify in Plan before sign-off.',
   agenticBridge:
     'Explain what the Agentic bridge is for in one paragraph, when to use Plan vs this page, and one safe first action.',
+  foundry:
+    'Explain Foundry L1 draft runs: humans seed failing tests, Dark Factory proposes patches, and promote requires explicit approval.',
   publishWebsites:
     'Explain how these sites relate to workspace work and suggest one sentence for stakeholders about what each site is for.',
   publishBlog:
@@ -548,6 +554,10 @@ export const ROUTE_SUBTITLE = {
     'What your workspace already recorded about evidence, decisions, and readiness—open a row for detail; technical payloads stay under Inspect.',
   agenticBridge:
     'See how agents, recipes, and approvals are configured here—read-only catalog tied to your workspace; execution stays in Work and Plan.',
+  foundry:
+    'Bounded Dark Factory L1: propose a plan, run a draft against a workspace project, review assay, then promote changed files with human approval.',
+  foundryRun:
+    'Live workflow stages for one Foundry run—poll until assay completes, then approve promote before committing on a feature branch.',
   connectorHealth: ADMIN_INSPECT_COPY.connectorHealthSubtitle,
   governanceAudit: ADMIN_INSPECT_COPY.auditLogSubtitle,
   toolsetAdvanced: ADMIN_INSPECT_COPY.toolsetPurpose,

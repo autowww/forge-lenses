@@ -52,7 +52,7 @@ export type StudioLensVisibility = { flow: boolean; artifacts: boolean }
  * debugging and E2E, but are not primary product navigation. UIs should use framed loading and
  * explicit invalid-session states (see `WizardSessionProbeChrome`).
  */
-export type StudioRouteProbeKind = 'wizard_session' | 'docs_health_session'
+export type StudioRouteProbeKind = 'wizard_session' | 'docs_health_session' | 'foundry_run'
 
 export type StudioRouteDefinition = {
   id: string
@@ -133,6 +133,8 @@ export const SR = {
   methodologyRecord: 'sr.knowledge.methodologyRecord',
   methodologyReadiness: 'sr.delivery.methodologyReadiness',
   agenticBridge: 'sr.knowledge.agenticBridge',
+  foundry: 'sr.knowledge.foundry',
+  foundryRun: 'sr.knowledge.foundryRun',
   fallback: 'sr.fallback',
 } as const
 
@@ -642,6 +644,35 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
       artifacts: { knowledge: R.agenticBridgeSidebar },
     },
     defaultSidebarLabel: R.agenticBridgeSidebar,
+  },
+  {
+    id: SR.foundry,
+    pattern: '/foundry',
+    kind: 'canonical',
+    canonicalTitle: V.foundry,
+    subtitle: SUB.foundry,
+    objectType: 'knowledge',
+    lensVisibility: PRIMARY,
+    flow: bundle('knowledge', [V.knowledge, V.foundry], ['/tutorials', null]),
+    artifacts: bundle('knowledge', [V.knowledge, V.foundry], ['/tutorials', null]),
+    sidebar: {
+      flow: { knowledge: R.foundrySidebar },
+      artifacts: { knowledge: R.foundrySidebar },
+    },
+    defaultSidebarLabel: R.foundrySidebar,
+  },
+  {
+    id: SR.foundryRun,
+    pattern: '/foundry/runs/:runId',
+    kind: 'canonical',
+    canonicalTitle: V.foundryRun,
+    subtitle: SUB.foundryRun,
+    objectType: 'knowledge',
+    lensVisibility: PRIMARY,
+    flow: bundle('knowledge', [V.knowledge, V.foundry, V.foundryRun], ['/tutorials', '/foundry', null]),
+    artifacts: bundle('knowledge', [V.knowledge, V.foundry, V.foundryRun], ['/tutorials', '/foundry', null]),
+    defaultSidebarLabel: V.foundryRun,
+    probeKind: 'foundry_run',
   },
   {
     id: SR.search,

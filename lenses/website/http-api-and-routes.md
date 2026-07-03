@@ -296,6 +296,25 @@ Feature flag **`LENSES_EXPERIMENTAL_SDLC_COPILOT`** — on by default; set to **
 | `POST` | `/api/agents/runs` | Create **`agent_run`**; **`approval_gated`** / **`write`** spawn **`approval_request`** + **`seeks_approval`**. |
 | `POST` | `/api/agents/runs/<id>/approve` | Requires **`confirm_human_approval`: true** when run is write-capable. |
 | `POST` | `/api/agents/outputs/<id>/link` | Body **`artifact_id`** — link **`agent_output`** → **`methodology_artifact`** or **`evidence`**. |
+
+## Foundry (Dark Factory Studio bridge)
+
+**Feature flag** — **`LENSES_EXPERIMENTAL_FOUNDRY`**: default **on** when **`LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3`** is on; set **`0`** to disable (**`feature_disabled`** on GET/POST).
+
+**Execution** — Launches **`forge-dark-factory`** from a sibling checkout (`../forge-dark-factory`) or **`FOUNDRY_DARK_FACTORY_ROOT`**. Run records live under **`<workspace>/.lenses-local/foundry-runs/`**. Studio routes: **`/studio/foundry`**, **`/studio/foundry/runs/:runId`**.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/foundry/enabled` | **`ok`**, **`enabled`**. |
+| `GET` | `/api/foundry/capabilities` | Autonomy ladder (**L1** available; **L2/L3** stub; **L4+** not planned). |
+| `GET` | `/api/foundry/runs` | Recent Foundry runs (normalized phase summaries). |
+| `GET` | `/api/foundry/runs/<id>` | One run + assay/proof when **`foundry_run_dir`** is set. |
+| `POST` | `/api/foundry/plan` | Deterministic L1 plan (**goal**, **`target`** or **`project`**, **`level`**). |
+| `POST` | `/api/foundry/intake` | Chat/fallback parser → **`goal`**, **`target`**, **`project`**, **`level`**. |
+| `POST` | `/api/foundry/runs` | Start L1 draft run (**`worker`**: **`fake`** \| **`local`**, optional **`fixture`**). Loopback / **`LENSES_ALLOW_ACTIONS=1`**. **L2/L3** → **501** **`dark_factory_level_not_wired`**. |
+| `POST` | `/api/foundry/runs/<id>/approve` | Requires **`confirm_human_approval`: true**; promotes changed files from DF worktree (**`promote_scope: file`**). |
+| `POST` | `/api/foundry/campaigns` | **501** stub — campaigns not wired in Studio. |
+
 | `GET` | `/api/ceremonies/enabled` | **`ok`**, **`enabled`**, **`registry_version`** (Sprint B4 ceremony bridge; no DB required). |
 | `GET` | `/api/ceremonies/intents` | Neutral **C1–C6** intents (from **`registry.v1.json`**) + **`delivery_modes`** catalog. |
 | `GET` | `/api/ceremonies/mappings` | Explicit **intent ↔ methodology** mapping rows (Forge ritual names and route hints). |

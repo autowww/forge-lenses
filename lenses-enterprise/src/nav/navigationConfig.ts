@@ -132,6 +132,11 @@ function sideNavForSection(
           to: '/knowledge/agentic-bridge',
           sidebarGroup: 'knowledge_govern' as const,
         },
+        {
+          label: lbl(SR.foundry, mode, 'knowledge'),
+          to: '/foundry',
+          sidebarGroup: 'knowledge_govern' as const,
+        },
         ...(blueprintsWizardFeatureEnabled()
           ? [
               {

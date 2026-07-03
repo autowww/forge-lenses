@@ -83,6 +83,10 @@ const MethodologyReadinessPage = lazy(() =>
 const AgenticBridgePage = lazy(() =>
   import('./pages/AgenticBridgePage').then((m) => ({ default: m.AgenticBridgePage })),
 )
+const FoundryPage = lazy(() => import('./pages/FoundryPage').then((m) => ({ default: m.FoundryPage })))
+const FoundryRunPage = lazy(() =>
+  import('./pages/FoundryRunPage').then((m) => ({ default: m.FoundryRunPage })),
+)
 
 function RouteFallback() {
   return (
@@ -152,6 +156,8 @@ export default function App() {
               <Route path="knowledge/methodology/record/:entityId" element={<MethodologyGraphRecordPage />} />
               <Route path="knowledge/methodology/readiness" element={<MethodologyReadinessPage />} />
               <Route path="knowledge/agentic-bridge" element={<AgenticBridgePage />} />
+              <Route path="foundry" element={<FoundryPage />} />
+              <Route path="foundry/runs/:runId" element={<FoundryRunPage />} />
               <Route path="roadmap-section" element={<RoadmapSectionPage />} />
               <Route path="feature-showcase" element={<FeatureShowcaseDemoPage />} />
               {/* Blueprints Wizard: hub is primary UX; `session/:sessionId` is a probe/deep-link surface

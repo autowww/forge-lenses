@@ -1,1 +1,0 @@
-import{z as e}from"./page-BqgQO8yC.js";import{E as t,L as n}from"./index-47M8J4Zg.js";import{t as r}from"./boards-Ce1YvssZ.js";var i=e();function a(){t({route:`board`});let{mode:e}=n();return(0,i.jsx)(r,{variant:e===`artifacts`?`artifacts`:`flow`})}export{a as BoardHubPage};
