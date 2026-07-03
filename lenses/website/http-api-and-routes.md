@@ -393,6 +393,16 @@ Used by Forge Studio Docs Health rail + maintainer overlays in **`docs/maintaine
 | `GET` | `/api/docs-health/work-items` | Paginated remediation queue (titles, repos, timestamps). Read-only. |
 | `GET` | `/api/docs-health/live-sessions` | Telemetry for live verification sessions keyed by Lens job ids (who is validating which repo). Requires same auth posture as Docs Health viewer. |
 
+## Autonomy maturity (experimental)
+
+Backed by **`lenses/autonomy_maturity/`** — deterministic per-project scoring against the blueprint autonomy maturity framework. All endpoints are feature-flagged (**`LENSES_EXPERIMENTAL_AUTONOMY_MATURITY=1`**); with the flag off, the overview and project endpoints return **404** `feature_disabled`.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/autonomy-maturity/enabled` | JSON **`enabled`** boolean so the Studio UI can hide the panel when the flag is off. Read-only. |
+| `GET` | `/api/autonomy-maturity/overview` | Workspace summary: per-project **observed** level+grade claim, 0–100 **score**, and top recommendation, sorted weakest-first. Read-only. |
+| `GET` | `/api/project/<name>/autonomy-maturity` | Full per-project assessment: score components (gate definition, demonstrated evidence, repeatability, operational), gate signals, Dark Factory run evidence, and gap **recommendations**. **403** `project_forbidden` when access policy is enforced without read. |
+
 ## ForgeSDLC public blog mirror endpoints
 
 Backed by **`lenses/forgesdlc_blog*`** ingestion helpers — safe to expose read-only summaries on LAN **only when** bindings allow it.
