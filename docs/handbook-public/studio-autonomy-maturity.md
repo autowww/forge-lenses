@@ -1,3 +1,17 @@
+---
+
+nav_title: Autonomy maturity in Studio
+public_publish: true
+audience: public
+product_area: lenses
+tier: practitioner
+handbook_area: lenses
+learning_level: '201'
+section: studio-wizard
+status: experimental
+description: Autonomy maturity assessment in Studio — Forge Lenses handbook entry (product-areas).
+---
+
 # Autonomy maturity (Studio, experimental)
 
 Lenses Studio can assess each workspace project against the Forge **autonomy maturity framework**: what autonomy level and grade the repo has actually *proven*, a 0–100 score, and the cheapest next promotion. The canonical scoring spec lives in Blueprints (`AUTONOMY-MATURITY-FRAMEWORK.md`); the ladder itself (levels L0–L8, grades a–d, sub-levels L1.1–L4.3) is defined in Blueprints `AUTONOMY-LEVELS.md`.
