@@ -47,14 +47,14 @@ Right after [Install and run](02-install-and-run.md), before deeper Studio or Wi
 
 Exact wording changes between builds; use this table only to orient, not as an API.
 
-```blueprint-diagram-ascii
+```blueprint-diagram
 key: linear
 alt: Studio first session flow
 caption: Open Studio, confirm workspace, open one project
-
-+-------------+     +------------------+     +----------------+
-| Open /studio| --> | Confirm workspace | --> | Open a project |
-+-------------+     +------------------+     +----------------+
+fallback_ascii: |
+  +-------------+     +------------------+     +----------------+
+  | Open /studio| --> | Confirm workspace | --> | Open a project |
+  +-------------+     +------------------+     +----------------+
 ```
 
 ## Expected outcome
