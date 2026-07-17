@@ -20,7 +20,35 @@ Use this page to **shortcut to the documentation that matters for your hat** —
 ```blueprint-diagram
 key: swimlane
 alt: Readers choose Studio flows, Wizard lab, enterprise hardening, or HTTP builders after fundamentals
+title: Role-based handbook branching
+summary: Readers branch by role objective to reach the right handbook pages without detouring through contributor-only drafts.
+node: Process flow
+detail: Reader identifies which hat they wear before choosing documentation.
+more: This page shortcuts to handbook pages that matter for evaluator, builder, operator, security, or facilitator roles.
+node: Lane A
+detail: The evaluator or builder lane for fundamentals-first reading.
+more: Evaluators start with overview and install; solo developers open workspace setup and Studio 101.
+node: handoff
+detail: Moves from role selection to the recommended first pages.
+more: Each role row in the table maps to three prioritized handbook destinations without contributor-only detours.
+node: shared outcome
+detail: Reader reaches governed, role-appropriate documentation quickly.
+more: Links resolve to public navigation profile pages on lenses.forgesdlc.com.
+node: Lane B
+detail: The operator or facilitator lane for inspect-and-adapt loops.
+more: Team leads, platform operators, and security reviewers follow day-two and enterprise paths.
+node: inspect / adapt
+detail: Reader probes live workspace behavior and adjusts the reading order.
+more: Operators inspect network binding and configuration; security reviewers trace what leaves the machine.
+node: feedback
+detail: Outcomes inform whether to deepen or postpone advanced topics.
+more: The "do not start here yet" section gates Wizard 301 and raw API catalogs until fundamentals stick.
 caption: Branch by role objective after workspace setup (evaluator/builder/operator lanes)
+fallback_ascii: |
+  Process flow
+
+  Lane A ──► handoff ──► shared outcome
+  Lane B ──► inspect / adapt ──► feedback
 ```
 
 ## Role → recommended first reads

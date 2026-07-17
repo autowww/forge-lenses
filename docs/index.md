@@ -1,5 +1,4 @@
 ---
-
 nav_title: Home
 audience: public
 section: product
@@ -9,8 +8,18 @@ tier: product
 handbook_area: product
 status: shipped
 public_publish: true
-description: Install Forge Lenses locally, navigate Classic Lenses, Forge Studio, and the Blueprints Wizard, and integrate with schemas and APIs—without sending code to a SaaS reviewer.
+description: Install Forge Lenses locally, navigate Classic Lenses, Forge Studio, and the Blueprints Wizard,
+  and integrate with schemas and APIs—without sending code to a SaaS reviewer.
 page_type: landing
+content_id: forge.docs.lenses.home
+canonical_owner: forge-lenses
+primary_persona: practitioner
+reader_stage: discover
+maturity: demonstrated
+evidence_level: canonical_doc
+refresh_policy: on_claim_change
+last_reviewed: '2026-07-03'
+page_contract_profile: landing
 ---
 
 # Forge Lenses — see your Forge workspace locally
@@ -22,6 +31,17 @@ This site (**[lenses.forgesdlc.com](https://lenses.forgesdlc.com)**) is the **ca
 ```blueprint-diagram
 key: linear
 alt: Hero path from install through workspace root selection to Classic or Studio
+title: First-session hero path
+summary: Install Lenses, point it at your workspace root, then open Classic or Forge Studio on loopback.
+node: Install
+detail: Bring up the local Lenses Python server on your machine.
+more: Follow Install and run to clone, create a venv, and start the server at 127.0.0.1 without widening network exposure.
+node: Workspace root selection
+detail: Set LENSES_WORKSPACE_ROOT to the Forge repos your team agreed to scan.
+more: Workspace setup guides root choice and scan-host layout so Projects and lenses reflect the right siblings.
+node: Classic or Studio
+detail: Open Classic at `/` or Forge Studio at `/studio/` for your first session.
+more: Classic serves the workspace dashboard; Studio carries newer flows including the Blueprints Wizard at `/studio/blueprints/wizard/`.
 caption: Typical first-session path through documentation
 ```
 
@@ -72,6 +92,23 @@ Detailed journey tables live on **[Pick your path](handbook-public/role-based-pa
 ```blueprint-diagram
 key: tree
 alt: One server hosting Classic dashboard, Forge Studio, shared API, Docs Health signals
+title: One server product map
+summary: Classic, Studio, shared API, and Docs Health signals run on one local Python process you control.
+node: One server
+detail: A single local Python process hosts every Lenses surface.
+more: Bind loopback by default; Classic and Studio consume the same `/api` without a separate deployment.
+node: Classic dashboard
+detail: Server-rendered workspace dashboard at the site root path.
+more: Projects, Forge plan lenses, and overview views live at `/` for daily inspection of your clones.
+node: Forge Studio
+detail: React UX at `/studio/` for newer flows and dashboards.
+more: Blueprints Wizard sessions run inside Studio; exports stay local unless you configure outbound integrations.
+node: Shared API
+detail: One `/api` surface serves Classic and Studio clients alike.
+more: Builders integrate against the same route families documented in the HTTP API catalog.
+node: Docs Health signals
+detail: Analysis and reporting for handbook and documentation quality.
+more: Read-only overlays help operators spot drift before opening remediation tooling.
 caption: Forge Lenses — one server, Classic and Studio/Wizard surfaces
 ```
 

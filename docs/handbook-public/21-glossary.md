@@ -25,3 +25,4 @@ page_type: reference
 | **`.lenses-repo/`** | Cached GitHub overlays once PAT sign-in succeeds. |
 | **Docs Health** | Job + UI for documentation quality signals ([chapter](15-docs-health.md)). |
 | **Kitchen Sink diagram** | Product docs use `blueprint-diagram*` fenced blocks (not Mermaid). |
+| **Workspace abbreviations** | Short names for Forge repos and handbook deploy shells (**bp**, **ks**, **fl**, **ffw**, …) — [glossary on blueprints.forgesdlc.com](https://blueprints.forgesdlc.com/sdlc--methodologies-forge-workspace-abbreviations.html). |

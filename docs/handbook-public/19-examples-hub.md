@@ -21,7 +21,28 @@ These files live in [`docs/examples/`](../examples/) beside [`docs/schemas/`](..
 ```blueprint-diagram
 key: heatmap
 alt: Rows of schemas versus CI pytest cells showing validation coverage intensity
+title: Builder JSON sample flow
+summary: How hand-edited samples stay aligned with schemas and pytest validation in CI.
+node: Start
+detail: A schema or envelope change signals that samples may be stale.
+more: Tracked JSON lives beside docs/schemas/; samples are not runtime fixtures.
+node: Core steps (see walkthrough below)
+detail: Edit the schema, update matching sample-*.json files, then run pytest.
+more: tests/test_docs_schemas.py validates the same shapes the server and builders rely on.
+node: Outcome
+detail: CI keeps scrubbed, deterministic examples builders can cite safely.
+more: Mention behavioral shifts in Schemas and API when HTTP tables move.
 caption: Samples stay scrubbed; extend the matrix whenever route families stabilize
+fallback_ascii: |
+  Process flow
+
+  Start
+      |
+      v
+  Core steps (see walkthrough below)
+      |
+      v
+  Outcome
 ```
 
 | Example | Schema | Use |

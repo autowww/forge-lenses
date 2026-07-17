@@ -78,6 +78,25 @@ For **desktop-app**, JSON APIs, or contributor-level detail, use the **forge-len
 ```blueprint-diagram
 key: linear
 alt: Set LENSES_WORKSPACE_ROOT → restart → confirm Projects; if nested host layout, see advanced note for startup and caches
+title: Symptom to fix flow
+summary: Move from a wrong Projects or scan outcome to a bounded fix using this page's worked examples and table.
+node: Symptom
+detail: Name what Projects or scans show that does not match expectation.
+more: Empty UI, permission errors, slow scans, or caches under the wrong directory are common starting points described in the worked examples above.
+node: likely mistake
+detail: Match the symptom to the usual root cause from the table above.
+more: Wrong LENSES_WORKSPACE_ROOT, unreadable paths, an overly broad root, or nested host layout without startup setup are frequent mistakes on this page.
+node: fix
+detail: Apply the documented fix, then restart the server and reload to verify.
+more: Set the agreed workspace root, fix permissions or narrow the root, run the host startup script when nested, or ask your maintainer before editing workspace-registry.json.
+fallback_ascii: |
+  Symptom
+      |
+      v
+  likely mistake
+      |
+      v
+  fix
 ```
 
 ## Expected outcome (plain language)

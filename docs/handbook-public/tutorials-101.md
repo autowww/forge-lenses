@@ -47,7 +47,23 @@ Beginner paths assume **[Install and run](02-install-and-run.md)** is complete a
 ```blueprint-diagram
 key: swimlane
 alt: Suggested 101 learning lanes for Studio and Wizard
+title: 101 tutorial lane map
+summary: Two parallel beginner paths through Studio or Wizard, each producing a reviewable win after install.
+node: Suggested order
+detail: The page's recommended frame before choosing a learning lane.
+more: Prerequisites assume install is complete; either lane can start first without blocking the other.
+node: Lane A ──► handoff ──► shared outcome
+detail: Studio path from shell navigation to a concrete workspace artifact.
+more: Covers Studio 101, Classic dashboard, and Docs Health so you can name one observable Studio result today.
+node: Lane B ──► inspect / adapt ──► feedback
+detail: Wizard path through session creation and hub versus session URLs.
+more: Wizard 101 walks a throwaway session through the twelve-step UX without requiring a live LLM when offline.
 caption: Either lane can start first; both assume install is done
+fallback_ascii: |
+  Suggested order
+
+  Lane A ──► handoff ──► shared outcome
+  Lane B ──► inspect / adapt ──► feedback
 ```
 
 ## Recover

@@ -13,12 +13,12 @@ import type {
   FoundryRun,
   FoundryRunsList,
 } from '../lib/foundryTypes'
-import { KNOWLEDGE_PUBLISH_COPILOT, ROUTE_SUBTITLE, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { ROUTE_SUBTITLE, STUDIO_VOCAB, WORK_COPILOT_DEFAULT_PLAN } from '../nav/studioVisibleCopy'
 
 const LEVELS = ['L1', 'L2', 'L3'] as const
 
 export function FoundryPage() {
-  useLensesCopilotPage({ route: 'knowledge', defaultQuery: KNOWLEDGE_PUBLISH_COPILOT.foundry })
+  useLensesCopilotPage({ route: 'work', defaultQuery: WORK_COPILOT_DEFAULT_PLAN })
   const navigate = useNavigate()
   const { state: workspace } = useWorkspace()
   const projects = useMemo(

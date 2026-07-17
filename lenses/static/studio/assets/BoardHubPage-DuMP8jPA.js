@@ -1,0 +1,1 @@
+import{z as e}from"./page-CrIeSzGg.js";import{D as t,U as n}from"./index-DLyyiGNZ.js";import{t as r}from"./boards-CDsMtr_p.js";var i=e();function a(){t({route:`board`});let{mode:e}=n();return(0,i.jsx)(r,{variant:e===`artifacts`?`artifacts`:`flow`})}export{a as BoardHubPage};

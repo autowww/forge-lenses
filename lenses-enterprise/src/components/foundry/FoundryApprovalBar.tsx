@@ -24,8 +24,9 @@ export function FoundryApprovalBar({ runId, disabled, onApprove }: Props) {
     <section className="le-card" aria-label="Human approval before promote">
       <h2 className="le-card__title">Review before apply</h2>
       <p className="le-muted">
-        Draft run <code>{runId}</code> passed assay. Promote copies changed files into the live target working tree
-        (file scope). Commit on a feature branch per branching policy — Studio does not auto-commit.
+        Draft run <code>{runId}</code> passed assay. Review the unified diff above, then promote copies changed
+        files into the live target working tree (file scope). Commit on a feature branch per branching policy —
+        Studio does not auto-commit.
       </p>
       <label className="le-check-row">
         <input

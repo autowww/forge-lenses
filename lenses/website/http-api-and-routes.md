@@ -269,6 +269,11 @@ Feature flag **`LENSES_EXPERIMENTAL_SDLC_COPILOT`** — on by default; set to **
 | `POST` | `/api/review-packs` | Create **`review_pack`**. **`201`**. |
 | `GET` | `/api/doc-hydration/review-packs` | Read-only list of doc-hydration review packs (hydration briefs, claim inventories, reviewer decision manifests, workcell results) scanned from `forge-platform/docs/hydration-runs/` and `workbench/doc-hydration-runs/`. |
 | `GET` | `/api/doc-hydration/review-packs/<id>` | Read-only detail for one doc-hydration review pack: brief Markdown, claim inventory, hydration plans, workcell result, and the reviewer decision manifest as an approval record. |
+| `GET` | `/api/doc-management/catalog` | Personas and hydration target surfaces for Studio wizard (from forge-platform governance registries). |
+| `GET` | `/api/doc-management/sessions` | List Doc Management sessions (`.lenses-local/doc-management/sessions/`). |
+| `GET` | `/api/doc-management/session/<id>` | Doc Management session detail including pack artifacts and reviewer manifest. |
+| `GET` | `/api/doc-management/session-events?session_id=` | SSE stream of session state (workflow stages, status). |
+| `POST` | `/api/doc-management` | Doc Management ops: `create_session`, `session_intake`, `session_wizard`, `session_run`, `session_decisions`, `session_promote`, `session_rollback`, `session_cancel`. |
 | `GET` | `/api/assay-packets` | List **`assay_packet`** summaries. |
 | `GET` | `/api/assay-packets/<id>` | View plus **`readiness_gaps`** for **`primary_release_id`**. |
 | `POST` | `/api/assay-packets` | Create **`assay_packet`**. **`201`**. |
@@ -310,7 +315,7 @@ Feature flag **`LENSES_EXPERIMENTAL_SDLC_COPILOT`** — on by default; set to **
 | `GET` | `/api/foundry/enabled` | **`ok`**, **`enabled`**. |
 | `GET` | `/api/foundry/capabilities` | Autonomy ladder (**L1** available; **L2/L3** stub; **L4+** not planned). |
 | `GET` | `/api/foundry/runs` | Recent Foundry runs (normalized phase summaries). |
-| `GET` | `/api/foundry/runs/<id>` | One run + assay/proof when **`foundry_run_dir`** is set. |
+| `GET` | `/api/foundry/runs/<id>` | One run + assay/proof when **`foundry_run_dir`** is set; includes **`review`** (proof markdown + per-file unified diffs) for in-UI promote review. |
 | `POST` | `/api/foundry/plan` | Deterministic L1 plan (**goal**, **`target`** or **`project`**, **`level`**). |
 | `POST` | `/api/foundry/intake` | Chat/fallback parser → **`goal`**, **`target`**, **`project`**, **`level`**. |
 | `POST` | `/api/foundry/runs` | Start L1 draft run (**`worker`**: **`fake`** \| **`local`**, optional **`fixture`**). Loopback / **`LENSES_ALLOW_ACTIONS=1`**. **L2/L3** → **501** **`dark_factory_level_not_wired`**. |

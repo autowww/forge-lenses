@@ -23,7 +23,29 @@ Forge Lenses exposes a single **local HTTP surface** from `python3 -m lenses`. S
 ```blueprint-diagram
 key: network
 alt: Browser, Forge Lenses process, repos, Fleet, and outbound LLMs as HTTP peers
+title: Lenses local HTTP surface
+summary: One Lenses process exposes /api routes that Studio, builders, and local HTTP peers share on loopback.
+node: What it is
+detail: The local HTTP integration surface this builders overview introduces.
+more: Forge Lenses serves documented /api/... routes from python3 -m lenses; Studio and Classic browsers call the same paths integrators use.
+node: Root / intake
+detail: The Lenses process entry where inbound API requests arrive.
+more: Prefix families and methods are cataloged for operators; builders verify behavior against the generated route tables on loopback.
+node: branch A
+detail: A first HTTP peer path off the shared local API intake.
+node: branch B
+detail: A second peer class using the same documented route boundaries.
+node: branch C
+detail: A third peer path on the bounded local network diagram.
+more: Outbound Fleet or LLM calls stay outside this surface unless a route explicitly brokers them.
 caption: Builders reason about POST boundaries the same surfaces Studio trusts locally
+fallback_ascii: |
+  What it is
+
+  Root / intake
+      +-- branch A
+      +-- branch B
+      +-- branch C
 ```
 
 ## Where to read next

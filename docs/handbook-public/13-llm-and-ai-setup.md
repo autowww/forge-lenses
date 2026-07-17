@@ -22,7 +22,31 @@ The Studio **AI tray** consumes the same **`/api/llm/*`**, **`/api/fleet/*`**, *
 ```blueprint-diagram
 key: network
 alt: Loopback-only Studio pane calling Fleet and LLM routes without automatic cloud egress
+title: Studio AI tray API surface
+summary: How loopback Studio reaches LLM, Fleet, and copilot routes without automatic cloud egress.
+node: What it is
+detail: Introduces the local-first AI control plane this guide configures.
+more: The AI tray shares `/api/llm/*`, `/api/fleet/*`, `/api/sdlc-copilot/*`, and OAuth-like helpers documented in the HTTP API reference.
+node: Root / intake
+detail: Studio on loopback calls the local Lenses server as the intake point.
+more: Default binding is `127.0.0.1:8080`; traffic stays on disk and loopback until you opt into WAN providers.
+node: branch A
+detail: LLM routes manage providers, settings, probes, and diagnostics.
+more: Secrets persist under `.lenses-local/`; use provider-probe and diagnostics endpoints to verify nightly profiles.
+node: branch B
+detail: Fleet routes discover and pool Forge-hosted inference nodes.
+more: Populate Fleet settings with discovery subnets and bearer references, then run discover and node-detail before enrolling clients.
+node: branch C
+detail: SDLC copilot and OAuth-like helpers remain optional, gated routes.
+more: Enable copilot flags deliberately; audit tails write to `sdlc-copilot-audit.jsonl` and never mirror to Git.
 caption: Optional providers stay opt-in; document every boundary before enabling WAN paths
+fallback_ascii: |
+  What it is
+
+  Root / intake
+      +-- branch A
+      +-- branch B
+      +-- branch C
 ```
 
 ## When to use this guide

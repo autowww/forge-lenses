@@ -13,6 +13,13 @@ export function autonomyMaturityFeatureEnabled(): boolean {
   return false
 }
 
+/** Doc Management / Hydration v2 Studio sessions — on by default unless VITE_EXPERIMENTAL_DOC_MANAGEMENT=0. */
+export function docManagementFeatureEnabled(): boolean {
+  const v = import.meta.env.VITE_EXPERIMENTAL_DOC_MANAGEMENT
+  if (v === 'false' || v === '0') return false
+  return true
+}
+
 /** Opt-in client sends for wizard telemetry POST (server also needs ``LENSES_BLUEPRINTS_WIZARD_TELEMETRY``). */
 export function blueprintsWizardTelemetryClientEnabled(): boolean {
   const v = import.meta.env.VITE_BLUEPRINTS_WIZARD_TELEMETRY

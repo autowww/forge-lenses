@@ -50,6 +50,17 @@ Exact wording changes between builds; use this table only to orient, not as an A
 ```blueprint-diagram
 key: linear
 alt: Studio first session flow
+title: Studio first session flow
+summary: Proves Forge Studio loads and one workspace or project surface renders live data.
+node: Open /studio
+detail: Load Forge Studio at your local server URL.
+more: After install, this confirms the Studio shell and assets resolve. A blank page signals an environment issue—see Troubleshooting.
+node: Confirm workspace
+detail: Verify the workspace lens across scanned repos renders.
+more: Workspace spans your scanned repos; visible chrome and content here mean the server is healthy and Studio is viable.
+node: Open a project
+detail: Use the sidebar to open one primary area with real content.
+more: Projects focus on a single repo; completing this step gives confidence you can navigate without reading source files.
 caption: Open Studio, confirm workspace, open one project
 fallback_ascii: |
   +-------------+     +------------------+     +----------------+

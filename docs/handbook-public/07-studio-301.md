@@ -42,6 +42,36 @@ Use **Studio 301** when you already know [Studio 201](06-studio-201.md) basics a
 ```blueprint-diagram
 key: decision
 alt: Prefer Studio 201 for learning; use Studio 301 when choosing Classic vs Studio or debugging mismatches
+title: When to reach for Studio 301
+summary: Decide whether advanced Studio guidance fits your situation or you should stay on Studio 201 or escalate.
+node: Decision framework (when to reach for 301)
+detail: Entry point for choosing whether this advanced page fits your situation.
+more: Use when you know Studio 201 but need deliberate Classic versus Studio choices or mismatch debugging.
+node: Current state
+detail: Assess your Studio navigation comfort and whether a mismatch needs investigation.
+more: New team members belong on Studio 201; empty charts, conflicting status, or experimental flows point here.
+node: Checkpoint / gate
+detail: Confirm prerequisites before advancing to 301 topics.
+more: You should be past first-week onboarding and comfortable with Studio 201 navigation and first-session checks.
+node: refine or escalate
+detail: Step back to Studio 201 or open Troubleshooting for unresolved mismatches.
+more: Verify the same project in Classic first; reconcile status before switching surfaces when data disagrees.
+node: Continue flow
+detail: Proceed with Studio 301 advanced scenarios, limitations, and Classic fallbacks.
+more: Covers chart debugging, surface comparison, experimental gaps, and performance notes for large workspaces.
+fallback_ascii: |
+  Decision framework (when to reach for 301)
+
+  Current state
+      |
+      v
+  Checkpoint / gate
+      |
+      +-- no ──► refine or escalate
+      |
+     yes
+      v
+  Continue flow
 ```
 
 ## Advanced scenarios

@@ -15,7 +15,30 @@ const MOCK_RUN = {
     { id: 'route', label: 'route', status: 'completed' },
     { id: 'assay', label: 'assay', status: 'completed' },
   ],
+  activity: [
+    { id: 'act_1', ts: '2026-07-04T04:00:00Z', text: 'Run queued — L1 draft', tone: 'busy' },
+    { id: 'act_2', ts: '2026-07-04T04:00:01Z', text: 'Building context pack — 8 items', tone: 'ok' },
+  ],
+  current_phase: 'assay',
   assay: { ok: true, tests_pass: true },
+  review: {
+    ok: true,
+    proof_markdown: '# Proof\n\n- changed engine.py\n',
+    narrative: {
+      ok: true,
+      root_cause: '`multiply()` returned the sum instead of the product.',
+      change_summary: 'Corrected multiply() to use multiplication.',
+      why_it_works: 'Verification re-ran pytest.',
+    },
+    files: [
+      {
+        path: 'src/dfcalc/engine.py',
+        unified_diff: '--- before\n+++ after\n@@\n-return a + b\n+return a * b\n',
+        has_changes: true,
+        source: 'fixture',
+      },
+    ],
+  },
 }
 
 function mockFoundryApis(page: Page) {
@@ -64,4 +87,9 @@ test('Foundry run viewer — stage bar and assay card', async ({ page }) => {
   await expect(page.getByText(/fix failing multiply/i).first()).toBeVisible({ timeout: 120_000 })
   await expect(page.getByLabel(/Dark Factory workflow stages/i)).toBeVisible()
   await expect(page.getByText(/Assay passed/i).first()).toBeVisible()
+  await expect(page.getByText(/Review changes/i).first()).toBeVisible()
+  await expect(page.getByText(/Stage details/i).first()).toBeVisible()
+  await expect(page.getByText(/Agent activity/i).first()).toBeVisible()
+  await expect(page.getByText(/Root cause/i).first()).toBeVisible()
+  await expect(page.getByText(/return a \* b/i).first()).toBeVisible()
 })

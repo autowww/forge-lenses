@@ -17,6 +17,8 @@ import { ProjectChartsPage } from './pages/ProjectChartsPage'
 import { ProjectStrategyPage } from './pages/ProjectStrategyPage'
 import { ProjectBranchingPage } from './pages/ProjectBranchingPage'
 import { ProjectForgeRunPage } from './pages/ProjectForgeRunPage'
+import { DocManagementHubPage } from './pages/DocManagementHubPage'
+import { DocManagementSessionPage } from './pages/DocManagementSessionPage'
 import { ProjectDocsHealthPage } from './pages/ProjectDocsHealthPage'
 import { ProjectDocsHealthMasterPage } from './pages/ProjectDocsHealthMasterPage'
 import { ProjectDocsHealthSessionPage } from './pages/ProjectDocsHealthSessionPage'
@@ -155,6 +157,8 @@ export default function App() {
               <Route path="view/local-site/*" element={<StaticEmbedPage kind="local-site" />} />
               <Route path="blog" element={<BlogPage />} />
               <Route path="blog/post/:slug" element={<BlogPostPage />} />
+              <Route path="doc-management" element={<DocManagementHubPage />} />
+              <Route path="doc-management/session/:sessionId" element={<DocManagementSessionPage />} />
               <Route path="workspace-md" element={<WorkspaceMdPage />} />
               <Route path="workspace-md/view" element={<WorkspaceMdPage />} />
               <Route path="knowledge/methodology/evidence" element={<MethodologyEvidenceRegistryPage />} />

@@ -559,9 +559,9 @@ export const ROUTE_SUBTITLE = {
   agenticBridge:
     'See how agents, recipes, and approvals are configured here—read-only catalog tied to your workspace; execution stays in Work and Plan.',
   foundry:
-    'Bounded Dark Factory L1: propose a plan, run a draft against a workspace project, review assay, then promote changed files with human approval.',
+    'Bounded Dark Factory L1 in Work: propose a plan, run a draft, review diffs and assay in Studio, then promote with human approval.',
   foundryRun:
-    'Live workflow stages for one Foundry run—poll until assay completes, then approve promote before committing on a feature branch.',
+    'Live agent activity, workflow stages, proof summary, and per-file diffs—approve promote when satisfied.',
   autonomyMaturity:
     'Observed autonomy maturity per project — level and grade claim, 0-100 score, weakest first. Read-only signals; Wizard intent is never counted.',
   projectAutonomyMaturity:

@@ -53,6 +53,34 @@ Read **layouts**, then **root choice**, then **when projects or scans look wrong
 ```blueprint-diagram
 key: decision
 alt: Workspace setup — common layouts, then choosing the root, then fixes when projects or scans look wrong
+title: Workspace setup reading order
+summary: Navigate layouts, root choice, and scan troubleshooting in sequence before relying on Studio overview.
+node: Topics
+detail: The three child pages that structure workspace setup on disk.
+more: Read layouts first, then root choice, then scan-host fixes when Projects or Overview still look wrong.
+node: Current state
+detail: Your grasp of folder layout and whether a workspace root is already chosen.
+node: Checkpoint / gate
+detail: Confirms prerequisites before advancing to the next setup topic.
+more: Each child page states an expected outcome; verify it matches your disk layout and env var before moving on.
+node: refine or escalate
+detail: Revisit an earlier topic or open troubleshooting when the gate fails.
+more: Empty Projects or wrong repo counts usually mean returning to root choice or the scan-host page, not skipping ahead.
+node: Continue flow
+detail: Proceed to the next handbook page in the bounded setup sequence.
+fallback_ascii: |
+  Topics
+
+  Current state
+      |
+      v
+  Checkpoint / gate
+      |
+      +-- no ──► refine or escalate
+      |
+     yes
+      v
+  Continue flow
 ```
 
 ## How to verify success

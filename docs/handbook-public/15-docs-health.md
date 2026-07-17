@@ -22,7 +22,31 @@ Forge Studio exposes three JSON feeds for documentation hygiene:
 ```blueprint-diagram
 key: linear
 alt: Summary feed to work items to live sessions with GET-only verification first
+title: Docs Health overlay flow
+summary: How operators inspect documentation hygiene through read-only JSON feeds before opening mutation tooling.
+node: What it is
+detail: Studio exposes three GET feeds for documentation hygiene signals.
+more: The summary, work-items, and live-sessions endpoints roll up counts, remediation queues, and active verification jobs.
+node: Start
+detail: Operators open Docs Health when policy or handbook drift is suspected.
+more: Typical triggers include branching policy changes or agents reporting divergent handbook copies across submodules.
+node: Core steps (see walkthrough below)
+detail: Verify each endpoint with GET-only checks from localhost.
+more: Hit summary, work-items, and live-sessions; reconcile counts and correlate live-sessions repos with Fleet nodes when proxies run.
+node: Outcome
+detail: Confirmed hygiene state without invoking mutation tooling.
+more: Docs Health stays read-only until operators explicitly choose remediation paths linked from Troubleshooting.
 caption: Docs Health stays read-only until operators explicitly open mutation tooling
+fallback_ascii: |
+  What it is
+
+  Start
+      |
+      v
+  Core steps (see walkthrough below)
+      |
+      v
+  Outcome
 ```
 
 | Method | Path | Purpose |

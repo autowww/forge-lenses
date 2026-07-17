@@ -22,7 +22,37 @@ Lenses deliberately defaults to **`127.0.0.1`** binding (`--bind-all-interfaces`
 ```blueprint-diagram
 key: decision
 alt: Widening binds or automation flags forks into OIDC prerequisites versus rollback
+title: Security posture change gate
+summary: Operators keep loopback-first as default and widen exposure only after a bounded checkpoint passes.
+node: What it is
+detail: Name the bind, automation, or exposure change under review.
+more: Covers widening beyond 127.0.0.1, enabling LENSES_ALLOW_ACTIONS or LENSES_ALLOW_GIT_ACTIONS, or proxying /studio/ and /api/ outward.
+node: Current state
+detail: Record active binds, .lenses-local writes, and enabled flags.
+more: Confirm loopback-only listeners, inspect .lenses-local and .lenses-repo overlays, and note any RBAC or OIDC already bootstrapped.
+node: Checkpoint / gate
+detail: Decide whether prerequisites and evidence satisfy policy.
+more: Remote POST surfaces and destructive flows still require GitHub or OIDC session even when allow-action flags are set.
+node: refine or escalate
+detail: Pause the change and narrow scope or involve reviewers.
+more: Roll back draft config, close gaps against the enterprise hub checklist, or escalate before retrying the widen.
+node: Continue flow
+detail: Apply the bounded change with traceable approval.
+more: Re-verify binds, governance-audit.jsonl entries, and the HTTP route catalog after the change lands.
 caption: Operators treat loopback-first posture as default and branch only with evidence
+fallback_ascii: |
+  What it is
+
+  Current state
+      |
+      v
+  Checkpoint / gate
+      |
+      +-- no ──► refine or escalate
+      |
+     yes
+      v
+  Continue flow
 ```
 
 ## When to revisit this checklist

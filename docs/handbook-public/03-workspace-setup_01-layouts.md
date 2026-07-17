@@ -42,6 +42,30 @@ Before you set `LENSES_WORKSPACE_ROOT` or when teammates disagree whether Lenses
 ```blueprint-diagram
 key: board
 alt: Sibling layout vs host-repo layout — pick one before choosing the root
+title: Workspace layout decision
+summary: Compare sibling and host-repo arrangements before setting LENSES_WORKSPACE_ROOT for bounded multi-repo scans.
+node: Layouts (summary)
+detail: Start with the summary table comparing layout patterns.
+more: The table contrasts sibling repos versus a host repo with nested Lenses, including typical root paths and when each works well.
+node: Root / intake
+detail: Choose the folder LENSES_WORKSPACE_ROOT will scan.
+more: The root defines which clones appear as project cards; it should list your intended program workspace, not an arbitrary slice of disk.
+node: branch A
+detail: Sibling repos: clones share one parent folder.
+more: Set the root to the parent listing forge-lenses and product repos; Projects shows each service as a separate card.
+node: branch B
+detail: Host repo: Lenses nested inside one monorepo.
+more: Point the root at the host git root so services and libs under the host tree are discoverable together.
+node: branch C
+detail: Lenses-only subtree when root is forge-lenses/.
+more: Useful for Lenses development alone; wrong when you need full-program visibility across the host tree.
+fallback_ascii: |
+  Layouts (summary)
+
+  Root / intake
+      +-- branch A
+      +-- branch B
+      +-- branch C
 ```
 
 ## Worked example — sibling repos (most common)

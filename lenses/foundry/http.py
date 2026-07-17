@@ -6,12 +6,14 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, Callable
 
+from lenses.foundry.activity import append_activity, bootstrap_run_activity
 from lenses.foundry.feature import foundry_enabled
 from lenses.foundry.intake import parse_intake_message
 from lenses.foundry.launcher import launch_run_async
 from lenses.foundry.payload import capabilities_payload, normalize_run_dir
 from lenses.foundry.plan import build_plan
 from lenses.foundry.promote import promote_from_run_dir
+from lenses.foundry.review import build_review_payload
 from lenses.foundry.target_resolve import resolve_foundry_target
 from lenses.foundry.store import (
     create_run_record,
@@ -53,6 +55,8 @@ def _run_public(record: dict[str, Any]) -> dict[str, Any]:
         "foundry_run_dir": record.get("foundry_run_dir"),
         "promoted": record.get("promoted"),
         "approved": record.get("approved"),
+        "activity": record.get("activity") or [],
+        "current_phase": record.get("current_phase"),
         "created_at": record.get("created_at"),
         "updated_at": record.get("updated_at"),
     }
@@ -98,6 +102,26 @@ def handle_foundry_get(
             payload["phases"] = normalized.get("phases") or payload.get("phases")
             payload["assay"] = normalized.get("assay")
             payload["proof"] = normalized.get("proof")
+            live = Path(str(record.get("target") or ""))
+            if live.is_dir():
+                phases_doc = Path(run_dir) / "machine" / "phases.json"
+                phases_raw = None
+                if phases_doc.is_file():
+                    try:
+                        import json as _json
+
+                        phases_raw = (_json.loads(phases_doc.read_text(encoding="utf-8")) or {}).get("phases")
+                    except (OSError, ValueError):
+                        phases_raw = None
+                payload["review"] = build_review_payload(
+                    run_dir=Path(run_dir),
+                    live_target=live,
+                    proof=normalized.get("proof") if isinstance(normalized.get("proof"), dict) else None,
+                    promoted=bool(record.get("promoted")),
+                    goal=str(record.get("goal") or ""),
+                    phases_raw=phases_raw if isinstance(phases_raw, list) else None,
+                    plan=record.get("plan") if isinstance(record.get("plan"), dict) else None,
+                )
         send_json(200, payload)
         return True
 
@@ -178,8 +202,15 @@ def handle_foundry_post(
         )
         record = touch_run(record, status="running")
         save_run(workspace_root, record)
-
         worker = str(body.get("worker") or "fake").strip().lower()
+        bootstrap_run_activity(
+            workspace_root,
+            record["id"],
+            goal=goal,
+            worker=worker,
+            project=str(body.get("project") or ""),
+        )
+
         fixture_raw = str(body.get("fixture") or "").strip()
         fixture = Path(fixture_raw) if fixture_raw else target / "fixtures" / "multiply_fix.json"
         if not fixture.is_file():
@@ -209,11 +240,18 @@ def handle_foundry_post(
                 assay_ok=normalized.get("assay_ok"),
             )
             save_run(workspace_root, rec)
+            append_activity(
+                workspace_root,
+                record["id"],
+                text=f"Run finished — {normalized.get('final_status', status)}",
+                tone="ok" if status == "completed" else "err",
+            )
 
         def on_error(msg: str) -> None:
             rec = load_run(workspace_root, record["id"]) or record
             rec = touch_run(rec, status="failed", error=msg)
             save_run(workspace_root, rec)
+            append_activity(workspace_root, record["id"], text=f"Run failed — {msg[:500]}", tone="err")
 
         launch_run_async(
             lenses_repo_root=LENSES_REPO_ROOT,
@@ -225,6 +263,8 @@ def handle_foundry_post(
             fixture=fixture,
             allowed_files=allowed,
             verification_argv=verification,
+            workspace_root=workspace_root,
+            run_id=record["id"],
             on_complete=on_complete,
             on_error=on_error,
         )

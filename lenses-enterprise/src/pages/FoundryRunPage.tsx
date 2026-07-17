@@ -4,6 +4,10 @@ import { apiGetJson } from '../api/http'
 import { PageHeader, StatePanel } from '../components/page'
 import { FoundryApprovalBar } from '../components/foundry/FoundryApprovalBar'
 import { FoundryAssayCard } from '../components/foundry/FoundryAssayCard'
+import { FoundryDiffReview } from '../components/foundry/FoundryDiffReview'
+import { FoundryLiveRunPanel } from '../components/foundry/FoundryLiveRunPanel'
+import { FoundryPhaseDetails } from '../components/foundry/FoundryPhaseDetails'
+import '../components/foundry/foundry-review.css'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
 import {
   ForgeRunHeader,
@@ -12,7 +16,8 @@ import {
 } from '../forgesdlc-kitchensink'
 import { apiPostJson } from '../api/http'
 import type { FoundryRun } from '../lib/foundryTypes'
-import { ROUTE_SUBTITLE, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { foundryStagesWithPulse } from '../lib/foundryActivity'
+import { ROUTE_SUBTITLE, STUDIO_VOCAB, WORK_COPILOT_DEFAULT_PLAN } from '../nav/studioVisibleCopy'
 
 export function FoundryRunPage() {
   const { runId = '' } = useParams()
@@ -20,10 +25,12 @@ export function FoundryRunPage() {
   const [run, setRun] = useState<FoundryRun | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
 
   useLensesCopilotPage({
-    route: 'knowledge',
+    route: 'work',
     pageContextSummary: `Foundry run ${decoded}`,
+    defaultQuery: WORK_COPILOT_DEFAULT_PLAN,
   })
 
   const fetchRun = useCallback(async () => {
@@ -45,7 +52,7 @@ export function FoundryRunPage() {
 
   useEffect(() => {
     if (!run || (run.status !== 'running' && run.status !== 'pending')) return
-    const t = window.setInterval(() => void fetchRun(), 2000)
+    const t = window.setInterval(() => void fetchRun(), 1000)
     return () => window.clearInterval(t)
   }, [run, fetchRun])
 
@@ -63,12 +70,12 @@ export function FoundryRunPage() {
 
   const stages = useMemo(
     () =>
-      (run?.phases ?? []).map((p) => ({
+      foundryStagesWithPulse(run?.phases, run?.status, run?.current_phase).map((p) => ({
         id: p.id,
         label: p.label,
         status: p.status,
       })),
-    [run?.phases],
+    [run?.phases, run?.status, run?.current_phase],
   )
 
   const onApprove = async (confirm: boolean) => {
@@ -80,6 +87,8 @@ export function FoundryRunPage() {
 
   const showApproval =
     run?.status === 'completed' && run.assay_ok === true && !run.promoted && !run.approved
+
+  const showReview = run?.status === 'completed' || run?.status === 'failed' || run?.promoted
 
   return (
     <>
@@ -101,15 +110,27 @@ export function FoundryRunPage() {
       ) : (
         <section className="le-stack" style={{ marginTop: '1rem' }}>
           <ForgeRunHeader title={run.goal ?? decoded} subtitle={run.target} badges={badges} />
-          <ForgeWorkflowStageBar stages={stages} aria-label="Dark Factory workflow stages" />
+          <ForgeWorkflowStageBar
+            stages={stages}
+            aria-label="Dark Factory workflow stages"
+            currentStageId={selectedPhaseId ?? run.current_phase ?? null}
+            onStageClick={setSelectedPhaseId}
+          />
+          <FoundryLiveRunPanel run={run} />
+          <FoundryPhaseDetails
+            phases={run.phases ?? []}
+            selectedId={selectedPhaseId}
+            onSelect={setSelectedPhaseId}
+          />
           {run.status === 'completed' || run.status === 'failed' ? <FoundryAssayCard run={run} /> : null}
+          {showReview ? <FoundryDiffReview review={run.review} /> : null}
           {showApproval ? (
             <FoundryApprovalBar runId={decoded} onApprove={onApprove} />
           ) : run.promoted ? (
             <StatePanel
               variant="empty"
               title="Promoted"
-              description="Changed files were copied to the target repo. Commit on a feature branch and open a PR."
+              description="Changed files were copied to the target repo. Review the git diff above, then commit on a feature branch and open a PR."
             />
           ) : null}
         </section>

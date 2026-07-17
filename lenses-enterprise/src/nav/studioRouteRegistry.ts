@@ -52,7 +52,7 @@ export type StudioLensVisibility = { flow: boolean; artifacts: boolean }
  * debugging and E2E, but are not primary product navigation. UIs should use framed loading and
  * explicit invalid-session states (see `WizardSessionProbeChrome`).
  */
-export type StudioRouteProbeKind = 'wizard_session' | 'docs_health_session' | 'foundry_run'
+export type StudioRouteProbeKind = 'wizard_session' | 'docs_health_session' | 'foundry_run' | 'doc_management_session'
 
 export type StudioRouteDefinition = {
   id: string
@@ -125,6 +125,8 @@ export const SR = {
   workspaceMdView: 'sr.knowledge.workspaceMdView',
   blogIndex: 'sr.blog.index',
   blogPost: 'sr.blog.post',
+  docManagementHub: 'sr.publish.docManagementHub',
+  docManagementSession: 'sr.publish.docManagementSession',
   blueprintsWizard: 'sr.knowledge.blueprintsWizard',
   blueprintsWizardSession: 'sr.knowledge.blueprintsWizardSession',
   featureShowcase: 'sr.demo.featureShowcase',
@@ -133,8 +135,8 @@ export const SR = {
   methodologyRecord: 'sr.knowledge.methodologyRecord',
   methodologyReadiness: 'sr.delivery.methodologyReadiness',
   agenticBridge: 'sr.knowledge.agenticBridge',
-  foundry: 'sr.knowledge.foundry',
-  foundryRun: 'sr.knowledge.foundryRun',
+  foundry: 'sr.work.foundry',
+  foundryRun: 'sr.work.foundryRun',
   autonomyMaturity: 'sr.knowledge.autonomyMaturity',
   projectAutonomyMaturity: 'sr.projects.autonomyMaturity',
   fallback: 'sr.fallback',
@@ -449,6 +451,29 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     defaultSidebarLabel: V.boards,
   },
   {
+    id: SR.docManagementSession,
+    pattern: '/doc-management/session/:sessionId',
+    kind: 'canonical',
+    canonicalTitle: 'Doc management session',
+    objectType: 'knowledge',
+    lensVisibility: PRIMARY,
+    probeKind: 'doc_management_session',
+    flow: bundle('publish', [V.publish, 'Doc management'], ['/doc-management', null]),
+    artifacts: bundle('publish', [V.publish, 'Doc management'], ['/doc-management', null]),
+  },
+  {
+    id: SR.docManagementHub,
+    pattern: '/doc-management',
+    kind: 'canonical',
+    canonicalTitle: 'Doc management',
+    subtitle: 'Governed hydration sessions',
+    objectType: 'knowledge',
+    lensVisibility: PRIMARY,
+    flow: bundle('publish', [V.publish, 'Doc management'], [null]),
+    artifacts: bundle('publish', [V.publish, 'Doc management'], [null]),
+    defaultSidebarLabel: 'Doc management',
+  },
+  {
     id: SR.blogPost,
     pattern: '/blog/post/:slug',
     kind: 'canonical',
@@ -655,11 +680,11 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     subtitle: SUB.foundry,
     objectType: 'knowledge',
     lensVisibility: PRIMARY,
-    flow: bundle('knowledge', [V.knowledge, V.foundry], ['/tutorials', null]),
-    artifacts: bundle('knowledge', [V.knowledge, V.foundry], ['/tutorials', null]),
+    flow: bundle('work', [V.work, V.foundry], ['/plan', null]),
+    artifacts: bundle('work', [V.work, V.foundry], ['/plan', null]),
     sidebar: {
-      flow: { knowledge: R.foundrySidebar },
-      artifacts: { knowledge: R.foundrySidebar },
+      flow: { work: R.foundrySidebar },
+      artifacts: { work: R.foundrySidebar },
     },
     defaultSidebarLabel: R.foundrySidebar,
   },
@@ -671,8 +696,8 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     subtitle: SUB.foundryRun,
     objectType: 'knowledge',
     lensVisibility: PRIMARY,
-    flow: bundle('knowledge', [V.knowledge, V.foundry, V.foundryRun], ['/tutorials', '/foundry', null]),
-    artifacts: bundle('knowledge', [V.knowledge, V.foundry, V.foundryRun], ['/tutorials', '/foundry', null]),
+    flow: bundle('work', [V.work, V.foundry, V.foundryRun], ['/plan', '/foundry', null]),
+    artifacts: bundle('work', [V.work, V.foundry, V.foundryRun], ['/plan', '/foundry', null]),
     defaultSidebarLabel: V.foundryRun,
     probeKind: 'foundry_run',
   },

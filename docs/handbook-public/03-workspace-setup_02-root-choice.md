@@ -81,6 +81,25 @@ Restart the server. **Projects** should list both product folders you care about
 ```blueprint-diagram
 key: decision
 alt: Too empty — move root up; too noisy — move root down; then restart server
+title: Workspace root choice flow
+summary: Diagnose Projects or Overview symptoms, identify the root mistake, and set a bounded LENSES_WORKSPACE_ROOT.
+node: Symptom
+detail: The Projects or Overview behavior that signals a root mismatch.
+more: Empty cards, missing repos, or unrelated trees all trace back to where the server starts scanning on disk.
+node: likely mistake
+detail: The common root depth or path error behind that symptom.
+more: Too deep hides sibling repos; too shallow pulls in folders outside your program boundary.
+node: fix
+detail: Adjust LENSES_WORKSPACE_ROOT up or down to the agreed parent folder.
+more: Set a stable absolute path, document it for the team, then restart the Lenses server so scans reflect the new boundary.
+fallback_ascii: |
+  Symptom
+      |
+      v
+  likely mistake
+      |
+      v
+  fix
 ```
 
 ## Expected outcome (plain language)

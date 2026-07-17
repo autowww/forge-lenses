@@ -26,7 +26,35 @@ Operators need repeatable cold starts for **`python3 -m lenses`**, systemd/pm2 e
 ```blueprint-diagram
 key: swimlane
 alt: Operator checkpoints before widening binds or enabling proxies
+title: Operator deployment checkpoints
+summary: How platform and security lanes coordinate before widening binds, proxies, or automation surfaces.
+node: Scenario
+detail: Frames the local-first handoff from developer install to operator-managed deployment.
+more: Operators need repeatable cold starts, process managers, reverse proxies, and backup policies while POST surfaces stay non-public unless explicitly guarded.
+node: Lane A
+detail: Platform ownership lane for identity freeze and operational handoff.
+more: The platform owner freezes identity and systemd unit content before any widen-to-prod change proceeds.
+node: handoff
+detail: Transfers frozen git SHA, Python version, and unit definitions to ops.
+more: Captures git describe artifact and documented Python version per the freeze-identity checkpoint in the Steps table.
+node: shared outcome
+detail: Agreed operational baseline ready for deliberate network widening.
+more: Both lanes converge on a traceable baseline before binds, OIDC, or allowlists change in production.
+node: Lane B
+detail: Security review lane that inspects trust-zone crossings before sign-off.
+more: The security reviewer signs off widen-to-prod decisions and attaches logs to incident timelines when anything regresses.
+node: inspect / adapt
+detail: Reviews binds, OIDC checkpoints, and allowlists against enterprise controls.
+more: Cross-checks network binding, OIDC sessions for /api/**, and LENSES_ALLOW_* against documented allowlists and the configuration reference.
+node: feedback
+detail: Returns findings or approval before access is widened again.
+more: Failed checks loop back through recovery: revert binds to loopback, disable allowlists temporarily, redeploy from Releases, rerun auth smoke.
 caption: Freeze identity → tighten binds/OIDC → widen automation deliberately
+fallback_ascii: |
+  Scenario
+
+  Lane A ──► handoff ──► shared outcome
+  Lane B ──► inspect / adapt ──► feedback
 ```
 
 ## Risks vs controls

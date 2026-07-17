@@ -22,7 +22,31 @@ Getting the Lenses **Python server** running so you can open the dashboard and F
 ```blueprint-diagram
 key: linear
 alt: Clone, venv, pip install, start server, open browser tabs for dashboard and Studio
+title: Install and run Lenses
+summary: Bring the Lenses Python server up on loopback so the dashboard and Studio load in your browser.
+node: What it is
+detail: The local Python server that serves dashboard and Forge Studio.
+more: Lenses is a local-first control plane for inspecting and guiding Forge workspaces; this page covers first boot only.
+node: Start
+detail: Clone forge-lenses and create a dedicated Python virtual environment.
+more: Choose standalone clone beside product repos or add as a submodule in a parent workspace; both paths run setup.sh before pip install.
+node: Core steps (see walkthrough below)
+detail: Install requirements, launch the server, and open loopback URLs.
+more: pip install -r requirements.txt, then ./scripts/run-lenses.sh; confirm Classic UI, workspace-state API, and /studio/ per the health checks below.
+node: Outcome
+detail: Dashboard and Studio sessions load at 127.0.0.1 without widening network exposure.
+more: Default port is 8080; override with LENSES_PORT if the port is already in use.
 caption: Install to first-loopback session without widening network exposure
+fallback_ascii: |
+  What it is
+
+  Start
+      |
+      v
+  Core steps (see walkthrough below)
+      |
+      v
+  Outcome
 ```
 
 ## When to use it

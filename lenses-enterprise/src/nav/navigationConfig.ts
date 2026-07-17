@@ -9,7 +9,7 @@ import {
 } from './studioVisibleCopy'
 import { SR, studioRouteSidebarLabel as lbl } from './studioRouteRegistry'
 import { STUDIO_DOCS_HOME } from '../util/staticPreviewUrl'
-import { autonomyMaturityFeatureEnabled, blueprintsWizardFeatureEnabled } from '../util/experimentalFlags'
+import { autonomyMaturityFeatureEnabled, blueprintsWizardFeatureEnabled, docManagementFeatureEnabled } from '../util/experimentalFlags'
 import { flowArtifactsHelpHomeTo } from './studioHelpQuery'
 
 const HOME_LABEL = V.home
@@ -79,6 +79,10 @@ function sideNavForSection(
         { label: lbl(SR.planStory, mode, 'work'), to: '/plan?tab=story' },
         { label: lbl(SR.planSource, mode, 'work'), to: '/plan?tab=source' },
         { label: lbl(SR.methodologyReadiness, mode, 'work'), to: '/knowledge/methodology/readiness' },
+        {
+          label: lbl(SR.foundry, mode, 'work'),
+          to: '/foundry',
+        },
         { label: lbl(SR.planMatrix, mode, 'work'), to: '/plan/matrix', sidebarGroup: 'work_advanced' },
         { label: lbl(SR.wbsIndex, mode, 'work'), to: '/wbs', sidebarGroup: 'work_advanced' },
         { label: lbl(SR.wbsView, mode, 'work'), to: '/wbs/view', sidebarGroup: 'work_advanced' },
@@ -132,11 +136,6 @@ function sideNavForSection(
           to: '/knowledge/agentic-bridge',
           sidebarGroup: 'knowledge_govern' as const,
         },
-        {
-          label: lbl(SR.foundry, mode, 'knowledge'),
-          to: '/foundry',
-          sidebarGroup: 'knowledge_govern' as const,
-        },
         ...(autonomyMaturityFeatureEnabled()
           ? [
               {
@@ -165,6 +164,15 @@ function sideNavForSection(
           sidebarGroup: 'publish_sites' as const,
         },
         { label: lbl(SR.blogIndex, mode, 'publish'), to: '/blog', sidebarGroup: 'publish_stories' as const },
+        ...(docManagementFeatureEnabled()
+          ? [
+              {
+                label: lbl(SR.docManagementHub, mode, 'publish'),
+                to: '/doc-management',
+                sidebarGroup: 'publish_stories' as const,
+              },
+            ]
+          : []),
         {
           label: 'Blog home (live)',
           href: 'https://forgesdlc.com/blog/index.html',

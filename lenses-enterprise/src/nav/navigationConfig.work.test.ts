@@ -9,5 +9,6 @@ describe('Work section sidebar (UX4)', () => {
     const adv = w.filter((e) => e.sidebarGroup === 'work_advanced')
     expect(adv.length).toBeGreaterThanOrEqual(4)
     expect(adv.some((e) => e.to?.includes('/plan/matrix'))).toBe(true)
+    expect(w.some((e) => e.to === '/foundry')).toBe(true)
   })
 })

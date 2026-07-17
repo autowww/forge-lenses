@@ -22,7 +22,30 @@ Using Forge Studio for **regular** work: switching between **workspace lenses** 
 ```blueprint-diagram
 key: swimlane
 alt: Daily operator lane switching Flow and Artifacts lenses without losing project context
+title: Flow and Artifacts lanes
+summary: How daily Studio work alternates delivery flow and artifact views while keeping one project in focus.
+node: What it is
+detail: Frames day-to-day Studio use after you trust the local loopback surface.
+node: Lane A
+detail: The Flow lens lane for execution and delivery tracking.
+more: Prefer Flow on execution days when you need handoffs and a clear next action on the plan or board.
+node: handoff
+detail: Tracks delivery steps and handoffs inside the active project.
+node: shared outcome
+detail: Leaves you with a bounded next action on the plan or board.
+node: Lane B
+detail: The Artifacts lens lane for planning and review work.
+more: Prefer Artifacts for refinement prep or meetings that need roadmaps, boards, or document-shaped views.
+node: inspect / adapt
+detail: Opens scope and status artifacts your build exposes for the same project.
+node: feedback
+detail: Returns a stable, reviewable view of scope and status.
 caption: Studio 201 assumes you already trust the local loopback surface from 101
+fallback_ascii: |
+  What it is
+
+  Lane A ──► handoff ──► shared outcome
+  Lane B ──► inspect / adapt ──► feedback
 ```
 
 ## When to use it

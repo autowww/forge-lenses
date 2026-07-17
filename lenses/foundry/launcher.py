@@ -53,6 +53,8 @@ def launch_run_async(
     fixture: Path | None,
     allowed_files: tuple[str, ...] | None = None,
     verification_argv: tuple[str, ...] | None = None,
+    workspace_root: Path | None = None,
+    run_id: str = "",
     on_complete: Callable[[dict[str, Any]], None],
     on_error: Callable[[str], None],
 ) -> None:
@@ -74,6 +76,13 @@ def launch_run_async(
             on_error(f"forge_dark_factory import failed: {exc}")
             return
 
+        def on_phase(phase: Any) -> None:
+            if workspace_root is None or not run_id:
+                return
+            from lenses.foundry.activity import sync_phase_progress
+
+            sync_phase_progress(workspace_root, run_id, phase)
+
         config = DriverConfig(
             goal=goal,
             target=target,
@@ -84,6 +93,7 @@ def launch_run_async(
             keep_worktree=True,
             allowed_files=allowed_files,
             verification_argv=verification_argv,
+            on_phase=on_phase if workspace_root and run_id else None,
         )
         try:
             result = df_run(config)

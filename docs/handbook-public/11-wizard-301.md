@@ -22,7 +22,31 @@ Deeper use of the Wizard: **artifact bundles**, **Refine** and LLM-assisted step
 ```blueprint-diagram
 key: sequence
 alt: Refine prompts call guarded POST routes before review/recheck publishes bundles
+title: Advanced Wizard session flow
+summary: How artifact emphasis, Refine, review gates, and exports chain through one governed Session shell.
+node: What it is
+detail: Frames the advanced Wizard topics as one coordinated workflow.
+more: Artifact bundles, Refine, review/recheck, and Cursor Launch Pack share the same Session shell as Wizard 101/201.
+node: Actor / trigger
+detail: A squad starts or resumes a server-enabled Wizard session.
+more: Prerequisites assume stable server-enabled sessions from Wizard 201; the team picks bundle emphasis and enters stage content.
+node: System step
+detail: Optional LLM steps run behind guarded POST routes in-session.
+more: Refine rewrites Understanding notes; Review and Recheck validate artifacts before publish, using the same bounded session API as earlier tiers.
+node: Outcome / handoff
+detail: Reviewed bundles and Launch Pack export for bounded editor handoff.
+more: Exports match team policy; Recheck passes or gaps are knowingly accepted before the pack leaves the session.
 caption: Wizard 301 coordinates LLM optional steps behind the same Session shell as 101/201
+fallback_ascii: |
+  What it is
+
+  Actor / trigger
+      |
+      v
+  System step
+      |
+      v
+  Outcome / handoff
 ```
 
 ## When to use it

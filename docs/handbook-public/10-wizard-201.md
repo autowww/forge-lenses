@@ -52,6 +52,35 @@ The four modes differ by how much is unknown vs how much is already shipping; us
 ```blueprint-diagram
 key: quadrant
 alt: Wizard 201 mission modes — idea vs assess vs resume vs repair
+title: Wizard mission session flow
+summary: How choosing a mission mode frames the wizard steps that follow for one bounded initiative.
+node: Mission modes at a glance
+detail: The overview that frames the four posture options above.
+more: Use the decision table to match unknowns and shipping state before you start.
+node: Start
+detail: You open or resume a wizard session and pick mission mode.
+more: Mission is the first step; it sets targets, scope, and run plan coherence for everything after.
+node: Core steps (see walkthrough below)
+detail: Child pages walk through mode-specific wizard steps.
+more: Each of the four modes links to a deep dive; downstream steps should not fight the posture you chose.
+node: Outcome
+detail: A session result aligned with the mission you selected.
+more: Verify success by confirming the mode matches team posture and downstream steps stay coherent.
+node: Note: one session per initiative
+detail: Keep one wizard session scoped to a single initiative.
+more: Start a new session on a hard pivot; name sessions on the hub for later retrieval.
+fallback_ascii: |
+  Mission modes at a glance
+
+  Start
+      |
+      v
+  Core steps (see walkthrough below)
+      |
+      v
+  Outcome
+
+  Note: one session per initiative
 ```
 
 ### Sessions

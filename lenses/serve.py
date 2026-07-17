@@ -2139,6 +2139,66 @@ class LensesHandler(BaseHTTPRequestHandler):
             get_review_pack_detail(self.workspace_root, pack_id, send_json=self._send_json)
             return
 
+        if path == "/api/doc-management/catalog":
+            from lenses.doc_management.api_handlers import get_catalog
+
+            get_catalog(self.workspace_root, send_json=self._send_json)
+            return
+
+        if path == "/api/doc-management/sessions":
+            from lenses.doc_management.api_handlers import get_sessions
+
+            get_sessions(self.workspace_root, send_json=self._send_json)
+            return
+
+        if path == "/api/doc-management/session-events":
+            from lenses.doc_management.feature_flag import doc_management_enabled
+            from lenses.doc_management.session_projection import session_public_view
+
+            if not doc_management_enabled():
+                self._send_json(404, {"ok": False, "error": "feature_disabled"})
+                return
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            sid = str(qs.get("session_id", [""])[0] or "").strip()
+            if not sid:
+                self._send_json(400, {"ok": False, "error": "missing_session_id"})
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Connection", "keep-alive")
+            self.send_header("X-Accel-Buffering", "no")
+            self.end_headers()
+            seq = 0
+            try:
+                while True:
+                    merged = session_public_view(self.workspace_root, sid)
+                    if merged is None:
+                        payload = {"ok": False, "error": "session_not_found", "seq": seq}
+                        line = "data: " + json.dumps(payload, default=str) + "\n\n"
+                        self.wfile.write(line.encode("utf-8"))
+                        self.wfile.flush()
+                        break
+                    payload = {"ok": True, "session": merged, "seq": seq}
+                    line = "data: " + json.dumps(payload, default=str) + "\n\n"
+                    self.wfile.write(line.encode("utf-8"))
+                    self.wfile.flush()
+                    seq += 1
+                    st = str(merged.get("status") or "")
+                    if st in ("completed", "cancelled", "rolled_back", "failed") and seq > 2:
+                        break
+                    time.sleep(0.85)
+            except (BrokenPipeError, ConnectionResetError, OSError):
+                return
+            return
+
+        if path.startswith("/api/doc-management/session/"):
+            from lenses.doc_management.api_handlers import get_session
+
+            sid = urllib.parse.unquote(path[len("/api/doc-management/session/"):])
+            get_session(self.workspace_root, sid, send_json=self._send_json)
+            return
+
         if path == "/api/docs-health/summary":
             from lenses.docs_health.api_handlers import get_workspace_summary
 
@@ -4056,6 +4116,13 @@ class LensesHandler(BaseHTTPRequestHandler):
             elif result.get("error") in ("copilot_commit_forbidden", "confirm_required"):
                 code = 403 if result.get("error") == "copilot_commit_forbidden" else 400
             self._send_json(code, result)
+            return
+
+        if post_path == "/api/doc-management":
+            from lenses.doc_management.api_handlers import post_doc_management
+
+            body = self._read_json_body(max_len=8_000_000)
+            post_doc_management(self.workspace_root, body, send_json=self._send_json)
             return
 
         if post_path == "/api/blueprints/wizard/session":

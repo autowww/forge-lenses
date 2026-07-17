@@ -24,6 +24,9 @@ export type FoundryRun = {
   proof?: Record<string, unknown>
   promoted?: boolean
   approved?: boolean
+  review?: FoundryReview
+  activity?: FoundryActivityLine[]
+  current_phase?: string
   created_at?: string
   updated_at?: string
   error?: string
@@ -60,4 +63,37 @@ export type FoundryIntake = {
   target?: string
   project?: string
   source?: string
+}
+
+export type FoundryReviewNarrative = {
+  ok?: boolean
+  root_cause?: string
+  change_summary?: string
+  why_it_works?: string
+  worker_notes?: string[]
+  fixture_path?: string
+  has_fixture_before_after?: boolean
+}
+
+export type FoundryReviewFile = {
+  path: string
+  unified_diff?: string
+  has_changes?: boolean
+  source?: string
+}
+
+export type FoundryReview = {
+  ok?: boolean
+  proof_markdown?: string
+  files?: FoundryReviewFile[]
+  promoted?: boolean
+  narrative?: FoundryReviewNarrative
+}
+
+export type FoundryActivityLine = {
+  id?: string
+  ts?: string
+  text: string
+  tone?: 'info' | 'ok' | 'err' | 'busy'
+  phase?: string
 }

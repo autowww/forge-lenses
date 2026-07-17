@@ -1,15 +1,19 @@
-import { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { createDocManagementSession } from '../api/docManagement'
 import { EmbeddedPreviewFrame } from '../components/EmbeddedPreviewFrame'
 import { PageHeader, StatePanel } from '../components/page'
 import { useForgesdlcBlog } from '../context/ForgesdlcBlogContext'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
 import { STUDIO_VIEWER } from '../nav/studioVisibleCopy'
+import { docManagementFeatureEnabled } from '../util/experimentalFlags'
 
 const FORGE_BLOG_BASE = 'https://forgesdlc.com/blog/'
 
 export function BlogPostPage() {
   const { slug: slugParam } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
+  const [hydrateBusy, setHydrateBusy] = useState(false)
   const slug = slugParam ? decodeURIComponent(slugParam) : ''
   useLensesCopilotPage({ route: 'publish', entityId: slug || undefined })
   const canonicalUrl = `${FORGE_BLOG_BASE}${slug}`
@@ -41,6 +45,37 @@ export function BlogPostPage() {
             <a href={readUrl} target="_blank" rel="noreferrer">
               Open on forgesdlc.com
             </a>
+            {docManagementFeatureEnabled() && slugLower ? (
+              <>
+                {' · '}
+                <button
+                  type="button"
+                  className="le-link-btn"
+                  disabled={hydrateBusy}
+                  onClick={() => {
+                    void (async () => {
+                      setHydrateBusy(true)
+                      try {
+                        const res = await createDocManagementSession(
+                          `Hydrate: ${meta?.title || slug}`,
+                          { intake_source: 'blog', blog_slug: slugLower },
+                        )
+                        const sid = String((res.session as { id?: string })?.id || '')
+                        if (sid) {
+                          navigate(
+                            `/doc-management/session/${encodeURIComponent(sid)}?blog_slug=${encodeURIComponent(slugLower)}`,
+                          )
+                        }
+                      } finally {
+                        setHydrateBusy(false)
+                      }
+                    })()
+                  }}
+                >
+                  {hydrateBusy ? 'Starting…' : 'Hydrate from this post'}
+                </button>
+              </>
+            ) : null}
           </span>
         }
       />

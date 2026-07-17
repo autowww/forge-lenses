@@ -31,7 +31,28 @@ Short pages for **binding**, **identity**, **automation flags**, **LLM boundarie
 ```blueprint-diagram
 key: roadmap
 alt: Enterprise spine from security review through binding, OIDC, allowlists, Fleet, backups
+title: Enterprise operator spine
+summary: How each hub page traces a trigger through a bounded system step to a reviewable operator outcome.
+node: Actor / trigger
+detail: The operator or automation event that starts the concern on this page.
+more: Spine rows name who acts—operators, proxies, Fleet jobs, or upgrade scripts—before any Lenses behavior runs.
+node: System step
+detail: The bounded Lenses configuration or process that responds to the trigger.
+more: Examples include socket binding, OIDC session rules, LENSES_ALLOW_* gates, LLM egress limits, Fleet integration, and backup retention paths.
+node: Outcome / handoff
+detail: The provable result operators attach to incidents or change records.
+more: Hub pages stay short so teams deep-link into focused runbooks with logs, manifests, and rollback steps.
 caption: Each hub row is intentionally short so operators can deep-link into focused runbooks
+fallback_ascii: |
+  Operator spine (what each page proves)
+
+  Actor / trigger
+      |
+      v
+  System step
+      |
+      v
+  Outcome / handoff
 ```
 
 | Topic | Page |

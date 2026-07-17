@@ -27,7 +27,31 @@ Treat the OpenAPI artefact as a **navigator** alongside the handbook. Runtime tr
 ```blueprint-diagram
 key: tree
 alt: Builder docs tree linking HTTP tables, schemas, derived OpenAPI, and Fleet helpers
+title: Builder API documentation tree
+summary: How derived OpenAPI sits alongside handbook HTTP tables, JSON Schemas, and runtime truth for builders.
+node: Process flow
+detail: The builder-facing path from route inventory to reviewable API documentation.
+more: Collectors snapshot live routes, generators emit Markdown and OpenAPI, and CI drift gates keep committed artefacts aligned.
+node: Root / intake
+detail: Route inventory and handbook prose as the shared intake surface.
+more: api-routes.json and the HTTP appendix anchor what builders read before citing behaviour in contracts or integrations.
+node: branch A
+detail: Handbook HTTP tables listing method inventories per route family.
+more: export_api_routes_docs.py snapshots Markdown and JSON tables builders navigate alongside OpenAPI paths.
+node: branch B
+detail: JSON Schemas defining request and response shapes where they exist.
+more: docs/schemas/ carries authoritative models; OpenAPI remains a method navigator when schemas are absent.
+node: branch C
+detail: Derived openapi.json as a non-authoritative route navigator.
+more: export_openapi.py regenerates one path bucket per discrete signature; runtime truth stays in lenses/serve.py.
 caption: Derived OpenAPI is a sibling to handbook tables and schemas, not a second server implementation
+fallback_ascii: |
+  Process flow
+
+  Root / intake
+      +-- branch A
+      +-- branch B
+      +-- branch C
 ```
 
 ## Stable route families referenced in reviewer contracts

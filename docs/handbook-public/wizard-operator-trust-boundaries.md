@@ -38,7 +38,31 @@ Same story as the overview diagram — trust flows across Studio, Lenses, and op
 ```blueprint-diagram
 key: sequence
 alt: Trust boundaries for Wizard sessions vs repo and outbound services
+title: Wizard trust boundary sequence
+summary: How operator actions flow through Studio and Lenses without auto-editing the git working tree.
+node: Sequence view
+detail: Frames trust across Studio, Lenses, and optional outbound services.
+more: Mirrors the overview diagram — session data stays server-side while outbound calls are explicit POSTs, never silent repo mutations.
+node: Actor / trigger
+detail: The operator or Studio UI starts a bounded Wizard action.
+more: The browser holds transient UI state only; hard-refresh can drop unsaved UI, so rely on server persistence for the session envelope.
+node: System step
+detail: Lenses serves and updates the server-side session envelope.
+more: Routes under `/api/blueprints/wizard/*` read and write session JSON, telemetry, and export scratch under `.lenses-local/`.
+node: Outcome / handoff
+detail: Results return to Studio; optional outbound POSTs stay explicit.
+more: Wizard does not auto-commit Blueprints submodule or product branches; LLM Refine/Interpret and Fleet jobs require deliberate operator wiring and redaction.
 caption: Session envelope persists server-side; outbound calls are explicit POSTs
+fallback_ascii: |
+  Sequence view
+
+  Actor / trigger
+      |
+      v
+  System step
+      |
+      v
+  Outcome / handoff
 ```
 
 ## Verify

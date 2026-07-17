@@ -22,7 +22,31 @@ Your **first** run through the Blueprints Wizard: open the hub, create a session
 ```blueprint-diagram
 key: state
 alt: Wizard steps advancing from hub through assess refine review without leaving Studio
+title: First wizard session flow
+summary: How a first Blueprints Wizard run moves from hub entry through the twelve steps to reviewable outcomes in Studio.
+node: What it is
+detail: Frames this page as your first governed Wizard walkthrough.
+more: Covers opening the hub, understanding the twelve-step pipeline, and completing one short worked example without requiring LLM calls for navigation.
+node: Start
+detail: Open Studio and create or resume a Wizard session from the hub.
+more: Choose Blueprints Wizard in the sidebar, land on `/studio/blueprints/wizard`, and confirm the session stepper renders at `/studio/blueprints/wizard/session/<id>`.
+node: Core steps (see walkthrough below)
+detail: Advance through the twelve bounded steps with saved notes at each stage.
+more: Mission through experimental build follow the stepper order; use Refine where offered and pause after Run plan or Review for a dry run.
+node: Outcome
+detail: Finish with a persistent session and visible artifacts or exports.
+more: A shareable session URL, saved step notes, and at least one export path—such as a Cursor Launch Pack—signal a successful first session.
 caption: Treat the twelve-step pipeline as a state machine with explicit recovery paths
+fallback_ascii: |
+  What it is
+
+  Start
+      |
+      v
+  Core steps (see walkthrough below)
+      |
+      v
+  Outcome
 ```
 
 ## When to use it
