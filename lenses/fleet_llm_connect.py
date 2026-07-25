@@ -71,7 +71,7 @@ def connect_forge_llm_to_llm_settings(
                 "detail": "Could not infer published forge-gateway port from compose ps.",
                 "fleet_body": fb,
             }
-        effective = f"http://{host}:{int(hp)}"
+        effective = f"http://{host}:{int(hp)}/v1"
 
     prev = merged_openai_compat_base_url(llm_load_raw(workspace_root))
     url_unchanged = bool(prev and prev.rstrip("/") == effective)
