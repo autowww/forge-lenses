@@ -20,6 +20,33 @@ evidence_level: canonical_doc
 refresh_policy: on_claim_change
 last_reviewed: '2026-07-03'
 page_contract_profile: landing
+landing_blocks:
+  layer_rail:
+    items:
+      - layer: Classic
+        product: Workspace dashboard
+        role: Projects and Forge plan lenses at /
+        href: handbook-public/01-lenses-overview.md
+      - layer: Studio
+        product: Forge Studio
+        role: React UX at /studio/ on shared API
+        href: handbook-public/05-studio-101.md
+      - layer: Wizard
+        product: Blueprints Wizard
+        role: Guided workshop inside Studio
+        href: handbook-public/09-wizard-101.md
+      - layer: Docs Health
+        product: Documentation quality
+        role: Analysis overlays before remediation
+        href: handbook-public/15-docs-health.md
+      - layer: Enterprise
+        product: Security posture
+        role: Binding, backups, OIDC, allowlists
+        href: handbook-public/enterprise-index.md
+      - layer: Builders
+        product: HTTP API
+        role: Route families and JSON examples
+        href: handbook-public/builders-api-overview.md
 ---
 
 # Forge Lenses — see your Forge workspace locally
@@ -80,6 +107,8 @@ Detailed journey tables live on **[Pick your path](handbook-public/role-based-pa
 | **First week** | Enterprise rollout inputs (binding, backups, Fleet if used), **[Tutorials — 301](handbook-public/tutorials-301.md)**, **[Builders](handbook-public/builders-api-overview.md)** integration sketches. |
 
 ## Product map — what sits on one server
+
+<!-- ks-landing:layer_rail -->
 
 | Area | Plain language |
 |------|----------------|
