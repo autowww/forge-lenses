@@ -42,9 +42,14 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/devsecops` | general | `/api/devsecops/enabled` |
 | GET | `/api/devsecops` | general | `/api/devsecops/overview` |
 | GET | `/api/doc-hydration` | general | `/api/doc-hydration/review-packs` |
+| GET | `/api/doc-management` | general | `/api/doc-management/catalog` |
+| GET | `/api/doc-management` | general | `/api/doc-management/session-events` |
+| GET | `/api/doc-management` | general | `/api/doc-management/sessions` |
 | GET | `/api/docs-health` | docs-health | `/api/docs-health/live-sessions` |
 | GET | `/api/docs-health` | docs-health | `/api/docs-health/summary` |
 | GET | `/api/docs-health` | docs-health | `/api/docs-health/work-items` |
+| GET | `/api/epic-hub` | general | `/api/epic-hub` |
+| GET | `/api/epic-spec-board` | general | `/api/epic-spec-board` |
 | GET | `/api/fleet` | general | `/api/fleet/settings` |
 | GET | `/api/forge-work-model` | general | `/api/forge-work-model` |
 | GET | `/api/forgesdlc-blog` | general | `/api/forgesdlc-blog` |
@@ -58,6 +63,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/llm` | general | `/api/llm/routing-preview` |
 | GET | `/api/llm` | general | `/api/llm/settings` |
 | GET | `/api/llm` | general | `/api/llm/usage` |
+| GET | `/api/nested-roadmap-config` | general | `/api/nested-roadmap-config` |
 | GET | `/api/ops-delivery` | general | `/api/ops-delivery/enabled` |
 | GET | `/api/ops-delivery` | general | `/api/ops-delivery/overview` |
 | GET | `/api/orchestration` | general | `/api/orchestration/enabled` |
@@ -100,15 +106,19 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | `/api/ceremonies` | general | `PREFIX:/api/ceremonies` |
 | GET | `/api/decisions` | general | `PREFIX:/api/decisions` |
 | GET | `/api/doc-hydration` | general | `PREFIX:/api/doc-hydration/review-packs` |
+| GET | `/api/doc-management` | general | `PREFIX:/api/doc-management/session` |
 | GET | `/api/evidence` | general | `PREFIX:/api/evidence` |
 | GET | `/api/execution-sessions` | general | `PREFIX:/api/execution-sessions` |
 | GET | `/api/foundry` | general | `PREFIX:/api/foundry` |
 | GET | `/api/handoffs` | general | `PREFIX:/api/handoffs` |
+| GET | `/api/jobs` | general | `PREFIX:/api/jobs/overview` |
 | GET | `/api/launches` | general | `PREFIX:/api/launches` |
 | GET | `/api/methodology` | general | `PREFIX:/api/methodology` |
 | GET | `/api/outcomes` | general | `PREFIX:/api/outcomes` |
 | GET | `/api/pdlc` | general | `PREFIX:/api/pdlc/bridge` |
 | GET | `/api/review-packs` | general | `PREFIX:/api/review-packs` |
+| GET | `/api/virtual-camera` | general | `PREFIX:/api/virtual-camera` |
+| GET | `/api/virtual-camera` | general | `PREFIX:/api/virtual-camera/preview` |
 | POST | `/api/access` | general | `/api/access/set-member` |
 | POST | `/api/actions` | general | `/api/actions/run` |
 | POST | `/api/assay-packets` | general | `/api/assay-packets` |
@@ -128,6 +138,9 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | POST | `/api/blueprints` | wizard | `/api/blueprints/wizard/session/<id>/refine` |
 | POST | `/api/blueprints` | wizard | `/api/blueprints/wizard/telemetry` |
 | POST | `/api/bridge` | general | `/api/bridge/links` |
+| POST | `/api/doc-management` | general | `/api/doc-management` |
+| POST | `/api/epic-spec-board` | general | `/api/epic-spec-board/dual-wiki-refresh` |
+| POST | `/api/epic-spec-board` | general | `/api/epic-spec-board/transition` |
 | POST | `/api/fleet` | general | `/api/fleet/connect-forge-llm` |
 | POST | `/api/fleet` | general | `/api/fleet/discover` |
 | POST | `/api/fleet` | general | `/api/fleet/node-detail` |
@@ -135,6 +148,7 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | POST | `/api/fleet` | general | `/api/fleet/settings` |
 | POST | `/api/fleet` | general | `/api/fleet/test-fleet` |
 | POST | `/api/forgesdlc-blog` | general | `/api/forgesdlc-blog/sync` |
+| POST | `/api/jobs` | general | `/api/jobs/overview` |
 | POST | `/api/llm` | general | `/api/llm/chat` |
 | POST | `/api/llm` | general | `/api/llm/ollama-action` |
 | POST | `/api/llm` | general | `/api/llm/provider-probe` |
@@ -165,7 +179,9 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | POST | `/api/handoffs` | general | `PREFIX:/api/handoffs` |
 | POST | `/api/launches` | general | `PREFIX:/api/launches` |
 | POST | `/api/outcomes` | general | `PREFIX:/api/outcomes` |
+| POST | `/api/virtual-camera` | general | `PREFIX:/api/virtual-camera` |
 | PUT | `/api/blueprints` | wizard | `PREFIX:/api/blueprints/wizard/session` |
+| PUT | `/api/virtual-camera` | general | `PREFIX:/api/virtual-camera/profiles` |
 
 ## By family
 
@@ -407,6 +423,21 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | general | `/api/doc-hydration/review-packs` |
 | GET | general | `PREFIX:/api/doc-hydration/review-packs` |
 
+### `/api/doc-management` — 5 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 4 |
+| POST | 1 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/doc-management/catalog` |
+| GET | general | `/api/doc-management/session-events` |
+| GET | general | `/api/doc-management/sessions` |
+| GET | general | `PREFIX:/api/doc-management/session` |
+| POST | general | `/api/doc-management` |
+
 ### `/api/docs-health` — 3 route(s)
 
 | Method | Count |
@@ -418,6 +449,29 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | docs-health | `/api/docs-health/live-sessions` |
 | GET | docs-health | `/api/docs-health/summary` |
 | GET | docs-health | `/api/docs-health/work-items` |
+
+### `/api/epic-hub` — 1 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 1 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/epic-hub` |
+
+### `/api/epic-spec-board` — 3 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 1 |
+| POST | 2 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/epic-spec-board` |
+| POST | general | `/api/epic-spec-board/dual-wiki-refresh` |
+| POST | general | `/api/epic-spec-board/transition` |
 
 ### `/api/evidence` — 1 route(s)
 
@@ -516,6 +570,18 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | GET | general | `PREFIX:/api/handoffs` |
 | POST | general | `PREFIX:/api/handoffs` |
 
+### `/api/jobs` — 2 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 1 |
+| POST | 1 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `PREFIX:/api/jobs/overview` |
+| POST | general | `/api/jobs/overview` |
+
 ### `/api/launches` — 2 route(s)
 
 | Method | Count |
@@ -559,6 +625,16 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | Method | Audience | Signature |
 |--------|----------|-----------|
 | GET | general | `PREFIX:/api/methodology` |
+
+### `/api/nested-roadmap-config` — 1 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 1 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `/api/nested-roadmap-config` |
 
 ### `/api/ops-delivery` — 2 route(s)
 
@@ -800,6 +876,21 @@ See also [Builders — route families](../handbook-public/builders-route-familie
 | Method | Audience | Signature |
 |--------|----------|-----------|
 | GET | general | `/api/tutorials-index` |
+
+### `/api/virtual-camera` — 4 route(s)
+
+| Method | Count |
+|--------|-------|
+| GET | 2 |
+| POST | 1 |
+| PUT | 1 |
+
+| Method | Audience | Signature |
+|--------|----------|-----------|
+| GET | general | `PREFIX:/api/virtual-camera` |
+| GET | general | `PREFIX:/api/virtual-camera/preview` |
+| POST | general | `PREFIX:/api/virtual-camera` |
+| PUT | general | `PREFIX:/api/virtual-camera/profiles` |
 
 ### `/api/wbs` — 1 route(s)
 

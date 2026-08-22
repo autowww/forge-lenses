@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "route_count": 145,
+  "route_count": 161,
   "families": {
     "/api/access": {
       "GET": 1,
@@ -70,8 +70,19 @@
     "/api/doc-hydration": {
       "GET": 2
     },
+    "/api/doc-management": {
+      "GET": 4,
+      "POST": 1
+    },
     "/api/docs-health": {
       "GET": 3
+    },
+    "/api/epic-hub": {
+      "GET": 1
+    },
+    "/api/epic-spec-board": {
+      "GET": 1,
+      "POST": 2
     },
     "/api/evidence": {
       "GET": 1
@@ -102,6 +113,10 @@
       "GET": 1,
       "POST": 1
     },
+    "/api/jobs": {
+      "GET": 1,
+      "POST": 1
+    },
     "/api/launches": {
       "GET": 1,
       "POST": 1
@@ -111,6 +126,9 @@
       "POST": 5
     },
     "/api/methodology": {
+      "GET": 1
+    },
+    "/api/nested-roadmap-config": {
       "GET": 1
     },
     "/api/ops-delivery": {
@@ -183,6 +201,11 @@
     },
     "/api/tutorials-index": {
       "GET": 1
+    },
+    "/api/virtual-camera": {
+      "GET": 2,
+      "POST": 1,
+      "PUT": 1
     },
     "/api/wbs": {
       "POST": 1
@@ -335,6 +358,24 @@
     },
     {
       "method": "GET",
+      "signature": "/api/doc-management/catalog",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-management/session-events",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-management/sessions",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
       "signature": "/api/docs-health/live-sessions",
       "family": "/api/docs-health",
       "audience": "docs-health"
@@ -350,6 +391,18 @@
       "signature": "/api/docs-health/work-items",
       "family": "/api/docs-health",
       "audience": "docs-health"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/epic-hub",
+      "family": "/api/epic-hub",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/epic-spec-board",
+      "family": "/api/epic-spec-board",
+      "audience": "general"
     },
     {
       "method": "GET",
@@ -427,6 +480,12 @@
       "method": "GET",
       "signature": "/api/llm/usage",
       "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/nested-roadmap-config",
+      "family": "/api/nested-roadmap-config",
       "audience": "general"
     },
     {
@@ -683,6 +742,12 @@
     },
     {
       "method": "GET",
+      "signature": "PREFIX:/api/doc-management/session",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
       "signature": "PREFIX:/api/evidence",
       "family": "/api/evidence",
       "audience": "general"
@@ -703,6 +768,12 @@
       "method": "GET",
       "signature": "PREFIX:/api/handoffs",
       "family": "/api/handoffs",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/jobs/overview",
+      "family": "/api/jobs",
       "audience": "general"
     },
     {
@@ -733,6 +804,18 @@
       "method": "GET",
       "signature": "PREFIX:/api/review-packs",
       "family": "/api/review-packs",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/virtual-camera",
+      "family": "/api/virtual-camera",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/virtual-camera/preview",
+      "family": "/api/virtual-camera",
       "audience": "general"
     },
     {
@@ -851,6 +934,24 @@
     },
     {
       "method": "POST",
+      "signature": "/api/doc-management",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/epic-spec-board/dual-wiki-refresh",
+      "family": "/api/epic-spec-board",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/epic-spec-board/transition",
+      "family": "/api/epic-spec-board",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
       "signature": "/api/fleet/connect-forge-llm",
       "family": "/api/fleet",
       "audience": "general"
@@ -889,6 +990,12 @@
       "method": "POST",
       "signature": "/api/forgesdlc-blog/sync",
       "family": "/api/forgesdlc-blog",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/jobs/overview",
+      "family": "/api/jobs",
       "audience": "general"
     },
     {
@@ -1072,10 +1179,22 @@
       "audience": "general"
     },
     {
+      "method": "POST",
+      "signature": "PREFIX:/api/virtual-camera",
+      "family": "/api/virtual-camera",
+      "audience": "general"
+    },
+    {
       "method": "PUT",
       "signature": "PREFIX:/api/blueprints/wizard/session",
       "family": "/api/blueprints",
       "audience": "wizard"
+    },
+    {
+      "method": "PUT",
+      "signature": "PREFIX:/api/virtual-camera/profiles",
+      "family": "/api/virtual-camera",
+      "audience": "general"
     }
   ]
 }
