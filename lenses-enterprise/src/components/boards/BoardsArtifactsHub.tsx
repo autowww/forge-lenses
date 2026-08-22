@@ -15,7 +15,7 @@ import {
 } from '../../lib/boardDirectory'
 import { classifyBoardRegistryData, formatRegistrySnapshotLabel } from '../../lib/boardRegistrySurface'
 import { mergePlanningScopeIntoTo } from '../../lib/planningClusterScope'
-import { DELIVERY_LENS, FULL_WORKSPACE_UI, STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
+import { DELIVERY_LENS, STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
 import { useWorkspace } from '../../context/WorkspaceContext'
 import { PageHeader, ResourceFetchStatus, StatePanel } from '../page'
 import { BoardPlanningShortcutStrip } from './BoardPlanningShortcutStrip'
@@ -84,12 +84,7 @@ function BoardsHubHeader({ variant }: { variant: BoardsHubVariant }) {
   if (variant === 'flow') {
     return <PageHeader title={STUDIO_VOCAB.boards} subtitle={DELIVERY_LENS.boardHubLeadFlow} />
   }
-  return (
-    <header className="le-boards-header">
-      <h1 className="le-h1">{STUDIO_VOCAB.boards}</h1>
-      <p className="le-boards-header__sub">{DELIVERY_LENS.boardHubLeadArtifacts}</p>
-    </header>
-  )
+  return <PageHeader title={STUDIO_VOCAB.boards} subtitle={DELIVERY_LENS.boardHubLeadArtifacts} />
 }
 
 export function BoardsArtifactsHub({ variant = 'artifacts' }: BoardsArtifactsHubProps) {
@@ -472,8 +467,8 @@ export function BoardsArtifactsHub({ variant = 'artifacts' }: BoardsArtifactsHub
                 <Link className="le-boards-recent-link" to={`/board/${encodeURIComponent(r.id)}`}>
                   {r.label}
                 </Link>
-                <span className="forge-support">
-                  {r.project} · {formatPreviewMtime(r.previewMtime)}
+                <span className="forge-support le-boards-card-face">
+                  owner {r.ownerLogin ?? '—'} · lastUpdated {formatPreviewMtime(r.previewMtime)}
                 </span>
               </li>
             ))}
@@ -830,10 +825,7 @@ function BoardTableRow({
               <p className="le-boards-detail-links">
                 <Link className="le-btn le-btn--primary" to={`/board/${enc}`}>
                   Studio editor
-                </Link>{' '}
-                <a className="le-btn" href={`/board/${enc}`}>
-                  {FULL_WORKSPACE_UI.openFullBoardEditor}
-                </a>
+                </Link>
               </p>
             </div>
           </td>

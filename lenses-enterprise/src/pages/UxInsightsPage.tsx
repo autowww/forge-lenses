@@ -65,6 +65,16 @@ export function UxInsightsPage() {
     return entries.slice(0, 14)
   }, [snap])
 
+  const topTourSteps = useMemo(() => {
+    const entries = Object.entries(snap.aggregates.tourSteps ?? {}).sort((a, b) => b[1] - a[1])
+    return entries.slice(0, 12)
+  }, [snap])
+
+  const topWizardSteps = useMemo(() => {
+    const entries = Object.entries(snap.aggregates.firstRunWizardSteps ?? {}).sort((a, b) => b[1] - a[1])
+    return entries.slice(0, 12)
+  }, [snap])
+
   return (
     <>
       <PageHeader
@@ -173,6 +183,36 @@ export function UxInsightsPage() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="le-panel" style={{ marginBottom: '1rem' }}>
+        <h2 className="le-panel__title" style={{ fontSize: '0.95rem' }}>
+          Tour &amp; first-run wizard
+        </h2>
+        {topTourSteps.length === 0 && topWizardSteps.length === 0 ? (
+          <p className="forge-support">No tour or wizard steps recorded yet — dismiss or complete onboarding on Home.</p>
+        ) : (
+          <>
+            {topTourSteps.length > 0 ? (
+              <ul className="le-list" style={{ fontSize: '0.82rem' }}>
+                {topTourSteps.map(([k, v]) => (
+                  <li key={k}>
+                    <code className="le-mono">{k}</code> — {v}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {topWizardSteps.length > 0 ? (
+              <ul className="le-list" style={{ fontSize: '0.82rem', marginTop: '0.5rem' }}>
+                {topWizardSteps.map(([k, v]) => (
+                  <li key={k}>
+                    <code className="le-mono">{k}</code> — {v}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
         )}
       </section>
 

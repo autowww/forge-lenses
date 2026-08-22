@@ -10,6 +10,7 @@ from lenses.charge_semantics import status_banked, status_terminal
 from lenses.forge_spine import (
     parse_charge_banking,
     parse_charge_blockers,
+    parse_charge_epics,
     parse_charge_frontmatter,
     parse_charge_sparks,
 )
@@ -68,6 +69,26 @@ MIN_WBS = """## Themes
 | M1E1S1T3 | Task three | M1E1S1 | |
 | M1E1S1T4 | Task four | M1E1S1 | |
 """
+
+
+EPIC_CHARGE = """---
+date: 2026-08-21
+hat: engineering
+---
+
+## Active Epics
+
+| # | id | OpenSpec change | status | actor |
+|---|-----|-----------------|--------|-------|
+| 1 | [M1E1](../WBS.md) | [c1](../openspec/changes/c1/) | in progress | eng |
+"""
+
+
+class ParseChargeEpicsFixtureTests(unittest.TestCase):
+    def test_epic_rows_parsed(self) -> None:
+        rows = parse_charge_epics(EPIC_CHARGE)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["epic_id"], "M1E1")
 
 
 class BreadcrumbFallbackTests(unittest.TestCase):

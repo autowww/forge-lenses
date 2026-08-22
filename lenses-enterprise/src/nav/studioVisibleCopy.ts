@@ -19,6 +19,8 @@ export const STUDIO_VOCAB = {
   plan: 'Plan',
   /** Default `/plan` surface (backlog + readiness); distinct from Delivery “Today” and from matrix/timeline. */
   planSummary: 'Plan summary',
+  /** Spec Flow OpenSpec Kanban on `/plan?tab=spec-board` (Epic execution profile). */
+  specFlow: 'Spec flow',
   today: 'Today',
   story: 'Story',
   sources: 'Sources',
@@ -39,7 +41,7 @@ export const STUDIO_VOCAB = {
   projectEvidenceBrowse: 'Evidence (browse)',
   knowledge: 'Knowledge',
   tutorials: 'Tutorials',
-  workBreakdown: 'Work breakdown',
+  workBreakdown: 'Backlog files',
   delivery: 'Delivery',
   automation: 'Automation',
   automationRun: 'Automation run',
@@ -62,7 +64,7 @@ export const STUDIO_VOCAB = {
   /** Sprint UX1 — primary “Work” area (plan, boards, timeline, readiness). */
   work: 'Work',
   /** Markdown documentation scan, score, and guided fixes for one repository. */
-  docsHealth: 'Docs health',
+  docsHealth: 'Documentation review',
   /** Breadcrumb / route label for the governed remediation console (same scope as documentationRemediationRun). */
   docsHealthSession: 'Documentation remediation run',
   /** H1 for the remediation session console — governed run, not a raw log. */
@@ -97,7 +99,7 @@ export const STUDIO_VOCAB = {
   methodologyGraphRecord: 'Graph record',
   methodologyReadiness: 'Release readiness',
   /** Sprint B3 — agent registry, drift, runs (orchestration graph). */
-  agenticBridge: 'Agentic bridge',
+  agenticBridge: 'AI agents',
   /** Dark Factory Studio — bounded L1 draft runs with human promote. */
   foundry: 'Foundry',
   foundryRun: 'Foundry run',
@@ -181,11 +183,11 @@ export const REGISTRY = {
   perProjectActivity: 'Per-project activity',
   browseAndPreview: 'Browse and preview',
   allSites: 'All sites',
-  workBreakdownDetailTitle: 'Work breakdown (detail)',
+  workBreakdownDetailTitle: 'Backlog files (detail)',
   /** Breadcrumb leaf — must match {@link workBreakdownDetailTitle} for H1 alignment. */
-  workBreakdownDetailBc: 'Work breakdown (detail)',
+  workBreakdownDetailBc: 'Backlog files (detail)',
   /** Breadcrumb leaf for `/wbs` — matches {@link STUDIO_VOCAB.workBreakdown}. */
-  workBreakdownBc: 'Work breakdown',
+  workBreakdownBc: 'Backlog files',
   roadmapsTimeline: 'Roadmaps timeline',
   roadmapSectionPreview: 'Roadmap section preview',
   sectionPreview: 'Section preview',
@@ -215,7 +217,7 @@ export const REGISTRY = {
   methodologyEvidenceSidebar: 'Evidence registry (graph)',
   methodologyDecisionsSidebar: 'Decisions (graph)',
   methodologyReadinessSidebar: 'Release readiness (gaps)',
-  agenticBridgeSidebar: 'Agentic bridge',
+  agenticBridgeSidebar: 'AI agents',
   foundrySidebar: 'Foundry (Dark Factory)',
   autonomyMaturitySidebar: 'Autonomy maturity (experimental)',
 } as const
@@ -258,6 +260,8 @@ export const KNOWLEDGE_SECTION_NAV = {
   evidenceHint: 'Markdown in your repo plus methodology-linked proof when the workspace exposes it.',
   governHeading: 'Govern',
   governHint: 'Signed decisions and how agents attach to your workspace—review before high-risk automation.',
+  labsHeading: 'Labs',
+  labsHint: 'Experimental automation and bounded draft runs—optional surfaces for operators.',
   buildHeading: 'Build & bootstrap',
   buildHint: 'Guided Blueprints sessions for early framing; export outcomes into normal Plan and project work.',
 } as const
@@ -339,6 +343,10 @@ export const STUDIO_UTILITIES = {
 
 export type StudioGlossaryId =
   | 'story'
+  | 'backlog'
+  | 'roadmap'
+  | 'evidence'
+  | 'readiness'
   | 'sources'
   | 'timelineVsRoadmap'
   | 'workspaceNotes'
@@ -354,7 +362,27 @@ export const STUDIO_GLOSSARY: Record<
   story: {
     title: 'Story',
     short: 'One prioritized work item from your plan backlog.',
-    long: 'A story is a single WBS-backed work item. Use the Story tab to inspect its tasks, status, and details.',
+    long: 'A story is a single backlog-backed work item. Use the Story tab to inspect its tasks, status, and details.',
+  },
+  backlog: {
+    title: 'Backlog',
+    short: 'The ordered list of stories and tasks you plan to deliver.',
+    long: 'Your backlog files (WBS markdown) hold the work items Lenses loads for Plan, Today, and boards. Pick a backlog scope to focus the whole Work journey.',
+  },
+  roadmap: {
+    title: 'Roadmap',
+    short: 'Themes, milestones, and cross-repo coverage for upcoming releases.',
+    long: 'Roadmaps describe intent and timing. Pair them with backlog files for execution detail and with Timeline for schedule-oriented views.',
+  },
+  evidence: {
+    title: 'Evidence',
+    short: 'Proof in your repo that supports status, decisions, and releases.',
+    long: 'Evidence is allowlisted markdown—charge logs, journals, Ember logs, forge-logs—and methodology-linked proof when your workspace exposes it.',
+  },
+  readiness: {
+    title: 'Readiness',
+    short: 'Signals that a release or scope looks ready to ship or delegate.',
+    long: 'Readiness compares methodology coverage, reviews, and gaps before you call a train “go”. Use it with Plan and evidence, not as a substitute for human sign-off.',
   },
   sources: {
     title: 'Sources',
@@ -419,6 +447,13 @@ export const DELIVERY_LENS = {
   createBoardSectionLead: 'Adds an entry to the registry; open the Studio or full editor to set columns and stickers.',
   boardEditorExecutionLead:
     'Studio execution editor—edit columns and stickers here; portfolio hygiene stays on the boards hub.',
+} as const
+
+/** Unified Evidence naming — one noun across Studio (FLS-006). */
+export const unifiedEvidence = {
+  evidenceNoun: 'Evidence',
+  proofAndEvidence: 'Proof & evidence',
+  evidenceBrowse: 'Evidence browse',
 } as const
 
 /** Evidence vs reference vs governance — used on hub, project, and rails. */
@@ -500,10 +535,12 @@ export const PROJECT_PORTFOLIO_COPILOT_DEFAULT =
 
 /** Sprint UX7 — admin / inspect / automation surfaces (gear menu, page framing, copilot defaults). */
 export const ADMIN_INSPECT_COPY = {
-  settingsSectionPreferences: 'Preferences',
-  settingsSectionAdmin: 'Workspace admin',
-  settingsSectionInspect: 'Inspect & advanced',
-  settingsSectionLabs: 'Labs & probes',
+  settingsSectionSetup: 'Setup',
+  settingsSectionPreferences: 'Setup',
+  settingsSectionGovernance: 'Governance',
+  settingsSectionAdmin: 'Governance',
+  settingsSectionInspect: 'Governance',
+  settingsSectionLabs: 'Labs',
   gearMenuPreferencesIntro:
     'LLM routing is an advanced workspace control. Day-to-day delivery stays on Home, Work, and Projects.',
   llmPreferencesModalTitle: 'AI Setup (advanced workspace)',
@@ -743,6 +780,8 @@ export const WORK_SECTION_ADVANCED_NAV = {
 export const PLAN_PAGE_COPY = {
   planSubtitle: 'Roadmap, scope, and structure for the selected backlog — same Work journey as Today and Boards.',
   todaySubtitle: 'Immediate focus: commitments, blockers, and signals — still the same scope as Plan and Timeline.',
+  specFlowSubtitle:
+    'OpenSpec Kanban for Epics on Charge — Intent through Archived; drag writes Charge and OpenSpec phase (Epic execution profile).',
   planDetailSectionTitle: 'Plan tools',
   planDetailSectionLead:
     'Optional: Today charge, sources, and story hub in one place. Prefer the Work strip above for the same tabs—open this section only when you need these panels together.',
@@ -779,12 +818,17 @@ export const WORK_COPILOT_DEFAULT_TODAY =
 export const WORK_COPILOT_DEFAULT_PLAN =
   'For this Plan summary scope: (1) summarize plan vs execution variance, (2) list blockers that need a decision, (3) flag missing readiness inputs, (4) explain what is slipping vs milestones, (5) translate the focused work item into business language.'
 
+/** Prefill for Spec Flow board — tighten OpenSpec SHALLs; dual wiki surfaces; no automatic spec.md writes. */
+export const WORK_COPILOT_DEFAULT_SPEC_BOARD =
+  'For this Epic on the Spec Flow board: (1) tighten OpenSpec Lite SHALL statements in the proposal/spec, (2) flag whether the Epic should split, (3) note L4.2 or cross-repo hold, (4) list declared dual wiki handbook surfaces and whether local HTML is fresh, (5) suggest Charge status alignment — do not mint WBS Tasks or write spec.md via API.'
+
 /** Query tab value → visible label (matches registry titles). */
-export const PLAN_TAB_LABEL: Record<'plan' | 'today' | 'source' | 'story', string> = {
+export const PLAN_TAB_LABEL: Record<'plan' | 'today' | 'source' | 'story' | 'spec-board', string> = {
   plan: STUDIO_VOCAB.planSummary,
   today: STUDIO_VOCAB.today,
   source: STUDIO_VOCAB.sources,
   story: STUDIO_VOCAB.story,
+  'spec-board': STUDIO_VOCAB.specFlow,
 }
 
 export const PRIMARY_SECTION_LABEL: Record<TopSectionId, string> = {

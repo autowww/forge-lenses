@@ -191,6 +191,76 @@ def parse_charge_sparks(charge_md: str) -> list[dict[str, Any]]:
     return out
 
 
+_EPIC_ID_IN_CELL = re.compile(r"(M\d+E\d+)", re.I)
+
+
+def parse_charge_epics(charge_md: str) -> list[dict[str, Any]]:
+    """Rows from the Active Epics table: epic_id, change_slug, status, actor."""
+    out: list[dict[str, Any]] = []
+    for table in iter_gfm_tables(charge_md):
+        if len(table) < 2:
+            continue
+        hdr = [_norm_header(c) for c in table[0]]
+        joined = " ".join(hdr)
+        if "spark" in joined:
+            continue
+        if "status" not in joined:
+            continue
+        has_id = any(h == "id" or h.endswith(" id") for h in hdr) or "id" in joined.split()
+        has_change = any("change" in h or "openspec" in h for h in hdr)
+        if not has_id:
+            continue
+        if not has_change and "epic" not in joined:
+            continue
+        idx_epic = next((i for i, h in enumerate(hdr) if h == "id"), None)
+        if idx_epic is None:
+            idx_epic = next((i for i, h in enumerate(hdr) if "id" in h), None)
+        if idx_epic is None:
+            continue
+        idx_change = next(
+            (i for i, h in enumerate(hdr) if "openspec" in h or h == "change" or "change" in h),
+            None,
+        )
+        idx_status = next((i for i, h in enumerate(hdr) if "status" in h), None)
+        idx_actor = next((i for i, h in enumerate(hdr) if "actor" in h or "owner" in h), None)
+        for row in table[2:]:
+            if len(row) < len(table[0]):
+                row = row + [""] * (len(table[0]) - len(row))
+            raw = row[idx_epic].strip() if idx_epic < len(row) else ""
+            if not raw or raw.startswith("#"):
+                continue
+            m = _EPIC_ID_IN_CELL.search(raw)
+            if not m:
+                continue
+            epic_id = m.group(1).upper()
+            change_slug = ""
+            if idx_change is not None and idx_change < len(row):
+                cell = row[idx_change].strip()
+                link_m = re.search(r"\]\(([^)]+)\)", cell)
+                if link_m:
+                    slug_path = link_m.group(1).rstrip("/").split("/")
+                    change_slug = slug_path[-1] if slug_path else ""
+                else:
+                    change_slug = re.sub(r"[`*]", "", cell).strip().split("/")[-1]
+            st = ""
+            if idx_status is not None and idx_status < len(row):
+                st = re.sub(r"[`*]", "", row[idx_status]).strip().lower()
+            if st.replace(" ", "") == "inprogress":
+                st = "in progress"
+            actor = ""
+            if idx_actor is not None and idx_actor < len(row):
+                actor = re.sub(r"[`*]", "", row[idx_actor]).strip()
+            out.append(
+                {
+                    "epic_id": epic_id,
+                    "change_slug": change_slug,
+                    "status": st,
+                    "actor": actor,
+                }
+            )
+    return out
+
+
 def parse_charge_frontmatter(charge_md: str) -> dict[str, Any]:
     """YAML frontmatter on Charge: hat, date, iteration."""
     out: dict[str, Any] = {"hat": "", "date": "", "iteration": ""}

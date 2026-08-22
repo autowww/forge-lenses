@@ -6,6 +6,7 @@ import { BlueprintsWizardLayout } from './BlueprintsWizardLayout'
 import { BlueprintsWizardSessionPage } from './BlueprintsWizardSessionPage'
 import { BlueprintsWizardHub } from '../blueprints-wizard/BlueprintsWizardHub'
 import { MainContentInertProvider } from '../context/MainContentInertContext'
+import { LensesCopilotPageScopeProvider } from '../context/LensesCopilotPageScopeContext'
 
 const newProductDraft = {
   repo_name: '',
@@ -118,7 +119,9 @@ function renderSession(path: string) {
   )
   return render(
     <MainContentInertProvider>
-      <RouterProvider router={router} />
+      <LensesCopilotPageScopeProvider>
+        <RouterProvider router={router} />
+      </LensesCopilotPageScopeProvider>
     </MainContentInertProvider>,
   )
 }
@@ -139,9 +142,7 @@ describe('BlueprintsWizard flows (mocked API)', () => {
   it('start_from_idea: advances Mission to Contribution with monotonic step_index', async () => {
     renderSession('/blueprints/wizard/session/flow-idea')
 
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 2, name: 'Mission' })).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { level: 2, name: 'Mission' })).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText(/Mission title/i), { target: { value: 'Idea mission' } })
     fireEvent.change(screen.getByLabelText(/Outcome \/ problem/i), {

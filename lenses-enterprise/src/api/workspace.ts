@@ -1,5 +1,8 @@
 import { apiGetJson } from './http'
 
+/** Client-side ceiling for workspace bootstrap (keep ≥ server LENSES_WORKSPACE_SCAN_TIMEOUT_SEC). */
+export const WORKSPACE_STATE_FETCH_TIMEOUT_MS = 180_000
+
 export type WorkspaceChild = {
   name: string
   path?: string
@@ -59,5 +62,7 @@ export type WorkspaceState = {
 
 export function getWorkspaceState(gitExtended = false): Promise<WorkspaceState> {
   const q = gitExtended ? '?git_extended=1' : ''
-  return apiGetJson<WorkspaceState>(`/api/workspace-state${q}`)
+  return apiGetJson<WorkspaceState>(`/api/workspace-state${q}`, {
+    signal: AbortSignal.timeout(WORKSPACE_STATE_FETCH_TIMEOUT_MS),
+  })
 }

@@ -37,15 +37,15 @@ EOF
 }
 
 if [[ "$REMOVE" == true ]]; then
-  rm -f "${APPS_DIR}/forge-lenses.desktop" "${APPS_DIR}/forge-studio.desktop"
-  echo "Removed forge-lenses.desktop and forge-studio.desktop from $APPS_DIR"
+  rm -f "${APPS_DIR}/forge-lenses.desktop" "${APPS_DIR}/forge-studio.desktop" "${APPS_DIR}/virtual-camera-studio.desktop"
+  echo "Removed forge-lenses.desktop, forge-studio.desktop, and virtual-camera-studio.desktop from $APPS_DIR"
   if command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database "$APPS_DIR" 2>/dev/null || true
   fi
   exit 0
 fi
 
-chmod +x "${SCRIPT_DIR}/launch-forge-lenses.sh" "${SCRIPT_DIR}/launch-forge-studio.sh" 2>/dev/null || true
+chmod +x "${SCRIPT_DIR}/launch-forge-lenses.sh" "${SCRIPT_DIR}/launch-forge-studio.sh" "${SCRIPT_DIR}/launch-virtual-camera-studio.sh" 2>/dev/null || true
 
 install_one "forge-lenses" "Forge Lenses" \
   "Workspace visualization (Electron shell for forge-lenses)" \
@@ -55,10 +55,14 @@ install_one "forge-studio" "Forge Studio" \
   "Lenses Studio UI (Electron opens /studio/)" \
   "launch-forge-studio.sh" "forge-studio.png"
 
+install_one "virtual-camera-studio" "Virtual Camera Studio" \
+  "Dedicated virtual webcam profiles for VDI and Teams (minimal Electron shell)" \
+  "launch-virtual-camera-studio.sh" "forge-studio.png"
+
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database "$APPS_DIR" 2>/dev/null || true
 fi
 
 echo ""
-echo "Done. Open the app grid (Super+A) or search for \"Forge Lenses\" / \"Forge Studio\"."
+echo "Done. Open the app grid (Super+A) or search for \"Forge Lenses\", \"Forge Studio\", or \"Virtual Camera Studio\"."
 echo "First run: cd \"$SCRIPT_DIR\" && npm install   (if you have not already)."

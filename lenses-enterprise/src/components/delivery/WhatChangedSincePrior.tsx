@@ -5,6 +5,7 @@ import { useWorkspace } from '../../context/WorkspaceContext'
 import { useResilientJsonBlock } from '../../hooks/useResilientJsonBlock'
 import { STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
 import { recordPageFailure } from '../../telemetry/studioTelemetry'
+import { isLocalFixtureProvider, isScanOnlyProvider } from '../../lib/apiInternalFields'
 import type { CicdControlTowerPayload } from './DeliveryControlTowerCard'
 
 /** MVP: no server-side yesterday snapshot; links + CI/CD posture strip for operational context. */
@@ -26,7 +27,7 @@ export function WhatChangedSincePrior() {
   const d = cicd.data
   if (cicd.phase === 'loading' && !d) {
     posture = <p className="forge-support">Loading release posture…</p>
-  } else if (d?.ok && d.feature_enabled !== false && d.provider_kind === 'local_fixture') {
+  } else if (d?.ok && d.feature_enabled !== false && isLocalFixtureProvider(d)) {
     const blocked = (d.blocked_promotions ?? []).length
     const freezes = (d.freeze_windows ?? []).filter((f) => f.active).length
     const focus = d.release_train?.current_focus
@@ -57,7 +58,7 @@ export function WhatChangedSincePrior() {
         description="Enable LENSES_EXPERIMENTAL_CICD_ORCHESTRATION for environment and promotion summaries here."
       />
     )
-  } else if (d?.ok && d.provider_kind === 'scan_only') {
+  } else if (d?.ok && isScanOnlyProvider(d)) {
     posture = (
       <p className="forge-support" style={{ marginTop: 0 }}>
         Add <code className="le-mono">cicd-orchestration.json</code> or demo seed to see release posture in this strip.{' '}

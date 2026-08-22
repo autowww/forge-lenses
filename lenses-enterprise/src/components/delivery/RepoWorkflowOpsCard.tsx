@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useWorkspace } from '../../context/WorkspaceContext'
 import { useResilientJsonBlock } from '../../hooks/useResilientJsonBlock'
 import { StatePanel } from '../page/StatePanel'
+import { isLocalFixtureProvider } from '../../lib/apiInternalFields'
 import { recordPageFailure } from '../../telemetry/studioTelemetry'
 
 type Health = {
@@ -98,7 +99,7 @@ export function RepoWorkflowOpsCard() {
     )
   } else {
     const repos = data.repos ?? []
-    const fixture = data.provider_kind === 'local_fixture'
+    const fixture = isLocalFixtureProvider(data)
 
     inner = (
       <>

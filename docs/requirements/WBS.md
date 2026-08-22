@@ -20,11 +20,15 @@
 
 ---
 
-## 1a. Sparks and Charge (discipline)
+## 1a. Sparks, Charge, and dual profile
 
-**Rule:** Any story that is **in progress** or **committed for the current increment** must have **Spark-level tasks** (`M*E*S*T*`) in the **Tasks** table below, with `discover:` / `specify:` / `build:` / `verify:` / `release:` phase prefixes where applicable. Backlog stories may omit Sparks until execution starts.
+> **Dual profile.** Core Forge **keeps** Ore → Ingot → **Forge Spark** → Charge (**Sparks**). **Under the Epic execution profile**, Charge lists **Epics** (`M*E*`) with a 1:1 OpenSpec change — Story / Task / Forge Spark grains are **L1–L2 agent scratch inside** the Epic, not Charge rows. See [`EPIC-EXECUTION-PROFILE.md`](../../blueprints/sdlc/methodologies/forge/EPIC-EXECUTION-PROFILE.md).
 
-**Charge:** When using Forge execution, list Active Sparks in `forge/charge.md` with Spark IDs matching this WBS so **`/plan`**, **Today**, and **`forge/charge.md`** stay aligned.
+**Spark discipline (core Forge or scratch inside Epics):** Any story that is **in progress** or **committed for the current increment** must have **Spark-level tasks** (`M*E*S*T*`) in the **Tasks** table below, with `discover:` / `specify:` / `build:` / `verify:` / `release:` phase prefixes where applicable. Backlog stories may omit Sparks until execution starts.
+
+**Charge under the Epic execution profile (this repo):** List **Active Epics** in [`forge/charge.md`](../../forge/charge.md) with Epic IDs matching this WBS and linked OpenSpec changes. Do **not** mint `M*E*S*T*` rows on Charge for Charged Epics — agents decompose **runs** inside the Epic boundary.
+
+**Charge (core Forge profile):** When using Spark-based Charge, list Active Sparks in `forge/charge.md` with Spark IDs matching this WBS so **`/plan`**, **Today**, and **`forge/charge.md`** stay aligned.
 
 ---
 
@@ -83,7 +87,7 @@ Before **baselining** or **re-scoping** epics under M2–M5, run a **Product fam
 | Story ID | Story | Acceptance criteria (summary) | Priority | Estimate | Dependencies |
 |----------|-------|------------------------------|----------|----------|--------------|
 | **M1E3S1** | WBS in Lenses | This file appears on `/wbs` and loads in `/plan` with `repo` + `wbs_p` (e.g. `docs/requirements/WBS.md` under forge-lenses child) | High | S | — |
-| **M1E3S2** | Charge optional | (Optional) `forge/charge.md` Active Sparks use IDs matching Sparks below | Low | S | M1E3S1 |
+| **M1E3S2** | Charge optional | (Optional) `forge/charge.md` **Active Epics** (profile) or Active Sparks (core) use IDs matching this WBS | Low | S | M1E3S1 |
 
 ### Theme: T5 — Surface completeness (capture-backed)
 

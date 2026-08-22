@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import type { CompareModeId, TimeHorizonId } from '../../context/ShellChromeContext'
 import type { OverviewChartPayload } from '../../api/chartOverview'
 import { horizonToWindowDays } from '../../api/chartOverview'
-import { formatDelta, tierToClass } from '../../lib/kpiTrendUi'
+import { formatDelta, heatIntensityClass, tierToClass } from '../../lib/kpiTrendUi'
 import type { RepoPortfolioRow } from '../../lib/workspacePortfolio'
 import { StatePanel } from '../page'
 
@@ -145,7 +145,7 @@ export function PortfolioHealth({
                     {r.linesAdded7d != null ? (
                       <>
                         <span
-                          className={tierToClass(r.linesTier ?? undefined)}
+                          className={`${tierToClass(r.linesTier ?? undefined)} ${heatIntensityClass(r.linesAdded7d, r.linesMedianPrior6 ?? null)}`.trim()}
                           title={
                             typeof r.linesMedianPrior6 === 'number'
                               ? `Median of prior six periods: ${r.linesMedianPrior6}`

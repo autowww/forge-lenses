@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
 import { TechnicalDetails } from '../page/TechnicalDetails'
+import { ExecutiveSummaryStrip } from '../shell/ExecutiveSummaryStrip'
 import type { PlanningClusterPageIdentity } from '../../nav/planningClusterPageIdentity'
 
 export type PlanningClusterPageHeaderProps = {
   identity: PlanningClusterPageIdentity
   /** Default matches Flow plan summary shell; Delivery today uses `le-delivery-header`. */
   headerClassName?: string
+  /** Show compact executive KPI strip above the planning header. */
+  executiveStrip?: boolean
   /** Optional row above the title (e.g. back link). */
   preface?: ReactNode
   /** Title row end: primary trace, scope pickers promoted from body, etc. */
@@ -23,6 +26,7 @@ export type PlanningClusterPageHeaderProps = {
 export function PlanningClusterPageHeader({
   identity,
   headerClassName = 'le-plan-page-header',
+  executiveStrip = true,
   preface,
   actions,
   freshness,
@@ -33,6 +37,8 @@ export function PlanningClusterPageHeader({
   const hasHint = Boolean(identity.entryHint || identity.storyWorkItemLine)
 
   return (
+    <>
+      {executiveStrip ? <ExecutiveSummaryStrip compact /> : null}
     <header className={headerClassName}>
       {preface ? <div className="le-plan-page-header__preface">{preface}</div> : null}
       <div className="le-plan-page-header__title-row">
@@ -53,5 +59,6 @@ export function PlanningClusterPageHeader({
       ) : null}
       {children}
     </header>
+    </>
   )
 }

@@ -1,13 +1,12 @@
 import { TechnicalDetails } from '../page'
-import { FULL_WORKSPACE_UI, STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
+import { STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
 
 type Props = {
   roadmapP: string
-  classicPlanHref: string
   roadmapSummaryHref: string | null
 }
 
-export function RoadmapTrace({ roadmapP, classicPlanHref, roadmapSummaryHref }: Props) {
+export function RoadmapTrace({ roadmapP, roadmapSummaryHref }: Props) {
   const hasRm = Boolean(roadmapP.trim())
 
   return (
@@ -27,19 +26,15 @@ export function RoadmapTrace({ roadmapP, classicPlanHref, roadmapSummaryHref }: 
           <p className="forge-support">
             <strong>Roadmap file:</strong> <code className="le-mono">{roadmapP}</code>
           </p>
-          <TechnicalDetails summary="Classic workspace roadmap previews (optional)" defaultOpen={false}>
-            <ul className="le-plan-trace-links">
-              {roadmapSummaryHref ? (
+          {roadmapSummaryHref ? (
+            <TechnicalDetails summary="Roadmap previews (optional)" defaultOpen={false}>
+              <ul className="le-plan-trace-links">
                 <li>
                   <a href={roadmapSummaryHref}>Roadmaps summary (charts fragment)</a>
                 </li>
-              ) : null}
-              <li>
-                <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameQuery}</a> — {STUDIO_VOCAB.sources} tab and
-                roadmap outline.
-              </li>
-            </ul>
-          </TechnicalDetails>
+              </ul>
+            </TechnicalDetails>
+          ) : null}
         </>
       )}
     </section>

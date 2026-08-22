@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Forge Lenses</title>
+  <title>Loading…</title>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -95,9 +95,12 @@
   <script>
     (function () {
       var q = new URLSearchParams(window.location.search);
-      if (q.get("variant") === "studio") {
-        var title = document.getElementById("title");
-        if (title) title.textContent = "Forge Studio";
+      var variant = q.get("variant");
+      var title = document.getElementById("title");
+      if (title && variant === "studio") {
+        title.textContent = "Forge Studio";
+      } else if (title && variant === "virtual-camera") {
+        title.textContent = "Virtual Camera Studio";
       }
       var buildEl = document.getElementById("build");
       var v = q.get("v");

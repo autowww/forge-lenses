@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { apiGetJson, qs } from '../api/http'
 import {
@@ -6,33 +6,46 @@ import {
   NestedRoadmapWorkspaceFrame,
   PlanningClusterLocalNav,
   PlanningClusterPageHeader,
+  RoadmapDateEditor,
+  TimelineMetrics,
   type OrchestrationPortfolioOverlay,
+  type RoadmapDateRow,
 } from '../components/plan'
-import { TechnicalDetails } from '../components/page'
+import { TechnicalDetails, canShowTechnicalDetails } from '../components/page'
+import { TimelineGantt, type GanttBar } from '../components/plan/TimelineGantt'
 import { DEMO_SCENARIO_BASELINE_ID, DEMO_SCENARIO_STRETCH_ID } from '../constants/demoOrchestration'
 import { useNavigationMode } from '../nav/useNavigationMode'
 import { getPlanningClusterPageIdentity } from '../nav/planningClusterPageIdentity'
-import { FULL_WORKSPACE_UI, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
+import { wbsBacklogPickerLabel, roadmapLocationLabel, clusterHeadingLabel } from '../util/planScopeCluster'
+import { friendlyRepoLabel } from '../util/planDisplayNames'
+import {
+  lastScopeFromParams,
+  readPersistedScope,
+  rememberScope,
+} from '../lib/timelineScopeMemory'
+
+type TimelineMetricsPayload = {
+  horizon_counts?: Record<string, number>
+  epic_bars?: { label: string; percent: number }[]
+}
 
 type TimelinePayload = {
   ok?: boolean
   selected?: { repo?: string; wbs_p?: string; roadmap_p?: string }
   gantt_html?: string
+  gantt_milestones?: string[]
+  gantt_bars?: GanttBar[]
+  metrics?: TimelineMetricsPayload
   metrics_html?: string
+  date_rows?: RoadmapDateRow[]
   editor_html?: string
   roadmap_source_href?: string
   repo_hints?: string[]
   wbs_options?: { rel_path: string; repo_hint: string }[]
   roadmap_options?: { rel_path: string; repo_hint: string }[]
   orchestration_portfolio?: OrchestrationPortfolioOverlay
-}
-
-declare global {
-  interface Window {
-    ForgeRoadmapDates?: { init: (root?: ParentNode | null) => void }
-  }
 }
 
 export function TimelinePage() {
@@ -49,38 +62,48 @@ export function TimelinePage() {
   const wbsP = sp.get('wbs_p') || ''
   const roadmapP = sp.get('roadmap_p') || ''
   const [data, setData] = useState<TimelinePayload | null>(null)
-  const editorHostRef = useRef<HTMLDivElement | null>(null)
+  const restoredScopeRef = useRef(false)
 
   useEffect(() => {
+    if (restoredScopeRef.current) return
+    if (repo || wbsP || roadmapP) {
+      restoredScopeRef.current = true
+      return
+    }
+    const lastScope = readPersistedScope()
+    if (!lastScope) {
+      restoredScopeRef.current = true
+      return
+    }
+    restoredScopeRef.current = true
+    const next = new URLSearchParams(sp)
+    if (lastScope.repo) next.set('repo', lastScope.repo)
+    if (lastScope.wbs_p) next.set('wbs_p', lastScope.wbs_p)
+    if (lastScope.roadmap_p) next.set('roadmap_p', lastScope.roadmap_p)
+    setSp(next, { replace: true })
+  }, [repo, wbsP, roadmapP, setSp, sp])
+
+  const reloadTimeline = useCallback(() => {
     const q = qs({
       repo: repo || undefined,
       wbs_p: wbsP || undefined,
       roadmap_p: roadmapP || undefined,
     })
-    apiGetJson<TimelinePayload>(`/api/timeline-context${q}`)
+    void apiGetJson<TimelinePayload>(`/api/timeline-context${q}`)
       .then(setData)
       .catch(() => setData(null))
   }, [repo, wbsP, roadmapP])
 
   useEffect(() => {
-    const el = editorHostRef.current
-    if (!el || !data?.editor_html?.trim()) return
-
-    function runInit() {
-      window.ForgeRoadmapDates?.init(el)
+    const persistedScope = lastScopeFromParams(repo, wbsP, roadmapP)
+    if (persistedScope.repo || persistedScope.wbs_p || persistedScope.roadmap_p) {
+      rememberScope(persistedScope)
     }
+  }, [repo, wbsP, roadmapP])
 
-    if (document.querySelector('script[data-forge-roadmap-dates-js]')) {
-      runInit()
-      return
-    }
-    const s = document.createElement('script')
-    s.src = '/__ks/js/roadmap-dates.js'
-    s.async = true
-    s.dataset.forgeRoadmapDatesJs = '1'
-    s.onload = runInit
-    document.body.appendChild(s)
-  }, [data?.editor_html])
+  useEffect(() => {
+    reloadTimeline()
+  }, [reloadTimeline])
 
   function setField(key: string, value: string) {
     const next = new URLSearchParams(sp)
@@ -103,6 +126,9 @@ export function TimelinePage() {
       'Last scan: not recorded'
     )
 
+  const legacyGanttMarkup = data?.gantt_html
+  const roadmapRel = data?.selected?.roadmap_p ?? roadmapP
+
   return (
     <>
       <PlanningClusterLocalNav />
@@ -113,17 +139,13 @@ export function TimelinePage() {
       >
         <TechnicalDetails summary="How this view fits Studio" defaultOpen={false}>
           <p className="forge-support">
-            This page uses HTML fragments from the workspace timeline service. For the legacy full three-pane roadmap
-            UI, open{' '}
-            <a href="/timeline" title={FULL_WORKSPACE_UI.navHint}>
-              full workspace {STUDIO_VOCAB.timeline}
-            </a>
-            .
+            Timeline uses structured React components for metrics and date editing, backed by{' '}
+            <code className="le-mono">GET /api/timeline-context</code>.
           </p>
         </TechnicalDetails>
         <TechnicalDetails summary="Technical — timeline API" defaultOpen={false}>
           <p className="forge-support" style={{ margin: 0 }}>
-            Payload from <code className="le-mono">GET /api/timeline-context</code> (Gantt + metrics HTML + editor host).
+            Payload includes <code className="le-mono">date_rows</code>, structured <code className="le-mono">metrics</code>, and Gantt bars.
           </p>
         </TechnicalDetails>
       </PlanningClusterPageHeader>
@@ -152,7 +174,7 @@ export function TimelinePage() {
             <option value="">—</option>
             {(data?.repo_hints ?? []).map((h) => (
               <option key={h} value={h}>
-                {h}
+                {friendlyRepoLabel(h) || clusterHeadingLabel(h)}
               </option>
             ))}
           </select>
@@ -166,8 +188,8 @@ export function TimelinePage() {
           >
             <option value="">—</option>
             {(data?.wbs_options ?? []).map((w) => (
-              <option key={w.rel_path} value={w.rel_path}>
-                {w.rel_path}
+              <option key={w.rel_path} value={w.rel_path} title={w.rel_path}>
+                {wbsBacklogPickerLabel(w.rel_path, w.repo_hint)}
               </option>
             ))}
           </select>
@@ -181,8 +203,8 @@ export function TimelinePage() {
           >
             <option value="">—</option>
             {(data?.roadmap_options ?? []).map((r) => (
-              <option key={r.rel_path} value={r.rel_path}>
-                {r.rel_path}
+              <option key={r.rel_path} value={r.rel_path} title={r.rel_path}>
+                {roadmapLocationLabel(r.rel_path, r.repo_hint)}
               </option>
             ))}
           </select>
@@ -193,22 +215,27 @@ export function TimelinePage() {
           <a href={data.roadmap_source_href}>Roadmap source</a>
         </p>
       )}
-      {data?.gantt_html && (
+      {data?.gantt_bars?.length ? (
+        <TimelineGantt milestones={data.gantt_milestones ?? []} bars={data.gantt_bars} />
+      ) : null}
+      {canShowTechnicalDetails() && legacyGanttMarkup ? (
         <div
-          className="le-panel lenses-timeline-gantt"
-          dangerouslySetInnerHTML={{ __html: data.gantt_html }}
+          className="le-panel lenses-timeline-gantt lenses-timeline-gantt--legacy"
+          dangerouslySetInnerHTML={{ __html: legacyGanttMarkup }}
         />
-      )}
-      {data?.metrics_html && (
+      ) : null}
+      <TimelineMetrics metrics={data?.metrics} />
+      {canShowTechnicalDetails() && data?.metrics_html ? (
         <div dangerouslySetInnerHTML={{ __html: data.metrics_html }} />
-      )}
-      {data?.editor_html && (
-        <div
-          ref={editorHostRef}
-          className="le-panel mt-3"
-          dangerouslySetInnerHTML={{ __html: data.editor_html }}
-        />
-      )}
+      ) : null}
+      <RoadmapDateEditor
+        relPath={roadmapRel}
+        rows={(data?.date_rows ?? []) as RoadmapDateRow[]}
+        onSaved={reloadTimeline}
+      />
+      {canShowTechnicalDetails() && data?.editor_html ? (
+        <div className="le-panel mt-3" dangerouslySetInnerHTML={{ __html: data.editor_html }} />
+      ) : null}
       <TechnicalDetails summary="Raw timeline payload (debug)" defaultOpen={false}>
         <pre className="le-preview le-json">{JSON.stringify(data, null, 2)}</pre>
       </TechnicalDetails>

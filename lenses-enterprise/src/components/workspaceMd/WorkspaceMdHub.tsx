@@ -189,8 +189,8 @@ export function WorkspaceMdHub({
           <p className="le-ws-md-hub__muted">Scanning workspace for evidence files…</p>
         ) : indexError ? (
           <p className="le-ws-md-hub__warn" role="status">
-            {indexError} — fix the server index, then reload. You can still open files from Plan or project links, or use
-            advanced path entry at the bottom of the page.
+            {indexError} You can still open files from Plan or project links, or use advanced path entry at the
+            bottom of the page.
           </p>
         ) : files.length === 0 ? (
           <p className="le-ws-md-hub__warn" role="status">

@@ -1,10 +1,24 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useMemo } from 'react'
 import { useNavigationMode } from '../nav/useNavigationMode'
 import { getBreadcrumbSegments } from '../nav/routeMeta'
+import { useWorkspace } from '../context/WorkspaceContext'
+
+function workspaceLabelFromRoot(root: string | undefined): string {
+  const trimmed = root?.trim()
+  if (!trimmed) return 'Workspace'
+  const parts = trimmed.replace(/[/\\]+$/, '').split(/[/\\]/)
+  return parts[parts.length - 1] || 'Workspace'
+}
 
 export function BreadcrumbBar() {
   const { mode } = useNavigationMode()
   const location = useLocation()
+  const { state } = useWorkspace()
+  const workspaceLabel = useMemo(
+    () => workspaceLabelFromRoot(state?.workspace_root),
+    [state?.workspace_root],
+  )
   const segments = getBreadcrumbSegments(location.pathname, location.search, mode)
 
   if (
@@ -18,6 +32,12 @@ export function BreadcrumbBar() {
 
   return (
     <div className="le-breadcrumb" aria-label="Breadcrumb">
+      <span className="le-breadcrumb__workspaceLabel le-muted" title={state?.workspace_root ?? undefined}>
+        {workspaceLabel}
+      </span>
+      <span className="le-breadcrumb__sep" aria-hidden="true">
+        {'\u00a0/\u00a0'}
+      </span>
       {segments.map((seg, i) => {
         const isLast = i === segments.length - 1
         return (

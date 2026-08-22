@@ -10,6 +10,15 @@ export function tierToClass(tier: string | undefined): string {
   return 'le-trend--unknown'
 }
 
+/** Heat intensity vs workspace median for KPI tiles and portfolio cells. */
+export function heatIntensityClass(current: number, median: number | null | undefined): string {
+  if (median == null || !Number.isFinite(median) || median <= 0) return ''
+  const ratio = current / median
+  if (ratio >= 1.35) return 'le-heat--high'
+  if (ratio >= 0.85) return 'le-heat--mid'
+  return 'le-heat--low'
+}
+
 /** Numeric values for SVG sparkline (0..1 y). Min–max scaling so variation uses the full height;
  * identical values map to midline (0.5) instead of the top edge, which looked like a broken chart. */
 export function normalizeSparklineValues(raw: number[]): number[] {

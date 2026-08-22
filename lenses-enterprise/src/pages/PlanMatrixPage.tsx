@@ -2,6 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { apiGetJson } from '../api/http'
 import {
+  getOverviewChartPayload,
+  perRepoLinesByKey,
+  sparklinePeriodTotals,
+  type OverviewChartPayload,
+} from '../api/chartOverview'
+import {
   GraphPortfolioSummary,
   NestedRoadmapWorkspaceFrame,
   PlanningClusterLocalNav,
@@ -14,6 +20,8 @@ import { useNavigationMode } from '../nav/useNavigationMode'
 import { getPlanningClusterPageIdentity } from '../nav/planningClusterPageIdentity'
 import { STUDIO_GLOSSARY, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 import { StatePanel } from '../components/page'
+import { useShellChrome } from '../context/ShellChromeContext'
+import { tierToClass } from '../lib/kpiTrendUi'
 import { resolveUxFailure, type UxResolvedFailure } from '../lib/uxPageState'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
 
@@ -92,10 +100,13 @@ export function PlanMatrixPage() {
   const [sp, setSp] = useSearchParams()
   const repoParam = (sp.get('repo') || '').trim() || 'all'
   const [payload, setPayload] = useState<RoadmapMatrixPayload | null>(null)
+  const [chartPayload, setChartPayload] = useState<OverviewChartPayload | null>(null)
   const [err, setErr] = useState<UxResolvedFailure | null>(null)
   const [loading, setLoading] = useState(false)
+  const { timeHorizon } = useShellChrome()
 
   const resolved = state?.resolved_at
+  const linesByRepo = useMemo(() => perRepoLinesByKey(chartPayload), [chartPayload])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -126,6 +137,12 @@ export function PlanMatrixPage() {
   useEffect(() => {
     void load()
   }, [load, resolved])
+
+  useEffect(() => {
+    void getOverviewChartPayload(timeHorizon)
+      .then(setChartPayload)
+      .catch(() => setChartPayload(null))
+  }, [timeHorizon, resolved])
 
   const columns = useMemo(() => {
     const order = payload?.column_order?.length
@@ -163,6 +180,30 @@ export function PlanMatrixPage() {
       }
     }
     return { stories, wbs: wbsPaths.size, n: ms.length }
+  }
+
+  function healthTier(
+    ms: MatrixMilestone[],
+    repoHint: string,
+  ): 'green' | 'amber' | 'red' | 'muted' {
+    if (!ms.length) return 'muted'
+    const pressure = Math.max(...ms.map((m) => m.orchestration?.max_dependency_pressure ?? 0))
+    const blocked = ms.some((m) => (m.orchestration?.slip_preview?.transitive_blocked_count ?? 0) > 0)
+    const thin = ms.every((m) => m.unique_story_count === 0)
+    const kpiTier = linesByRepo.get(repoHint.trim().toLowerCase())?.tier
+    if (blocked || pressure >= 8 || kpiTier === 'red') return 'red'
+    if (thin || pressure >= 4 || kpiTier === 'amber') return 'amber'
+    return 'green'
+  }
+
+  function repoSparkline(repoHint: string, ms: MatrixMilestone[]): number[] {
+    const entry = linesByRepo.get(repoHint.trim().toLowerCase())
+    if (entry?.period_totals?.length) {
+      return sparklinePeriodTotals(entry.period_totals.map((x) => Number(x)))
+    }
+    return ms
+      .slice(0, 6)
+      .map((m) => Math.max(m.unique_story_count, m.wbs_loaded_count, 1))
   }
 
   return (
@@ -263,13 +304,15 @@ export function PlanMatrixPage() {
       ) : null}
 
       {payload?.ok && payload.roadmaps.length === 0 ? (
-        <p className="forge-support">No roadmap / WBS pairs found for this filter.</p>
+        <div className="le-roadmap-matrix__emptyIllustration" role="status">
+          <p className="forge-support">No roadmap / WBS pairs found for this filter.</p>
+        </div>
       ) : null}
 
       {payload?.ok && payload.roadmaps.length > 0 ? (
         <div className="le-roadmap-matrix__scroll">
-          <table className="le-roadmap-matrix">
-            <thead>
+          <table className="le-roadmap-matrix le-roadmap-matrix--sticky">
+            <thead className="le-roadmap-matrix__thead--sticky">
               <tr>
                 <th scope="col" className="le-roadmap-matrix__th-roadmap">
                   Roadmap
@@ -299,8 +342,21 @@ export function PlanMatrixPage() {
                     const ms = milestonesForCell(rm, col)
                     const { stories, wbs, n } = cellSummary(ms)
                     const empty = n === 0 || stories === 0
+                    const tier = healthTier(ms, rm.repo_hint)
+                    const spark = repoSparkline(rm.repo_hint, ms)
+                    const kpiTierClass = tierToClass(linesByRepo.get(rm.repo_hint.trim().toLowerCase())?.tier)
+                    const milestoneTitle =
+                      n === 1 ? ms[0]?.title?.trim() || ms[0]?.milestone_key || '' : ''
+                    const outcomeTitle =
+                      n > 1
+                        ? ms
+                            .slice(0, 2)
+                            .map((m) => m.title?.trim() || m.milestone_key)
+                            .filter(Boolean)
+                            .join(' · ')
+                        : milestoneTitle
                     return (
-                      <td key={col} className="le-roadmap-matrix__cell">
+                      <td key={col} className={`le-roadmap-matrix__cell le-roadmap-matrix__cell--${tier}`}>
                         {empty ? (
                           <span className="le-roadmap-matrix__empty">—</span>
                         ) : (
@@ -309,6 +365,26 @@ export function PlanMatrixPage() {
                             className="le-roadmap-matrix__cell-btn"
                             onClick={() => setModal({ roadmap: rm, column: col, milestones: ms })}
                           >
+                            <span
+                              className={`le-roadmap-matrix__healthTier le-roadmap-matrix__healthTier--${tier} ${kpiTierClass}`}
+                              aria-hidden
+                            />
+                            {spark.length > 1 ? (
+                              <span className="le-roadmap-matrix__milestoneSparkline" aria-hidden>
+                                {spark.map((v, i) => (
+                                  <span
+                                    key={i}
+                                    className="le-roadmap-matrix__spark"
+                                    style={{ height: `${Math.min(100, 12 + v * 6)}%` }}
+                                  />
+                                ))}
+                              </span>
+                            ) : null}
+                            {outcomeTitle ? (
+                              <span className="le-roadmap-matrix__milestone-title milestoneTitle" title={outcomeTitle}>
+                                {outcomeTitle}
+                              </span>
+                            ) : null}
                             <span className="le-roadmap-matrix__stat">
                               {stories} stories · {wbs} WBS
                             </span>

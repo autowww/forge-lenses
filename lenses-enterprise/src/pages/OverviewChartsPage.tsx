@@ -8,7 +8,6 @@ import { AdvancedSurfaceFraming, ChartMountSection, PageHeader, TechnicalDetails
 import {
   ADMIN_INSPECT_COPY,
   ADVANCED_SURFACE_FRAMES,
-  FULL_WORKSPACE_UI,
   ROUTE_SUBTITLE,
   STUDIO_VOCAB,
 } from '../nav/studioVisibleCopy'
@@ -59,11 +58,7 @@ export function OverviewChartsPage() {
       </div>
       <TechnicalDetails summary="Technical details (charts API and data bundle)">
         <p className="forge-support" style={{ margin: 0 }}>
-          Same charts as the{' '}
-          <a href="/overview/charts-api" title={FULL_WORKSPACE_UI.navHint}>
-            {FULL_WORKSPACE_UI.chartsApiNote}
-          </a>{' '}
-          endpoint (<code>/overview/charts-api</code>) — <code>forge-data-charts.js</code> + <code>{apiUrl}</code>.
+          Charts load from <code>{apiUrl}</code> via <code>forge-data-charts.js</code>.
         </p>
         <p className="forge-support" style={{ margin: '0.5rem 0 0' }}>
           <strong>Time window:</strong> {period}. {bucketHint}

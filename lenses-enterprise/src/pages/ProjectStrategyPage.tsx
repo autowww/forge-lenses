@@ -5,7 +5,7 @@ import { ChartMountSection, PageHeader } from '../components/page'
 import { ProjectLocalNav } from '../components/projects'
 import { chargeMdCandidates } from '../lib/copilotPageEvidence'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
-import { FULL_WORKSPACE_UI, PROJECT_OBJECT_HOME, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { PROJECT_OBJECT_HOME, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 
 export function ProjectStrategyPage() {
   const { name = '' } = useParams()
@@ -41,14 +41,7 @@ export function ProjectStrategyPage() {
             ← {STUDIO_VOCAB.projectDashboard}
           </Link>
         }
-        subtitle={
-          <>
-            {PROJECT_OBJECT_HOME.strategyPageLead}{' '}
-            <a href={`/projects/${enc}/strategy`} title={FULL_WORKSPACE_UI.navHint}>
-              {FULL_WORKSPACE_UI.openFullProjectPage}
-            </a>
-          </>
-        }
+        subtitle={PROJECT_OBJECT_HOME.strategyPageLead}
       />
       <ProjectLocalNav projectName={decoded} />
       <ChartMountSection

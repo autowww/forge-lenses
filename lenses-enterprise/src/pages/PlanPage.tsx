@@ -21,6 +21,8 @@ import {
   SourceContext,
   StoryDetailModal,
   StoryHubPanel,
+  EpicHubPanel,
+  SpecFlowBoard,
   CeremonyBridgePanel,
   HandoffLoopPanel,
   OutcomeLoopPanel,
@@ -46,9 +48,9 @@ import {
   OpsDeliveryCard,
   DecisionsNeededToday,
   TodayActionBand,
+  FreshnessChip,
 } from '../components/delivery'
 import { DocsHealthWorkBand } from '../components/docs-health/DocsHealthWorkBand'
-import { TraceabilityLaunchButton } from '../components/traceability'
 import {
   DEMO_ORCHESTRATION_STORY_ID,
   DEMO_SCENARIO_BASELINE_ID,
@@ -59,12 +61,12 @@ import { friendlyDocumentTitle } from '../util/planDisplayNames'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
 import { StatePanel, TechnicalDetails } from '../components/page'
 import {
-  FULL_WORKSPACE_UI,
   PLAN_PAGE_COPY,
   PLAN_TAB_LABEL,
   STUDIO_VOCAB,
   WORK_COPILOT_DEFAULT_PLAN,
   WORK_COPILOT_DEFAULT_TODAY,
+  WORK_COPILOT_DEFAULT_SPEC_BOARD,
 } from '../nav/studioVisibleCopy'
 
 function PlanApiErrorPanel({ message }: { message: string }) {
@@ -128,6 +130,7 @@ export function PlanPage() {
 
   const copilotDefaultQuery = useMemo(() => {
     if (mode === 'flow' && tab === 'today') return WORK_COPILOT_DEFAULT_TODAY
+    if (tab === 'spec-board') return WORK_COPILOT_DEFAULT_SPEC_BOARD
     if (mode === 'flow') return WORK_COPILOT_DEFAULT_PLAN
     return undefined
   }, [mode, tab])
@@ -161,6 +164,9 @@ export function PlanPage() {
   const [spine, setSpine] = useState<Record<string, unknown> | null>(null)
   const [workModel, setWorkModel] = useState<Record<string, unknown> | null>(null)
   const [today, setToday] = useState<Record<string, unknown> | null>(null)
+  const [specBoard, setSpecBoard] = useState<Record<string, unknown> | null>(null)
+  const [epicHub, setEpicHub] = useState<Record<string, unknown> | null>(null)
+  const [specBoardLoading, setSpecBoardLoading] = useState(false)
   const [story, setStory] = useState<Record<string, unknown> | null>(null)
   const [storyLoading, setStoryLoading] = useState(false)
   const [storyModalOpen, setStoryModalOpen] = useState(false)
@@ -242,6 +248,70 @@ export function PlanPage() {
       .catch(() => setToday(null))
   }, [wbsP, repo, roadmapP, tab, mode])
 
+  const epicProfile = specBoard?.profile === 'epic'
+
+  useEffect(() => {
+    if (!wbsP.trim()) {
+      setSpecBoard(null)
+      return
+    }
+    setSpecBoardLoading(true)
+    const q = qs({
+      wbs_p: wbsP,
+      repo: repo || undefined,
+      roadmap_p: roadmapP || undefined,
+    })
+    apiGetJson<Record<string, unknown>>(`/api/epic-spec-board${q}`)
+      .then(setSpecBoard)
+      .catch(() => setSpecBoard(null))
+      .finally(() => setSpecBoardLoading(false))
+  }, [wbsP, repo, roadmapP])
+
+  useEffect(() => {
+    if (!wbsP.trim() || !nodeId.trim() || tab !== 'spec-board') {
+      setEpicHub(null)
+      return
+    }
+    if (!/^M\d+E\d+$/i.test(nodeId.trim())) {
+      setEpicHub(null)
+      return
+    }
+    const q = qs({
+      id: nodeId,
+      wbs_p: wbsP,
+      repo: repo || undefined,
+      roadmap_p: roadmapP || undefined,
+    })
+    apiGetJson<Record<string, unknown>>(`/api/epic-hub${q}`)
+      .then(setEpicHub)
+      .catch(() => setEpicHub(null))
+  }, [nodeId, wbsP, repo, roadmapP, tab])
+
+  const refetchSpecBoard = useCallback(() => {
+    if (!wbsP.trim()) return
+    const q = qs({
+      wbs_p: wbsP,
+      repo: repo || undefined,
+      roadmap_p: roadmapP || undefined,
+    })
+    apiGetJson<Record<string, unknown>>(`/api/epic-spec-board${q}`)
+      .then(setSpecBoard)
+      .catch(() => setSpecBoard(null))
+  }, [wbsP, repo, roadmapP])
+
+  const refetchEpicHub = useCallback(() => {
+    if (!wbsP.trim() || !nodeId.trim() || !/^M\d+E\d+$/i.test(nodeId.trim())) return
+    const q = qs({
+      id: nodeId,
+      wbs_p: wbsP,
+      repo: repo || undefined,
+      roadmap_p: roadmapP || undefined,
+    })
+    apiGetJson<Record<string, unknown>>(`/api/epic-hub${q}`)
+      .then(setEpicHub)
+      .catch(() => setEpicHub(null))
+  }, [nodeId, wbsP, repo, roadmapP])
+
   useEffect(() => {
     if (!wbsP.trim() || !nodeId.trim()) {
       /* eslint-disable react-hooks/set-state-in-effect -- clear story when scope or id missing */
@@ -291,10 +361,11 @@ export function PlanPage() {
     setFields({ tab: 'story' })
   }, [setFields])
 
-  const tabs = ['plan', 'today', 'source'] as const
+  const tabs = epicProfile
+    ? (['plan', 'today', 'spec-board', 'source'] as const)
+    : (['plan', 'today', 'source'] as const)
   const showStoryTab = Boolean(nodeId.trim())
 
-  const classicPlanHref = `/plan?${sp.toString()}`
   const roadmapSummaryHref = roadmapP.trim()
     ? `/roadmaps/summary?${new URLSearchParams({ p: roadmapP }).toString()}`
     : null
@@ -333,14 +404,19 @@ export function PlanPage() {
       return (
         <>
           {storyModalEl}
-          <PlanningClusterPageHeader identity={pageIdentity} freshness={scanFreshness}>
-            <TechnicalDetails summary="Sample trace (demo)" defaultOpen={false}>
-              <TraceabilityLaunchButton
-                rootId={DEMO_ORCHESTRATION_STORY_ID}
-                label="Trace sample story"
-                title="Canonical SDLC graph: story → PR → build → release → evidence"
-              />
-            </TechnicalDetails>
+          <PlanningClusterPageHeader
+            identity={pageIdentity}
+            freshness={
+              <>
+                {scanFreshness}
+                {' · '}
+                <FreshnessChip
+                  resolvedAt={state?.resolved_at}
+                  scopeComplete={Boolean(wbsP.trim())}
+                />
+              </>
+            }
+          >
             {wbsP.trim() ? (
               <p className="le-plan-page-header__context">
                 <span className="le-plan-page-header__context-label">Backlog</span>{' '}
@@ -354,19 +430,15 @@ export function PlanPage() {
                 ) : null}
               </p>
             ) : null}
-            <TechnicalDetails summary="Classic workspace Plan & repository shortcuts">
-              <p className="forge-support">
-                <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameScope}</a> — full three-pane Plan with this
-                query string.
-              </p>
-              {repo.trim() ? (
-                <p className="forge-support" style={{ marginTop: '0.35rem' }}>
+            {repo.trim() ? (
+              <TechnicalDetails summary="Repository shortcuts">
+                <p className="forge-support" style={{ margin: 0 }}>
                   <Link className="le-btn le-btn--small" to={`/projects/${encodeURIComponent(repo.trim())}`}>
                     Open code workflow &amp; PR health for this repository
                   </Link>
                 </p>
-              ) : null}
-            </TechnicalDetails>
+              </TechnicalDetails>
+            ) : null}
           </PlanningClusterPageHeader>
           <PlanningClusterLocalNav />
           <TodayActionBand repoHint={repo} wbsSelected={Boolean(wbsP.trim())} />
@@ -407,10 +479,6 @@ export function PlanPage() {
             <h2 id="le-delivery-evidence-h" className="le-delivery-section__title">
               Today charge &amp; evidence
             </h2>
-            <p className="le-delivery-section__lead">
-              <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameScope}</a> — same query string; opens the full
-              three-pane Plan outside Studio when you need the legacy layout.
-            </p>
             {today ? (
               <>
                 <TodayChargeView payload={today} />
@@ -441,14 +509,16 @@ export function PlanPage() {
     return (
       <>
         {storyModalEl}
-        <PlanningClusterPageHeader identity={pageIdentity} freshness={scanFreshness}>
-          <TechnicalDetails summary="Sample trace (demo)" defaultOpen={false}>
-            <TraceabilityLaunchButton
-              rootId={DEMO_ORCHESTRATION_STORY_ID}
-              label="Trace sample story"
-              title="Canonical SDLC graph: story → PR → build → release → evidence"
-            />
-          </TechnicalDetails>
+        <PlanningClusterPageHeader
+          identity={pageIdentity}
+          freshness={
+            <>
+              {scanFreshness}
+              {' · '}
+              <FreshnessChip resolvedAt={state?.resolved_at} scopeComplete={Boolean(wbsP.trim())} />
+            </>
+          }
+        >
           {wbsP.trim() ? (
             <p className="le-plan-page-header__context">
               <span className="le-plan-page-header__context-label">Backlog</span>{' '}
@@ -462,19 +532,15 @@ export function PlanPage() {
               ) : null}
             </p>
           ) : null}
-          <TechnicalDetails summary="Classic workspace plan & repository shortcuts">
-            <p className="forge-support">
-              <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameScope}</a> — full three-pane Plan with this
-              query string.
-            </p>
-            {repo.trim() ? (
-              <p className="forge-support" style={{ marginTop: '0.35rem' }}>
+          {repo.trim() ? (
+            <TechnicalDetails summary="Repository shortcuts">
+              <p className="forge-support" style={{ margin: 0 }}>
                 <Link className="le-btn le-btn--small" to={`/projects/${encodeURIComponent(repo.trim())}`}>
                   Open code workflow &amp; PR health for this repository
                 </Link>
               </p>
-            ) : null}
-          </TechnicalDetails>
+            </TechnicalDetails>
+          ) : null}
         </PlanningClusterPageHeader>
         <PlanningClusterLocalNav />
         {err ? <PlanApiErrorPanel message={err} /> : null}
@@ -549,17 +615,13 @@ export function PlanPage() {
           milestones={milestones}
           onSelectRoot={(rid) => setFields({ id: rid, tab: 'plan' })}
         />
-        <RoadmapTrace
-          roadmapP={roadmapP}
-          classicPlanHref={classicPlanHref}
-          roadmapSummaryHref={roadmapSummaryHref}
-        />
+        <RoadmapTrace roadmapP={roadmapP} roadmapSummaryHref={roadmapSummaryHref} />
         <DecisionsWaiting
           today={today}
           wbsSelected={Boolean(wbsP.trim())}
           onOpenTodayTab={() => setFields({ tab: 'today' })}
         />
-        <SourceContext classicPlanHref={classicPlanHref} />
+        <SourceContext />
 
         <TechnicalDetails summary="Plan tab tools (Today charge, sources, story hub)" defaultOpen={false}>
         <section className="le-plan-secondary" aria-label="Plan tools">
@@ -664,12 +726,18 @@ export function PlanPage() {
   return (
     <>
       {storyModalEl}
-      <PlanningClusterPageHeader identity={pageIdentity} freshness={scanFreshness}>
-        <TechnicalDetails summary="Artifacts lens & classic workspace">
-          <p className="forge-support">
-            {PLAN_PAGE_COPY.artifactsLensHint}{' '}
-            <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameScope}</a>
-          </p>
+      <PlanningClusterPageHeader
+        identity={pageIdentity}
+        freshness={
+          <>
+            {scanFreshness}
+            {' · '}
+            <FreshnessChip resolvedAt={state?.resolved_at} scopeComplete={Boolean(wbsP.trim())} />
+          </>
+        }
+      >
+        <TechnicalDetails summary="Artifacts lens">
+          <p className="forge-support">{PLAN_PAGE_COPY.artifactsLensHint}</p>
         </TechnicalDetails>
       </PlanningClusterPageHeader>
       <PlanningClusterLocalNav />
@@ -848,9 +916,43 @@ export function PlanPage() {
         </>
       )}
 
+      {tab === 'spec-board' && epicProfile && specBoard && (
+        <>
+          <SpecFlowBoard
+            columns={(specBoard.columns as { id: string; label: string }[]) ?? []}
+            cards={(specBoard.cards as import('../components/plan/SpecFlowBoard').SpecFlowCard[]) ?? []}
+            wbsP={wbsP}
+            repo={repo}
+            selectedId={nodeId.trim() || undefined}
+            onSelect={(id) => setFields({ id, tab: 'spec-board' })}
+            onTransitionComplete={refetchSpecBoard}
+          />
+          {nodeId.trim() && epicHub?.ok ? (
+            <EpicHubPanel
+              hub={epicHub}
+              epicId={nodeId.trim()}
+              wbsP={wbsP}
+              repo={repo}
+              onRefreshComplete={() => {
+                refetchEpicHub()
+                refetchSpecBoard()
+              }}
+            />
+          ) : null}
+          {specBoardLoading ? <p className="forge-support">Refreshing board…</p> : null}
+        </>
+      )}
+
+      {tab === 'spec-board' && !epicProfile && !specBoardLoading && (
+        <p className="forge-support">
+          Spec Flow board is available under the Epic execution profile (Active Epics on Charge or forge-sdlc
+          OpenSpec schema).
+        </p>
+      )}
+
       {tab === 'source' && (
         <>
-          <SourceContext classicPlanHref={classicPlanHref} />
+          <SourceContext />
           <section className="le-plan-roadmap-horizon" aria-label="Roadmap horizon">
             <h2 className="le-plan-section__title">Roadmap horizon</h2>
             <p className="forge-support le-plan-section__lead">
@@ -858,11 +960,7 @@ export function PlanPage() {
             </p>
             <NestedRoadmapWorkspaceFrame frameMinHeight="min(48vh, 26rem)" />
           </section>
-          <RoadmapTrace
-            roadmapP={roadmapP}
-            classicPlanHref={classicPlanHref}
-            roadmapSummaryHref={roadmapSummaryHref}
-          />
+          <RoadmapTrace roadmapP={roadmapP} roadmapSummaryHref={roadmapSummaryHref} />
         </>
       )}
 

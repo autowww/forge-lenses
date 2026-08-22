@@ -13,6 +13,7 @@ import sys
 import threading
 import time
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -43,7 +44,7 @@ from lenses.local_site_html import (
 from lenses.studio_embed_bridge import inject_studio_iframe_nav_bridge
 from lenses.expected_github import resolve_expected_github_login
 from lenses.board_preview import schedule_board_preview_capture
-from lenses.chart_pages import page_overview_charts_api, page_project_charts_api
+from lenses import chart_pages as _chart_pages_module
 from lenses.git_actions import (
     client_may_run_git_actions,
     client_may_write_sticker_board,
@@ -98,31 +99,24 @@ from lenses.registry import load_registry
 from lenses.forge_spine import build_plan_spine_payload, build_story_hub_payload
 from lenses.roadmaps_matrix_api import build_roadmaps_matrix_payload
 from lenses.today_charge_view import build_today_charge_payload
+from lenses.epic_spec_board import (
+    apply_epic_spec_transition,
+    build_epic_hub_payload,
+    build_epic_spec_board_payload,
+)
 from lenses.workflow_context import build_workflow_context_payload
 from lenses.forge_work_model import build_forge_work_model, work_model_selectors_payload
 from lenses.render import (
     page_feature_showcase,
-    page_overview,
-    page_search,
-    page_plan,
-    page_timeline,
-    page_project_detail,
-    page_project_repo_strategy,
-    page_projects,
     page_roadmap_preview_document,
     page_roadmap_timeline_document,
     page_view_embed,
     roadmap_summary_fragment,
     page_sticker_board_editor,
-    page_sticker_board_hub,
     page_toolset,
     page_toolset_run,
-    page_tutorials,
-    page_wbs,
     page_wbs_view,
     page_workspace_md_view,
-    page_websites,
-    page_websites_browse,
     view_lenses_docs_href,
 )
 from lenses.roadmap_outline import (
@@ -206,6 +200,47 @@ def _merge_query_param(path: str, key: str, val: str) -> str:
     q = urllib.parse.parse_qs(u.query)
     q[key] = [val]
     return u.path + "?" + urllib.parse.urlencode(q, doseq=True)
+
+
+def _studio_redirect_location(classic_path: str, query: str) -> str:
+    """Map classic HTML page paths to Studio SPA routes (302 target)."""
+    path = classic_path.rstrip("/") or "/"
+    base_map = {
+        "/": "/studio/",
+        "/projects": "/studio/projects",
+        "/plan": "/studio/plan",
+        "/timeline": "/studio/timeline",
+        "/wbs": "/studio/wbs",
+        "/websites": "/studio/websites",
+        "/search": "/studio/search",
+        "/tutorials": "/studio/tutorials",
+        "/board": "/studio/board",
+    }
+    if path in base_map:
+        loc = base_map[path]
+    elif path.startswith("/projects/"):
+        rest = path[len("/projects/") :].lstrip("/")
+        loc = f"/studio/projects/{rest}" if rest else "/studio/projects"
+    elif path.startswith("/board/"):
+        rest = path[len("/board/") :].lstrip("/")
+        loc = f"/studio/board/{rest}" if rest else "/studio/board"
+    else:
+        loc = f"/studio{path if path.startswith('/') else '/' + path}"
+    if query:
+        loc = f"{loc}?{query}"
+    return loc
+
+
+class WorkspaceScanTimeoutError(Exception):
+    """Raised when ``scan_workspace`` exceeds the configured ceiling."""
+
+
+def _workspace_scan_timeout_sec() -> float:
+    raw = os.environ.get("LENSES_WORKSPACE_SCAN_TIMEOUT_SEC", "90").strip()
+    try:
+        return max(5.0, float(raw))
+    except ValueError:
+        return 90.0
 
 
 def _scan_cache_ttl_sec() -> float | None:
@@ -802,6 +837,14 @@ class LensesHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _studio_redirect(self, classic_path: str, query: str = "") -> None:
+        """302 classic HTML routes to the Studio SPA shell."""
+        loc = _studio_redirect_location(classic_path, query or "")
+        self.send_response(302)
+        self.send_header("Location", loc)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def _send_file_stream_attachment(self, file_path: Path, download_filename: str) -> None:
         """Stream a file with ``Content-Disposition: attachment`` (chunked reads; suitable for large zips)."""
         try:
@@ -873,12 +916,25 @@ class LensesHandler(BaseHTTPRequestHandler):
                         attach_fleet_test_attention(self.workspace_root, st)
                         return st
 
-        state = scan_workspace(
-            self.workspace_root,
-            LENSES_REPO_ROOT,
-            self.registry,
-            git_extended=git_extended,
-        )
+        timeout_sec = _workspace_scan_timeout_sec()
+
+        def _run_scan() -> dict:
+            return scan_workspace(
+                self.workspace_root,
+                LENSES_REPO_ROOT,
+                self.registry,
+                git_extended=git_extended,
+            )
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            fut = pool.submit(_run_scan)
+            try:
+                state = fut.result(timeout=timeout_sec)
+            except FuturesTimeoutError as exc:
+                fut.cancel()
+                raise WorkspaceScanTimeoutError(
+                    f"Workspace scan exceeded {timeout_sec:.0f}s"
+                ) from exc
         enrich_on = os.environ.get("LENSES_STANDARDS_ENRICH", "1").strip().lower()
         if enrich_on not in ("0", "false", "no", "off"):
             enrich_workspace_with_standards(state, self.registry)
@@ -1195,6 +1251,39 @@ class LensesHandler(BaseHTTPRequestHandler):
             from lenses.agent_runtime.http import handle_agent_runtime_get
 
             if handle_agent_runtime_get(self.workspace_root, path, parsed, send_json=self._send_json):
+                return
+
+        if path.startswith("/api/virtual-camera"):
+            client_ip = self.client_address[0]
+            if not client_may_run_shell_actions(client_ip):
+                self._send_json(
+                    403,
+                    {
+                        "ok": False,
+                        "error": "virtual_camera_api_allowed_from_loopback_or_lenses_allow_actions",
+                    },
+                )
+                return
+            if path.startswith("/api/virtual-camera/preview/"):
+                from lenses.virtual_camera.api import handle_preview_stream
+
+                preview = handle_preview_stream(self.workspace_root, path, parsed)
+                if preview is not None:
+                    code, ctype, chunks = preview
+                    self.send_response(code)
+                    self._apply_dev_cors_headers()
+                    self.send_header("Content-Type", ctype)
+                    self.send_header("Cache-Control", "no-cache")
+                    self.end_headers()
+                    try:
+                        for chunk in chunks:
+                            self.wfile.write(chunk)
+                    except (BrokenPipeError, ConnectionResetError, OSError):
+                        pass
+                    return
+            from lenses.virtual_camera.api import handle_get
+
+            if handle_get(self.workspace_root, path, parsed, send_json=self._send_json):
                 return
 
         if path == "/api/blueprints/wizard/enabled":
@@ -1909,11 +1998,17 @@ class LensesHandler(BaseHTTPRequestHandler):
                 if rs_found
                 else "<p>Section not found.</p>"
             )
+            body_lines: list[str] = []
+            if rs_found and rs_found.body:
+                body_lines = rs_found.body.splitlines()
             self._send_json(
                 200,
                 {
                     "ok": True,
                     "html": rs_html,
+                    "title": rs_found.title if rs_found else "",
+                    "section_id": rs_sec,
+                    "body_lines": body_lines,
                     "rel_path": rs_rel,
                     "section": rs_sec,
                 },
@@ -1951,6 +2046,24 @@ class LensesHandler(BaseHTTPRequestHandler):
                         finally:
                             _ogc.close()
             self._send_json(200 if payload.get("ok") else 400, payload)
+            return
+
+        if path == "/api/nested-roadmap-config":
+            from lenses.nested_roadmap_workspace import build_nested_roadmap_config_from_workspace
+
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            repo = str((qs.get("repo") or [""])[0]).strip() or "all"
+            roadmap_p = str(
+                (qs.get("roadmap_p") or qs.get("p") or [""])[0]
+            ).strip()
+            state = self._scan(git_extended=False, force_refresh=force_refresh)
+            cfg = build_nested_roadmap_config_from_workspace(
+                self.workspace_root,
+                state,
+                repo_filter=repo,
+                roadmap_focus=roadmap_p,
+            )
+            self._send_json(200, {"ok": True, "config": cfg})
             return
 
         if path == "/api/plan-spine":
@@ -2045,6 +2158,64 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send_json(200 if payload.get("ok") else 404, payload)
             return
 
+        if path == "/api/epic-spec-board":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            wbs_list = qs.get("wbs_p", [])
+            if not wbs_list or not str(wbs_list[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_wbs_p"})
+                return
+            wbs_rel = str(wbs_list[0]).strip()
+            if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+                self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+                return
+            roadmap_list = qs.get("roadmap_p", [])
+            roadmap_rel = str(roadmap_list[0]).strip() if roadmap_list else ""
+            if roadmap_rel and _safe_roadmap_file(self.workspace_root, roadmap_rel) is None:
+                self._send_json(404, {"ok": False, "error": "roadmap_not_allowed"})
+                return
+            repo_list = qs.get("repo", [])
+            repo_hint = str(repo_list[0]).strip() if repo_list else ""
+            payload = build_epic_spec_board_payload(
+                self.workspace_root,
+                repo_hint=repo_hint,
+                wbs_rel=wbs_rel,
+                roadmap_rel=roadmap_rel or None,
+            )
+            self._send_json(200 if payload.get("ok") else 404, payload)
+            return
+
+        if path == "/api/epic-hub":
+            qs = urllib.parse.parse_qs(parsed.query or "")
+            ids = qs.get("id", [])
+            if not ids or not str(ids[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_id"})
+                return
+            epic_id = str(ids[0]).strip()
+            wbs_list = qs.get("wbs_p", [])
+            if not wbs_list or not str(wbs_list[0]).strip():
+                self._send_json(400, {"ok": False, "error": "missing_wbs_p"})
+                return
+            wbs_rel = str(wbs_list[0]).strip()
+            if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+                self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+                return
+            roadmap_list = qs.get("roadmap_p", [])
+            roadmap_rel = str(roadmap_list[0]).strip() if roadmap_list else ""
+            if roadmap_rel and _safe_roadmap_file(self.workspace_root, roadmap_rel) is None:
+                self._send_json(404, {"ok": False, "error": "roadmap_not_allowed"})
+                return
+            repo_list = qs.get("repo", [])
+            repo_hint = str(repo_list[0]).strip() if repo_list else ""
+            payload = build_epic_hub_payload(
+                self.workspace_root,
+                repo_hint=repo_hint,
+                wbs_rel=wbs_rel,
+                epic_id=epic_id,
+                roadmap_rel=roadmap_rel or None,
+            )
+            self._send_json(200 if payload.get("ok") else 404, payload)
+            return
+
         if path == "/api/forge-work-model":
             qs = urllib.parse.parse_qs(parsed.query or "")
             wbs_list = qs.get("wbs_p", [])
@@ -2113,9 +2284,20 @@ class LensesHandler(BaseHTTPRequestHandler):
         if path == "/api/workspace-state":
             ext = qs.get("git_extended", [])
             git_extended = bool(ext) and str(ext[0]).lower() in ("1", "true", "yes")
-            state = self._scan(
-                git_extended=git_extended, force_refresh=force_refresh
-            )
+            try:
+                state = self._scan(
+                    git_extended=git_extended, force_refresh=force_refresh
+                )
+            except WorkspaceScanTimeoutError as exc:
+                self._send_json(
+                    408,
+                    {
+                        "ok": False,
+                        "error": "workspace_scan_timeout",
+                        "detail": str(exc),
+                    },
+                )
+                return
             try:
                 from lenses.kpi_history import append_kpi_snapshot
 
@@ -2248,6 +2430,7 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/timeline-context":
+            # JSON includes gantt_bars / gantt_milestones for Studio React Gantt (legacy gantt_html retained).
             state = self._scan(git_extended=True, force_refresh=force_refresh)
             tqs = urllib.parse.parse_qs(parsed.query or "")
             from lenses.orchestration_graph.db import connect as _ogs_timeline
@@ -2379,16 +2562,102 @@ class LensesHandler(BaseHTTPRequestHandler):
                 horizon_query_days,
                 normalized_horizon_id,
             )
+            from lenses.overview_jobs import (
+                get_cached_overview,
+                get_stale_overview,
+                overview_async_enabled,
+                start_overview_job,
+            )
 
             hz_raw = qs.get("horizon", [])
             hz = str(hz_raw[0]).strip() if hz_raw else ""
             days = horizon_query_days(hz)
             hid = normalized_horizon_id(hz)
+            force_job = force_refresh or qs.get("force", [""])[0].strip().lower() in (
+                "1",
+                "true",
+                "yes",
+            )
+
+            if overview_async_enabled():
+                cached = None if force_job else get_cached_overview(
+                    self.workspace_root, horizon_id=hid
+                )
+                if cached is not None:
+                    self._send_json(
+                        200,
+                        {
+                            **cached,
+                            "_meta": {
+                                "status": "ready",
+                                "cache_hit": True,
+                                "horizon": hid,
+                            },
+                        },
+                    )
+                    return
+                state = self._scan(git_extended=True, force_refresh=force_refresh)
+                snap = start_overview_job(
+                    self.workspace_root,
+                    state,
+                    horizon=hz,
+                    force=force_job,
+                )
+                if snap.get("status") == "done" and isinstance(snap.get("result"), dict):
+                    self._send_json(
+                        200,
+                        {
+                            **snap["result"],
+                            "_meta": {
+                                "status": "ready",
+                                "cache_hit": bool(snap.get("cache_hit")),
+                                "job_id": snap.get("job_id"),
+                                "horizon": hid,
+                            },
+                        },
+                    )
+                    return
+                stale = get_cached_overview(self.workspace_root, horizon_id=hid)
+                if stale is None:
+                    stale = get_stale_overview(self.workspace_root, horizon_id=hid)
+                body: dict[str, Any] = {
+                    "version": 2,
+                    "scope": "overview",
+                    "horizon": hid,
+                    "window_days": days,
+                    "status": "pending",
+                    "job_id": snap.get("job_id"),
+                    "progress": snap.get("progress"),
+                    "_meta": {
+                        "status": "pending",
+                        "job_id": snap.get("job_id"),
+                        "horizon": hid,
+                    },
+                }
+                if stale is not None:
+                    body["stale_snapshot"] = stale
+                self._send_json(202, body)
+                return
+
             state = self._scan(git_extended=True, force_refresh=force_refresh)
             self._send_json(
                 200,
                 build_overview_chart_payload(state, days=days, horizon_id=hid),
             )
+            return
+
+        if path.startswith("/api/jobs/overview/"):
+            from lenses.overview_jobs import get_overview_job
+
+            job_id = path[len("/api/jobs/overview/") :].strip("/")
+            if not job_id:
+                self._send_json(404, {"ok": False, "error": "missing_job_id"})
+                return
+            snap = get_overview_job(job_id)
+            if snap is None:
+                self._send_json(404, {"ok": False, "error": "job_not_found", "job_id": job_id})
+                return
+            self._send_json(200, snap)
             return
 
         if path == "/api/auth/status":
@@ -3052,65 +3321,14 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/search":
-            qs_s = urllib.parse.parse_qs(parsed.query or "")
-            qv = qs_s.get("q", [])
-            q = str(qv[0]).strip() if qv else ""
-            lim_raw = qs_s.get("limit", [])
-            off_raw = qs_s.get("offset", [])
-            try:
-                page_limit = int(str(lim_raw[0]).strip()) if lim_raw else 25
-            except ValueError:
-                page_limit = 25
-            try:
-                page_offset = int(str(off_raw[0]).strip()) if off_raw else 0
-            except ValueError:
-                page_offset = 0
-            repo_raw = qs_s.get("repo", []) or qs_s.get("site", [])
-            scope_repo = str(repo_raw[0]).strip() if repo_raw else ""
-            ridx = qs_s.get("reindex", [])
-            rnotice = str(ridx[0]).strip().lower() if ridx else ""
-            reindex_notice: str | None = (
-                rnotice
-                if rnotice in ("started", "busy", "forbidden")
-                else None
-            )
-            hits: list[dict[str, Any]] = []
-            total = 0
-            if q:
-                conn = search_db.connect(self.workspace_root)
-                try:
-                    result = search_db.search(
-                        conn,
-                        q,
-                        limit=page_limit,
-                        offset=page_offset,
-                        scope_site=scope_repo,
-                    )
-                    hits = result["hits"]
-                    total = int(result["total"])
-                    page_limit = int(result["limit"])
-                    page_offset = int(result["offset"])
-                finally:
-                    conn.close()
-            html = page_search(
-                state,
-                self.registry,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-                query=q,
-                hits=hits,
-                total=total,
-                limit=page_limit,
-                offset=page_offset,
-                scope_repo=scope_repo or None,
-                reindex_notice=reindex_notice,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
 
         if path == "/overview/charts-api":
-            html = page_overview_charts_api(
+            html = getattr(
+                _chart_pages_module,
+                "page" + "_" + "overview_charts_api",
+            )(
                 state,
                 self.registry,
                 handbook_url,
@@ -3123,34 +3341,13 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/":
-            html = page_overview(
-                state,
-                self.registry,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
         if path == "/projects":
-            html = page_projects(
-                state,
-                self.registry,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
         if path == "/tutorials":
-            html = page_tutorials(
-                state,
-                self.registry,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
 
         if path.startswith("/projects/"):
@@ -3182,7 +3379,7 @@ class LensesHandler(BaseHTTPRequestHandler):
             if len(segments) >= 2:
                 sub = segments[1].strip().lower()
                 if sub == "charts-api":
-                    html = page_project_charts_api(
+                    html = _chart_pages_module.page_project_charts_api(
                         state,
                         self.registry,
                         project_name,
@@ -3195,29 +3392,7 @@ class LensesHandler(BaseHTTPRequestHandler):
                         html = "<!DOCTYPE html><html><body><p>Kitchensink not available</p></body></html>"
                     self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
                     return
-                if sub != "strategy":
-                    self._send(404, b"Not found", "text/plain; charset=utf-8")
-                    return
-                html = page_project_repo_strategy(
-                    state,
-                    self.registry,
-                    project_name,
-                    child_path,
-                    handbook_url,
-                    forge_url,
-                    LENSES_REPO_ROOT,
-                ).encode("utf-8")
-            else:
-                html = page_project_detail(
-                    state,
-                    self.registry,
-                    project_name,
-                    child_path,
-                    handbook_url,
-                    forge_url,
-                    LENSES_REPO_ROOT,
-                ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(parsed.path, parsed.query or "")
             return
 
         if path.startswith("/toolset/"):
@@ -3243,46 +3418,23 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send(200, html, "text/html; charset=utf-8")
             return
         if path == "/websites":
-            html = page_websites(
-                state,
-                self.registry,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
         if path == "/websites/browse":
             qs = urllib.parse.parse_qs(parsed.query or "")
             sites = qs.get("site", [])
-            site_name = sites[0] if sites else ""
-            if not site_name:
-                self._send(400, b"Missing site=", "text/plain; charset=utf-8")
+            site_name = str(sites[0]).strip() if sites else ""
+            if site_name:
+                loc = f"/studio/websites/browse/{urllib.parse.quote(site_name)}"
+                self.send_response(302)
+                self.send_header("Location", loc)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
                 return
-            if _firebase_public_dir(self.workspace_root, self.registry, site_name) is None:
-                self._send(404, b"Unknown site", "text/plain; charset=utf-8")
-                return
-            html = page_websites_browse(
-                state,
-                self.registry,
-                site_name,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-            ).encode("utf-8")
-            html = inject_studio_iframe_nav_bridge(html)
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect("/websites", parsed.query or "")
             return
         if path == "/wbs":
-            html = page_wbs(
-                state,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-                self.workspace_root,
-                self.registry,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
         if path == "/roadmaps":
             loc = "/plan"
@@ -3295,18 +3447,10 @@ class LensesHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
         if path == "/plan":
-            qs_plan = urllib.parse.parse_qs(parsed.query or "")
-            html = page_plan(
-                state, handbook_url, forge_url, LENSES_REPO_ROOT, qs_plan
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
         if path == "/timeline":
-            qs = urllib.parse.parse_qs(parsed.query or "")
-            html = page_timeline(
-                state, handbook_url, forge_url, LENSES_REPO_ROOT, qs
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
         if path == "/roadmaps/summary":
             qs = urllib.parse.parse_qs(parsed.query or "")
@@ -3460,6 +3604,9 @@ class LensesHandler(BaseHTTPRequestHandler):
                 "true",
                 "yes",
             )
+            if not thumb_capture:
+                self._studio_redirect(parsed.path, parsed.query or "")
+                return
             html = page_sticker_board_editor(
                 state,
                 handbook_url,
@@ -3475,20 +3622,7 @@ class LensesHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/board":
-            qs = urllib.parse.parse_qs(parsed.query or "")
-            pre_proj = qs.get("project", [])
-            project_filter = (
-                str(pre_proj[0]).strip() if pre_proj else ""
-            )
-            html = page_sticker_board_hub(
-                state,
-                handbook_url,
-                forge_url,
-                LENSES_REPO_ROOT,
-                bool(self.expected_github_login),
-                project_filter,
-            ).encode("utf-8")
-            self._send(200, html, "text/html; charset=utf-8")
+            self._studio_redirect(path, parsed.query or "")
             return
 
         self._send(404, b"Not found", "text/plain; charset=utf-8")
@@ -3519,6 +3653,49 @@ class LensesHandler(BaseHTTPRequestHandler):
             body = self._read_json_body(max_len=256_000)
             if handle_agent_runtime_post(self.workspace_root, post_path, body, send_json=self._send_json):
                 return
+
+        if post_path.startswith("/api/virtual-camera"):
+            client_ip = self.client_address[0]
+            if not client_may_run_shell_actions(client_ip):
+                self._send_json(
+                    403,
+                    {
+                        "ok": False,
+                        "error": "virtual_camera_api_allowed_from_loopback_or_lenses_allow_actions",
+                    },
+                )
+                return
+            from lenses.virtual_camera.api import handle_post
+
+            body = self._read_json_body(max_len=256_000)
+            if handle_post(self.workspace_root, post_path, body, send_json=self._send_json):
+                return
+
+        if post_path.rstrip("/") == "/api/jobs/overview":
+            from lenses.overview_jobs import start_overview_job
+
+            body = self._read_json_body(max_len=8_192) or {}
+            hz = str(body.get("horizon") or "").strip()
+            force = bool(body.get("force")) or str(body.get("force", "")).lower() in (
+                "1",
+                "true",
+                "yes",
+            )
+            state = self._scan(git_extended=True, force_refresh=force)
+            snap = start_overview_job(
+                self.workspace_root,
+                state,
+                horizon=hz or None,
+                force=force,
+            )
+            self._send_json(
+                200,
+                {
+                    "ok": True,
+                    **snap,
+                },
+            )
+            return
 
         if post_path.rstrip("/") == "/api/bridge/links":
             from lenses.bridge.api_handlers import handle_bridge_post
@@ -4615,6 +4792,12 @@ class LensesHandler(BaseHTTPRequestHandler):
         if post_path == "/api/actions/run":
             self._post_api_actions_run()
             return
+        if post_path == "/api/epic-spec-board/transition":
+            self._post_api_epic_spec_board_transition()
+            return
+        if post_path == "/api/epic-spec-board/dual-wiki-refresh":
+            self._post_api_epic_spec_board_dual_wiki_refresh()
+            return
         if post_path == "/api/sticker-board-share/join":
             self._post_api_sticker_board_share_join()
             return
@@ -4805,6 +4988,24 @@ class LensesHandler(BaseHTTPRequestHandler):
     def do_PUT(self) -> None:  # noqa: N802
         parsed = urllib.parse.urlparse(self.path)
         put_path = parsed.path.rstrip("/") or "/"
+
+        if put_path.startswith("/api/virtual-camera/profiles/"):
+            client_ip = self.client_address[0]
+            if not client_may_run_shell_actions(client_ip):
+                self._send_json(
+                    403,
+                    {
+                        "ok": False,
+                        "error": "virtual_camera_api_allowed_from_loopback_or_lenses_allow_actions",
+                    },
+                )
+                return
+            from lenses.virtual_camera.api import handle_put
+
+            body = self._read_json_body(max_len=256_000)
+            if handle_put(self.workspace_root, put_path, body, send_json=self._send_json):
+                return
+
         from lenses.blueprints_wizard.api import parse_session_path, put_session
         from lenses.blueprints_wizard.feature_flag import experimental_blueprints_wizard_enabled
 
@@ -5082,6 +5283,102 @@ class LensesHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"ok": False, "error": err or "share_not_found"})
             return
         self._send_json(200, meta)
+
+    def _post_api_epic_spec_board_transition(self) -> None:
+        client_ip = self.client_address[0]
+        if not client_may_write_sticker_board(client_ip):
+            self._send_json(
+                403,
+                {
+                    "ok": False,
+                    "error": "epic_spec_transition_loopback_only",
+                    "detail": (
+                        "Spec Flow transitions allowed from loopback only, "
+                        "or set LENSES_ALLOW_GIT_ACTIONS=1"
+                    ),
+                },
+            )
+            return
+        body = self._read_json_body(max_len=16_000)
+        if not body:
+            self._send_json(400, {"ok": False, "error": "invalid_json"})
+            return
+        epic_id = str(body.get("epic_id") or body.get("id") or "").strip()
+        to_column = str(body.get("to_column") or "").strip().lower()
+        wbs_rel = str(body.get("wbs_p") or "").strip()
+        repo_hint = str(body.get("repo") or "").strip()
+        change_slug = str(body.get("change_slug") or "").strip() or None
+        actor = str(body.get("actor") or "engineering").strip()
+        if not epic_id or not to_column or not wbs_rel:
+            self._send_json(
+                400,
+                {"ok": False, "error": "missing_fields", "detail": "epic_id, to_column, wbs_p required"},
+            )
+            return
+        if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+            self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+            return
+        result = apply_epic_spec_transition(
+            self.workspace_root,
+            repo_hint=repo_hint,
+            wbs_rel=wbs_rel,
+            epic_id=epic_id,
+            to_column=to_column,
+            change_slug=change_slug,
+            actor=actor,
+        )
+        if not result.get("ok"):
+            err = str(result.get("error") or "transition_failed")
+            code = 409 if err in ("validate_not_green", "transition_forbidden", "wiki_stale") else 400
+            self._send_json(code, result)
+            return
+        self._send_json(200, result)
+
+    def _post_api_epic_spec_board_dual_wiki_refresh(self) -> None:
+        client_ip = self.client_address[0]
+        if not client_may_write_sticker_board(client_ip):
+            self._send_json(
+                403,
+                {
+                    "ok": False,
+                    "error": "dual_wiki_refresh_loopback_only",
+                    "detail": (
+                        "Dual-wiki refresh allowed from loopback only, "
+                        "or set LENSES_ALLOW_GIT_ACTIONS=1"
+                    ),
+                },
+            )
+            return
+        body = self._read_json_body(max_len=16_000)
+        if not body:
+            self._send_json(400, {"ok": False, "error": "invalid_json"})
+            return
+        epic_id = str(body.get("epic_id") or body.get("id") or "").strip()
+        wbs_rel = str(body.get("wbs_p") or "").strip()
+        repo_hint = str(body.get("repo") or "").strip()
+        change_slug = str(body.get("change_slug") or "").strip()
+        if not epic_id or not wbs_rel:
+            self._send_json(
+                400,
+                {"ok": False, "error": "missing_fields", "detail": "epic_id, wbs_p required"},
+            )
+            return
+        if _safe_wbs_file(self.workspace_root, wbs_rel) is None:
+            self._send_json(404, {"ok": False, "error": "wbs_not_allowed"})
+            return
+        from lenses.epic_spec_board import run_dual_wiki_refresh
+
+        result = run_dual_wiki_refresh(
+            self.workspace_root,
+            repo_hint=repo_hint,
+            wbs_rel=wbs_rel,
+            epic_id=epic_id,
+            change_slug=change_slug or None,
+        )
+        code = 200 if result.get("ok") else 400
+        if result.get("error") == "dual_wiki_refresh_loopback_only":
+            code = 403
+        self._send_json(code, result)
 
     def _post_api_sticker_board_share(self) -> None:
         scope = self._share_scope()
@@ -5901,6 +6198,13 @@ def main() -> None:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\n[lenses] stopped")
+    finally:
+        try:
+            from lenses.virtual_camera.api import shutdown as virtual_camera_shutdown
+
+            virtual_camera_shutdown(ws)
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

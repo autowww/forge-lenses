@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { WorkspaceChild } from '../api/workspace'
+import { ExecutiveSummaryStrip } from '../components/shell/ExecutiveSummaryStrip'
 import { WorkspaceStateFallback } from '../components/WorkspaceStateFallback'
 import { StatePanel } from '../components/page'
 import { useWorkspace } from '../context/WorkspaceContext'
@@ -11,6 +12,7 @@ import { filterPortfolioRows, parsePortfolioTableFilter } from '../lib/portfolio
 import { buildRepoPortfolioRows } from '../lib/workspacePortfolio'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
 import { chargeMdCandidates } from '../lib/copilotPageEvidence'
+import { WorkspaceSparseGuide } from '../components/onboarding/WorkspaceSparseGuide'
 
 function sortFlowCards(children: WorkspaceChild[]) {
   const list = [...children]
@@ -25,6 +27,12 @@ function sortFlowCards(children: WorkspaceChild[]) {
     if (ag !== bg) return bg - ag
     return an.localeCompare(bn, undefined, { sensitivity: 'base' })
   })
+}
+
+function healthTierLabel(health: 'healthy' | 'watch' | 'at_risk'): string {
+  if (health === 'at_risk') return 'At risk'
+  if (health === 'watch') return 'Watch'
+  return 'Ready'
 }
 
 function ProjectsFlowCardGrid() {
@@ -51,6 +59,8 @@ function ProjectsFlowCardGrid() {
 
   return (
     <>
+      <ExecutiveSummaryStrip />
+      <WorkspaceSparseGuide telemetryTag="projects" lead="Add more git repositories to your workspace root to populate this portfolio grid." />
       <h1 className="le-h1">Projects</h1>
       <p className="forge-support" style={{ marginTop: '-0.35rem', marginBottom: '1rem', maxWidth: '44rem' }}>
         {PROJECT_OBJECT_HOME.listVersusDashboardLead}
@@ -86,13 +96,22 @@ function ProjectsFlowCardGrid() {
         />
       ) : null}
       <div className="le-card-grid">
-        {visibleGit.map((c) => (
-          <div key={c.name} className="le-card">
-            <h3>{c.name}</h3>
-            <p className="forge-support">{c.is_git ? 'Git repository' : 'Folder'}</p>
-            <Link to={`/projects/${encodeURIComponent(c.name)}`}>Dashboard →</Link>
-          </div>
-        ))}
+        {visibleGit.map((c) => {
+          const row = portfolioRows.find((r) => r.name === c.name)
+          const healthTier = row ? healthTierLabel(row.health) : 'Ready'
+          return (
+            <div key={c.name} className="le-card">
+              <h3>{c.name}</h3>
+              <p className="forge-support">
+                Git repository
+                <span className="le-health-tier" style={{ marginLeft: '0.5rem' }}>
+                  · {healthTier}
+                </span>
+              </p>
+              <Link to={`/projects/${encodeURIComponent(c.name)}`}>Dashboard →</Link>
+            </div>
+          )
+        })}
         {filter === 'all'
           ? folderCards.map((c) => (
               <div key={c.name} className="le-card">

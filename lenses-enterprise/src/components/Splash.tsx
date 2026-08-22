@@ -1,26 +1,33 @@
-import { studioBuildDetails, studioSplashBuildLine } from '../util/studioBuildInfo'
+import { studioBuildDetails, studioBuildFooterLine } from '../util/studioBuildInfo'
 
-const STEPS: Record<string, { title: string; detail: string }> = {
+const PROGRESS_STAGES = ['init', 'connect', 'scan', 'receive', 'parse'] as const
+
+const STEPS: Record<(typeof PROGRESS_STAGES)[number], { title: string; detail: string }> = {
   init: {
-    title: 'Initializing…',
-    detail: 'Preparing the Lenses Studio view.',
+    title: 'Starting Studio…',
+    detail: 'Preparing your workspace view.',
   },
   connect: {
     title: 'Connecting to Lenses…',
-    detail: 'Reaching the Lenses app on your machine.',
+    detail: 'Reaching the Lenses app on this machine.',
   },
   scan: {
-    title: 'Scanning workspace…',
-    detail: 'Indexing repositories, sites, and planning hints. Large folders can take a little longer.',
+    title: 'Scanning your workspace…',
+    detail: 'Indexing repositories, sites, and planning files. Large folders can take a little longer.',
   },
   receive: {
-    title: 'Receiving workspace data…',
-    detail: 'Waiting for the latest workspace snapshot from Lenses.',
+    title: 'Loading workspace data…',
+    detail: 'Pulling the latest scan results from Lenses.',
   },
   parse: {
     title: 'Almost ready…',
-    detail: 'Building the dashboard view.',
+    detail: 'Building your dashboard.',
   },
+}
+
+function progressStageIndex(step: keyof typeof STEPS): number {
+  const i = PROGRESS_STAGES.indexOf(step)
+  return i >= 0 ? i : 0
 }
 
 type Props = {
@@ -35,6 +42,8 @@ type Props = {
 export function Splash({ step, error, errorDescription, errorDetail, onRetry, hidden }: Props) {
   const s = STEPS[step] ?? STEPS.init
   const busy = !error
+  const stageIndex = progressStageIndex(step)
+  const progressPct = Math.round(((stageIndex + 1) / PROGRESS_STAGES.length) * 100)
 
   return (
     <div
@@ -52,6 +61,24 @@ export function Splash({ step, error, errorDescription, errorDetail, onRetry, hi
         <p className="le-splash__detail" id="le-splash-detail">
           {error ? errorDescription || 'Lenses could not finish loading your workspace.' : s.detail}
         </p>
+        {!error ? (
+          <div
+            className="le-splash__progress"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPct}
+            aria-labelledby="le-splash-title"
+            aria-describedby="le-splash-detail"
+          >
+            <div className="le-splash__progress-track">
+              <div className="le-splash__progress-fill" style={{ width: `${progressPct}%` }} />
+            </div>
+            <p className="le-splash__progress-stage" aria-live="polite">
+              Step {stageIndex + 1} of {PROGRESS_STAGES.length}: {s.title}
+            </p>
+          </div>
+        ) : null}
         {error && (
           <>
             {errorDetail ? (
@@ -72,12 +99,14 @@ export function Splash({ step, error, errorDescription, errorDetail, onRetry, hi
         )}
         <p className="le-splash__hint">
           {import.meta.env.VITE_STATIC_MUSEUM === 'true'
-            ? 'Read-only demo snapshot — connect the live app for a full workspace.'
-            : 'Runs against the Lenses app on this machine (local use).'}
+            ? 'Read-only demo — connect the live app for a full workspace.'
+            : 'Runs on this machine with the Lenses workspace app.'}
         </p>
-        <p className="le-splash__build" title={studioBuildDetails()}>
-          {studioSplashBuildLine()}
-        </p>
+        <details className="le-splash__technical le-splash__build-inspect">
+          <summary>Build details (inspect)</summary>
+          <p className="le-splash__build">{studioBuildFooterLine()}</p>
+          <pre className="le-splash__technical-pre">{studioBuildDetails()}</pre>
+        </details>
       </div>
     </div>
   )

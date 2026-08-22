@@ -17,9 +17,11 @@ from lenses.forge_spine import (
     index_versona_sessions,
     parse_charge_banking,
     parse_charge_blockers,
+    parse_charge_epics,
     parse_charge_frontmatter,
     parse_charge_sparks,
 )
+from lenses.epic_spec_board import detect_execution_profile
 from lenses.forge_work_model import ForgeWorkModel, build_forge_work_model
 from lenses.safe_forge_paths import workspace_md_view_link
 from lenses.story_definition_synthesis import synthesize_wbs_slots
@@ -207,6 +209,155 @@ def _ordered_spark_ids(
     return out
 
 
+def _epic_breadcrumb(wbs: WbsModel, epic_id: str) -> list[dict[str, str]]:
+    out: list[dict[str, str]] = []
+    mk = re.match(r"^(M\d+)", epic_id.strip())
+    milestone = mk.group(1) if mk else ""
+    if milestone:
+        out.append({"id": milestone, "kind": "milestone", "title": f"Milestone {milestone}"})
+    epic_title = epic_id
+    for eid, title, _ in wbs.epics:
+        if eid == epic_id:
+            epic_title = title
+            break
+    out.append({"id": epic_id, "kind": "epic", "title": epic_title or epic_id})
+    return out
+
+
+def _build_epic_today_payload(
+    wr: Path,
+    *,
+    repo_hint: str,
+    wbs_rel: str,
+    roadmap_rel: str | None,
+    wbs: WbsModel,
+    charge_md: str,
+    charge_path: Path,
+    fm: dict[str, Any],
+) -> dict[str, Any]:
+    """Today payload when Charge uses Active Epics (Epic execution profile)."""
+    base = _repo_base(wr, repo_hint)
+    active_rows = parse_charge_epics(charge_md)
+    blocker_rows = parse_charge_blockers(charge_md)
+    banking_rows = parse_charge_banking(charge_md)
+
+    blocker_by_epic: dict[str, dict[str, Any]] = {}
+    for br in blocker_rows:
+        sid = str(br.get("spark_id") or "").strip().upper()
+        if sid and re.match(r"^M\d+E\d+$", sid, re.I):
+            blocker_by_epic[sid] = br
+
+    banking_ids = {
+        str(r.get("spark_id") or "").strip().upper()
+        for r in banking_rows
+        if re.match(r"^M\d+E\d+$", str(r.get("spark_id") or "").strip(), re.I)
+    }
+
+    versona_root = base / "forge-logs" / "versona"
+    sessions = index_versona_sessions(wr, versona_root)
+    pending_versona: list[dict[str, Any]] = []
+    for s in sessions:
+        ref = s.get("ember_log_ref")
+        if ref is not None and isinstance(ref, str) and ref.strip():
+            continue
+        pending_versona.append(
+            {
+                "session_id": str(s.get("session_id") or ""),
+                "path": str(s.get("path") or ""),
+                "view_href": str(s.get("view_href") or ""),
+                "work_item_refs": [str(x) for x in (s.get("work_item_refs") or []) if x],
+                "plan_links": [],
+            }
+        )
+
+    charge_rel = ""
+    try:
+        charge_rel = str(charge_path.relative_to(wr)).replace("\\", "/")
+    except ValueError:
+        charge_rel = "forge/charge.md"
+
+    epic_payloads: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in active_rows:
+        eid = str(row.get("epic_id") or "").strip().upper()
+        if not eid or eid in seen:
+            continue
+        seen.add(eid)
+        status_s = str(row.get("status") or "").strip().lower()
+        change_slug = str(row.get("change_slug") or "").strip()
+        actor = str(row.get("actor") or "").strip()
+        blk = blocker_by_epic.get(eid)
+        banked = eid in banking_ids or status_banked(status_s)
+        terminal = status_terminal(status_s)
+        blocked = not banked and not terminal and (
+            bool(blk and str(blk.get("blocker") or "").strip()) or status_blocked_word(status_s)
+        )
+        title = eid
+        for ek, et, _ in wbs.epics:
+            if ek == eid:
+                title = et
+                break
+        trail = _epic_breadcrumb(wbs, eid)
+        epic_payloads.append(
+            {
+                "epic_id": eid,
+                "title": title,
+                "change_slug": change_slug,
+                "status": status_s,
+                "actor": actor or fm.get("hat") or "",
+                "blocker": str(blk.get("blocker") or "") if blk else "",
+                "next_action": _next_action("", blk, blocked),
+                "breadcrumb": trail,
+                "plan_href": plan_href(wbs_rel, repo_hint, roadmap_rel, eid),
+                "flags": {
+                    "banked": banked,
+                    "blocked": blocked,
+                    "terminal": terminal,
+                    "done": terminal,
+                },
+            }
+        )
+
+    active_out = [e for e in epic_payloads if not e["flags"]["banked"] and not e["flags"]["terminal"] and not e["flags"]["blocked"]]
+    blocked_out = [e for e in epic_payloads if e["flags"]["blocked"]]
+    banked_out = [e for e in epic_payloads if e["flags"]["banked"]]
+    resolved_out = [e for e in epic_payloads if e["flags"]["terminal"]][:_RECENTLY_RESOLVED_CAP]
+
+    return {
+        "ok": True,
+        "profile": "epic",
+        "repo_hint": repo_hint,
+        "wbs_rel": wbs_rel,
+        "roadmap_rel": roadmap_rel or "",
+        "epic_rows": epic_payloads,
+        "spark_rows": [],
+        "charge": {
+            "path": charge_rel,
+            "view_href": workspace_md_view_link(charge_rel) if charge_rel else "",
+            "hat": fm.get("hat") or "",
+            "date": fm.get("date") or "",
+            "iteration": fm.get("iteration") or "",
+        },
+        "phase_prefixes": sorted(
+            {
+                m.group(1)
+                for e in epic_payloads
+                if e.get("epic_id") and (m := re.match(r"^(M\d+)", str(e["epic_id"])))
+            }
+        ),
+        "sections": {
+            "active": active_out,
+            "blocked": blocked_out,
+            "banked": banked_out,
+            "recently_resolved": resolved_out,
+            "pending_versona": pending_versona,
+        },
+        "notes": {
+            "recently_resolved_scope": "Terminal-status Epics from this Charge file's Active Epics table only.",
+        },
+    }
+
+
 def build_today_charge_payload(
     workspace_root: Path,
     *,
@@ -232,6 +383,22 @@ def build_today_charge_payload(
         charge_md = charge_path.read_text(encoding="utf-8", errors="replace")
 
     fm = parse_charge_frontmatter(charge_md)
+    profile = detect_execution_profile(charge_md, base)
+    wbs_text = wbs_path.read_text(encoding="utf-8", errors="replace")
+    wbs = parse_wbs_markdown(wbs_rel, wbs_text)
+
+    if profile == "epic" and parse_charge_epics(charge_md):
+        return _build_epic_today_payload(
+            wr,
+            repo_hint=repo_hint,
+            wbs_rel=wbs_rel,
+            roadmap_rel=roadmap_rel,
+            wbs=wbs,
+            charge_md=charge_md,
+            charge_path=charge_path,
+            fm=fm,
+        )
+
     active_rows = parse_charge_sparks(charge_md)
     blocker_rows = parse_charge_blockers(charge_md)
     banking_rows = parse_charge_banking(charge_md)
@@ -244,8 +411,6 @@ def build_today_charge_payload(
 
     banking_ids = {str(r.get("spark_id") or "").strip() for r in banking_rows if r.get("spark_id")}
 
-    wbs_text = wbs_path.read_text(encoding="utf-8", errors="replace")
-    wbs = parse_wbs_markdown(wbs_rel, wbs_text)
     model = build_forge_work_model(
         wr,
         repo_hint=repo_hint,
@@ -404,6 +569,7 @@ def build_today_charge_payload(
 
     return {
         "ok": True,
+        "profile": "spark",
         "repo_hint": repo_hint,
         "wbs_rel": wbs_rel,
         "roadmap_rel": roadmap_p,

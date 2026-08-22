@@ -28,6 +28,36 @@ from lenses.render import (
 from lenses.safe_forge_paths import roadmap_timeline_view_link
 
 
+def _structured_gantt_bars(gm: dict[str, object]) -> tuple[list[str], list[dict[str, object]]]:
+    """Human-friendly Gantt bars for Studio React shell (non-breaking alongside gantt_html)."""
+    milestones = [str(m) for m in (gm.get("milestones") or []) if str(m).strip()]
+    raw_bars = gm.get("bars") or []
+    bars: list[dict[str, object]] = []
+    if not isinstance(raw_bars, list):
+        return milestones, bars
+    for i, bar in enumerate(raw_bars):
+        if not isinstance(bar, dict):
+            continue
+        try:
+            start = int(bar.get("start", 0))
+            end = int(bar.get("end", start))
+        except (TypeError, ValueError):
+            continue
+        epic_id = str(bar.get("epic_id") or "").strip()
+        bars.append(
+            {
+                "id": epic_id or f"bar-{i}",
+                "label": str(bar.get("label") or epic_id or f"Epic {i + 1}"),
+                "start": start,
+                "end": end,
+                "status": str(bar.get("status") or ""),
+                "start_label": milestones[start] if 0 <= start < len(milestones) else "",
+                "end_label": milestones[end] if 0 <= end < len(milestones) else "",
+            }
+        )
+    return milestones, bars
+
+
 def build_timeline_api_payload(
     workspace_root: Path,
     state: dict[str, Any],
@@ -89,14 +119,19 @@ def build_timeline_api_payload(
     ]
 
     gantt_html = ""
+    gantt_milestones: list[str] = []
+    gantt_bars: list[dict[str, object]] = []
     metrics_row_html = ""
     editor_html = ""
+    date_rows: list[dict[str, object]] = []
+    metrics: dict[str, object] = {}
     src_link = ""
     if rm_q:
         rpth = workspace_root / rm_q.replace("\\", "/").strip("/")
         if rpth.is_file():
             md = rpth.read_text(encoding="utf-8", errors="replace")
             gm = extract_gantt_model(md)
+            gantt_milestones, gantt_bars = _structured_gantt_bars(gm)
             gh = roadmap_gantt_html(gm, heading=True)
             dsm = extract_date_shift_model(md)
             dsh = roadmap_date_shift_html(dsm, heading=True)
@@ -109,6 +144,20 @@ def build_timeline_api_payload(
                     "and/or optional ISO date columns per <code>ROADMAP.template.md</code>.</p>"
                 )
             met = extract_chart_metrics(md)
+            epic_bars_struct: list[dict[str, object]] = []
+            for item in met.get("epic_bars") or []:
+                if isinstance(item, (list, tuple)) and len(item) >= 2:
+                    try:
+                        epic_bars_struct.append(
+                            {"label": str(item[0]), "percent": float(item[1])}
+                        )
+                    except (TypeError, ValueError):
+                        continue
+            metrics = {
+                "horizon_counts": dict(met.get("horizon_counts") or {}),
+                "epic_bars": epic_bars_struct,
+            }
+            date_rows = list(dsm.get("rows") or [])
             hz_html = horizon_badges_html(met.get("horizon_counts") or {})
             epic_pairs: list[tuple[str, float]] = []
             for item in met.get("epic_bars") or []:
@@ -141,7 +190,11 @@ def build_timeline_api_payload(
         "workspace_projects": wp,
         "current_project": scope,
         "gantt_html": gantt_html,
+        "gantt_milestones": gantt_milestones,
+        "gantt_bars": gantt_bars,
         "metrics_html": metrics_row_html,
+        "metrics": metrics,
+        "date_rows": date_rows,
         "roadmap_source_href": src_link,
         "editor_html": editor_html,
     }

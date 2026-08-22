@@ -5,6 +5,7 @@ import { BlueprintsWizardLayout } from './BlueprintsWizardLayout'
 import { BlueprintsWizardSessionPage } from './BlueprintsWizardSessionPage'
 import { BlueprintsWizardHub } from '../blueprints-wizard/BlueprintsWizardHub'
 import { MainContentInertProvider } from '../context/MainContentInertContext'
+import { LensesCopilotPageScopeProvider } from '../context/LensesCopilotPageScopeContext'
 
 const samplePayload = {
   title: '',
@@ -70,7 +71,9 @@ function renderSession(path: string) {
   )
   return render(
     <MainContentInertProvider>
-      <RouterProvider router={router} />
+      <LensesCopilotPageScopeProvider>
+        <RouterProvider router={router} />
+      </LensesCopilotPageScopeProvider>
     </MainContentInertProvider>,
   )
 }

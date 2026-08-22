@@ -76,3 +76,36 @@ jobs:
           name: playwright-report
           path: desktop/playwright-report/
           retention-days: 7
+
+  studio-ux-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps (lenses server)
+        run: pip install PyYAML "markdown>=3.5"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: lenses-enterprise/package-lock.json
+      - name: Install lenses-enterprise dependencies
+        working-directory: lenses-enterprise
+        run: npm ci
+      - name: Install Playwright Chromium (crawl v4)
+        working-directory: lenses-enterprise
+        run: npx playwright install chromium
+      - name: Build Studio (fixture server)
+        working-directory: lenses-enterprise
+        run: npm run build
+      - name: Studio UX crawl v4 gate (multi-repo fixture)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          E2E_BUILD_STUDIO: "0"
+          E2E_LENSES_PORT: "17556"
+        run: bash scripts/studio-ux-crawl-gate.sh

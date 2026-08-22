@@ -61,7 +61,7 @@ export type StudioRouteDefinition = {
   /** Default true. Use false for `/foo/*` style patterns. */
   end?: boolean
   /** When set, only matches `pathname === '/plan'` with this `tab` query (or default tab). */
-  planTab?: 'plan' | 'today' | 'story' | 'source'
+  planTab?: 'plan' | 'today' | 'story' | 'source' | 'spec-board'
   kind: StudioRouteKind
   /** For alias/legacy rows: canonical route id this resolves as. */
   canonicalRouteId?: string
@@ -86,6 +86,7 @@ export type StudioRouteDefinition = {
 export const SR = {
   homeOverview: 'sr.home.overview',
   planToday: 'sr.plan.today',
+  planSpecBoard: 'sr.plan.specBoard',
   planStory: 'sr.plan.story',
   planSource: 'sr.plan.source',
   planDefault: 'sr.plan.default',
@@ -137,6 +138,7 @@ export const SR = {
   agenticBridge: 'sr.knowledge.agenticBridge',
   foundry: 'sr.work.foundry',
   foundryRun: 'sr.work.foundryRun',
+  virtualCameraStudio: 'sr.labs.virtualCamera',
   autonomyMaturity: 'sr.knowledge.autonomyMaturity',
   projectAutonomyMaturity: 'sr.projects.autonomyMaturity',
   fallback: 'sr.fallback',
@@ -689,6 +691,18 @@ const ORDERED_PATTERNS: StudioRouteDefinition[] = [
     defaultSidebarLabel: R.foundrySidebar,
   },
   {
+    id: SR.virtualCameraStudio,
+    pattern: '/labs/virtual-camera',
+    kind: 'canonical',
+    canonicalTitle: 'Virtual Camera Studio',
+    subtitle: 'Local virtual V4L2 cameras for VDI and conferencing.',
+    objectType: 'demo',
+    lensVisibility: PRIMARY,
+    flow: bundle('home', ['Labs', 'Virtual Camera Studio'], [null, null]),
+    artifacts: bundle('home', ['Labs', 'Virtual Camera Studio'], [null, null]),
+    defaultSidebarLabel: 'Virtual Camera Studio',
+  },
+  {
     id: SR.foundryRun,
     pattern: '/foundry/runs/:runId',
     kind: 'canonical',
@@ -913,6 +927,21 @@ const PLAN_TAB_RULES: StudioRouteDefinition[] = [
     sidebar: {
       flow: { home: R.whatNeedsAttentionToday, work: V.today },
       artifacts: { work: V.today },
+    },
+  },
+  {
+    id: SR.planSpecBoard,
+    planTab: 'spec-board',
+    kind: 'canonical',
+    canonicalTitle: V.specFlow,
+    subtitle: PLAN_PAGE_COPY.specFlowSubtitle,
+    objectType: 'plan',
+    lensVisibility: PRIMARY,
+    flow: bundle('work', [V.work, V.specFlow], ['/plan', null]),
+    artifacts: bundle('work', [V.work, V.specFlow], ['/plan', null]),
+    sidebar: {
+      flow: { work: V.specFlow },
+      artifacts: { work: V.specFlow },
     },
   },
   {

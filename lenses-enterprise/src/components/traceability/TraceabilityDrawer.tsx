@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { apiGetJson } from '../../api/http'
 import { useTraceabilityDrawer } from '../../context/TraceabilityDrawerContext'
+import { readFeatureDisabled } from '../../lib/apiInternalFields'
 import { classifyFetchError } from '../../lib/classifyFetchError'
 import { recordPageFailure } from '../../telemetry/studioTelemetry'
 import { StatePanel } from '../page/StatePanel'
@@ -41,7 +42,6 @@ type TraceEdge = {
 
 type TracePayload = {
   ok?: boolean
-  feature_disabled?: boolean
   error?: string
   root?: TraceNode
   root_id?: string
@@ -123,7 +123,7 @@ export function TraceabilityDrawer() {
           const bp = await apiGetJson<TracePayload>(
             `/api/bridge/trace/${enc}?max_depth=8&max_nodes=500`,
           )
-          if (bp.feature_disabled) {
+          if (readFeatureDisabled(bp)) {
             /* fall through to legacy */
           } else if (bp.ok === false && bp.error === 'entity_not_found') {
             setData(bp)
@@ -146,7 +146,7 @@ export function TraceabilityDrawer() {
       const payload = await apiGetJson<TracePayload>(legacyUrl)
       setData(payload)
       setTraceSource('legacy')
-      if (payload.feature_disabled) {
+      if (readFeatureDisabled(payload)) {
         setPhase('ok')
         return
       }
@@ -300,7 +300,7 @@ export function TraceabilityDrawer() {
 
           {phase === 'loading' ? <p className="forge-support">Loading trace…</p> : null}
 
-          {data?.feature_disabled ? (
+          {readFeatureDisabled(data) ? (
             <p className="forge-support">
               Orchestration graph is disabled on this server (
               <code className="le-mono">LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH=0</code>).

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiGetJson } from '../../api/http'
+import { readFeatureDisabled } from '../../lib/apiInternalFields'
 import { StatePanel } from '../page/StatePanel'
 import { DEMO_ORCHESTRATION_STORY_ID } from '../../constants/demoOrchestration'
 
@@ -8,7 +9,6 @@ type ScenarioRow = { id: string; display_name: string; payload?: Record<string, 
 
 type PortfolioContext = {
   ok?: boolean
-  feature_disabled?: boolean
   rollups?: {
     dependency_pressure_max?: number
     open_vulnerabilities?: number
@@ -64,8 +64,8 @@ export function PortfolioPlanningPanel({
     try {
       const j = await apiGetJson<PortfolioContext>(`/api/orchestration/portfolio-context${q}`)
       setData(j)
-      if (j.feature_disabled) return
-      if (j.ok === false && !j.feature_disabled) setErr('Portfolio context unavailable')
+      if (readFeatureDisabled(j)) return
+      if (j.ok === false && !readFeatureDisabled(j)) setErr('Portfolio context unavailable')
     } catch (e) {
       setData(null)
       setErr(e instanceof Error ? e.message : 'Request failed')
@@ -110,7 +110,7 @@ export function PortfolioPlanningPanel({
         />
       ) : null}
 
-      {data?.feature_disabled ? (
+      {readFeatureDisabled(data) ? (
         <StatePanel
           variant="empty"
           density="compact"
@@ -119,7 +119,7 @@ export function PortfolioPlanningPanel({
         />
       ) : null}
 
-      {data && !data.feature_disabled && data.ok ? (
+      {data && !readFeatureDisabled(data) && data.ok ? (
         <>
           <div className="le-form-row" style={{ flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
             <label>

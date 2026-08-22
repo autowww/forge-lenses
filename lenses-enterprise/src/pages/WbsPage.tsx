@@ -7,7 +7,6 @@ import { mergePlanningScopeIntoTo } from '../lib/planningClusterScope'
 import { resolveUxFailure, type UxResolvedFailure } from '../lib/uxPageState'
 import { useNavigationMode } from '../nav/useNavigationMode'
 import { getPlanningClusterPageIdentity } from '../nav/planningClusterPageIdentity'
-import { FULL_WORKSPACE_UI, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
 
 export function WbsPage() {
@@ -63,17 +62,8 @@ export function WbsPage() {
       <PlanningClusterLocalNav />
       <PlanningClusterPageHeader identity={pageIdentity}>
         <p className="forge-support">
-          Prefer this list for scoped work breakdown paths. For the full multi-pane experience, open the{' '}
-          <a href="/wbs" title={FULL_WORKSPACE_UI.navHint}>
-            {FULL_WORKSPACE_UI.pill} {STUDIO_VOCAB.workBreakdown.toLowerCase()}
-          </a>{' '}
-          in the workspace shell.
+          Scoped work breakdown paths from your workspace scan. Pick a row to open Plan with that WBS file.
         </p>
-        <TechnicalDetails summary="Technical — classic route">
-          <p className="forge-support" style={{ margin: 0 }}>
-            Same scan data is available at <code className="le-mono">/wbs</code> outside Studio navigation.
-          </p>
-        </TechnicalDetails>
       </PlanningClusterPageHeader>
 
       {loading ? (

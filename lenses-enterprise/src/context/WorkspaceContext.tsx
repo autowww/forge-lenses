@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -13,13 +14,15 @@ import { resolveUxFailure, workspaceInvalidEnvelopeUx } from '../lib/uxPageState
 type Ctx = {
   state: WorkspaceState | null
   loading: boolean
+  /** Background rescan while UI stays mounted */
+  softRefreshing: boolean
   /** Short headline when workspace bootstrap failed */
   error: string | null
   /** Plain-language detail shown under the headline (splash / fallbacks) */
   errorDescription: string | null
   /** Diagnostics for “Show technical details” */
   errorDetail: string | null
-  refresh: () => Promise<void>
+  refresh: (opts?: { soft?: boolean }) => Promise<void>
 }
 
 const WorkspaceContext = createContext<Ctx | null>(null)
@@ -27,12 +30,20 @@ const WorkspaceContext = createContext<Ctx | null>(null)
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WorkspaceState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [softRefreshing, setSoftRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [errorDescription, setErrorDescription] = useState<string | null>(null)
   const [errorDetail, setErrorDetail] = useState<string | null>(null)
+  const stateRef = useRef<WorkspaceState | null>(null)
+  stateRef.current = state
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
+  const refresh = useCallback(async (opts?: { soft?: boolean }) => {
+    const soft = Boolean(opts?.soft) && stateRef.current != null
+    if (soft) {
+      setSoftRefreshing(true)
+    } else {
+      setLoading(true)
+    }
     setError(null)
     setErrorDescription(null)
     setErrorDetail(null)
@@ -43,7 +54,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setError(inv.title)
         setErrorDescription(inv.description)
         setErrorDetail(inv.technical)
-        setState(null)
+        if (!soft) setState(null)
       } else {
         setState(s)
       }
@@ -52,9 +63,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setError(ux.title)
       setErrorDescription(ux.description)
       setErrorDetail(ux.technical)
-      setState(null)
+      if (!soft) setState(null)
     } finally {
       setLoading(false)
+      setSoftRefreshing(false)
     }
   }, [])
 
@@ -63,8 +75,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const value = useMemo(
-    () => ({ state, loading, error, errorDescription, errorDetail, refresh }),
-    [state, loading, error, errorDescription, errorDetail, refresh],
+    () => ({
+      state,
+      loading,
+      softRefreshing,
+      error,
+      errorDescription,
+      errorDetail,
+      refresh,
+    }),
+    [state, loading, softRefreshing, error, errorDescription, errorDetail, refresh],
   )
 
   return (

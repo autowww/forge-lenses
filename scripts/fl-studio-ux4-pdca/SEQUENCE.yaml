@@ -1,0 +1,25 @@
+# Forge Lenses Studio UX4 remediation — phase order
+
+phases:
+  V00:
+    title: PDCA scaffold and gate harness
+    depends_on: []
+  V01:
+    title: Nested roadmap iframe → React host
+    backlog: [FLS4-001]
+    depends_on: [V00]
+  V02:
+    title: Classic Sites browse + board embed retirement
+    backlog: [FLS4-002]
+    depends_on: [V01]
+  V03:
+    title: Index bundle split (<700 KB)
+    backlog: [FLS4-003]
+    depends_on: [V02]
+  V04:
+    title: Board redirect soak + handbook update
+    backlog: [FLS4-004]
+    depends_on: [V03]
+  V05:
+    title: Playwright crawl v5 + backlog v5 + closeout
+    depends_on: [V04]

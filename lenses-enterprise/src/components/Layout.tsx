@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { Splash } from './Splash'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState, lazy } from 'react'
 import { BreadcrumbBar } from './BreadcrumbBar'
 import { StudioHistoryControls } from './StudioHistoryControls'
 import { HeaderUtilities } from './HeaderUtilities'
@@ -13,12 +13,18 @@ import { StudioRouteListener } from './StudioRouteListener'
 import { TraceabilityDrawerProvider } from '../context/TraceabilityDrawerContext'
 import { TraceabilityDrawer } from './traceability/TraceabilityDrawer'
 import { useMainContentInert } from '../context/MainContentInertContext'
-import { LensesCopilotRail } from './LensesCopilotRail'
 import { StudioThreadAnchorProvider } from '../context/StudioThreadAnchorContext'
 import { hrefToStudioRouterTo } from '../util/studioSameOriginLink'
 import { useNavigationMode } from '../nav/useNavigationMode'
 import { getStudioDocumentTitle } from '../nav/studioRouteRegistry'
 import { STUDIO_EXPORT_ROOT_ID } from '../lib/studioPageExport'
+import { virtualCameraElectronMode } from '../lib/studioElectronMode'
+import { VirtualCameraSplash } from './VirtualCameraSplash'
+import { WindowChrome } from './WindowChrome'
+
+const LensesCopilotRail = lazy(() =>
+  import('./LensesCopilotRail').then((m) => ({ default: m.LensesCopilotRail })),
+)
 
 function StudioDocumentTitle() {
   const { pathname, search } = useLocation()
@@ -31,17 +37,28 @@ function StudioDocumentTitle() {
 
 export function Layout() {
   const navigate = useNavigate()
-  const { loading, error, errorDescription, errorDetail, refresh } = useWorkspace()
+  const location = useLocation()
+  const { loading, error, errorDescription, errorDetail, refresh, state } = useWorkspace()
   const [step, setStep] = useState<
     'init' | 'connect' | 'scan' | 'receive' | 'parse'
   >('init')
   const [showSplash, setShowSplash] = useState(true)
   const [electronShell, setElectronShell] = useState(false)
+  const [minimalStudio, setMinimalStudio] = useState(false)
   const { mainContentInert } = useMainContentInert()
 
   useEffect(() => {
     setElectronShell(typeof window !== 'undefined' && !!window.lensesElectron)
+    setMinimalStudio(virtualCameraElectronMode())
   }, [])
+
+  useEffect(() => {
+    if (!minimalStudio) return
+    const path = location.pathname.replace(/\/+$/, '') || '/'
+    if (path === '/' || path === '/overview' || path === '/overview/charts') {
+      navigate('/labs/virtual-camera', { replace: true })
+    }
+  }, [minimalStudio, location.pathname, navigate])
 
   /** Preview iframes (/docs, /local-site, Classic browse) delegate same-origin nav here. */
   useEffect(() => {
@@ -64,6 +81,17 @@ export function Layout() {
         const site = sp.get('site')
         if (site) {
           navigate(`/websites/browse/${encodeURIComponent(site)}${hash}`)
+          return
+        }
+      }
+
+      if (path.startsWith('/view/local-site/')) {
+        const tail = path.slice('/view/local-site/'.length)
+        const parts = tail.replace(/^\/+/, '').split('/').filter(Boolean)
+        const site = parts[0]
+        if (site) {
+          const rest = parts.slice(1).join('/')
+          navigate(`/websites/browse/${encodeURIComponent(site)}${rest ? `/${rest}` : ''}${hash}`)
           return
         }
       }
@@ -103,17 +131,18 @@ export function Layout() {
   const splashCycleStartRef = useRef(Date.now())
 
   useEffect(() => {
-    if (loading) {
+    if (loading && state == null && !minimalStudio) {
       setShowSplash(true)
       splashCycleStartRef.current = Date.now()
     }
-  }, [loading])
+  }, [loading, state, minimalStudio])
 
   useEffect(() => {
     if (!loading && !error) {
       setStep('parse')
       const elapsed = Date.now() - splashCycleStartRef.current
-      const remaining = Math.max(0, 2000 - elapsed)
+      const minVisible = minimalStudio ? 0 : 2000
+      const remaining = Math.max(0, minVisible - elapsed)
       const t = window.setTimeout(() => setShowSplash(false), remaining)
       return () => window.clearTimeout(t)
     }
@@ -134,23 +163,27 @@ export function Layout() {
 
   return (
     <div
-      className={`le-root${!showSplash && !error ? ' le-ready' : ''}${electronShell ? ' le-root--electron' : ''}`}
+      className={`le-root${!showSplash && !error ? ' le-ready' : ''}${electronShell ? ' le-root--electron' : ''}${minimalStudio ? ' le-root--minimal-studio' : ''}`}
     >
-      <Splash
-        step={step}
-        error={error}
-        errorDescription={errorDescription}
-        errorDetail={errorDetail}
-        onRetry={() => void refresh()}
-        hidden={!showSplash && !error}
-      />
+      {minimalStudio && !error ? (
+        <VirtualCameraSplash hidden={!showSplash} />
+      ) : (
+        <Splash
+          step={step}
+          error={error}
+          errorDescription={errorDescription}
+          errorDetail={errorDetail}
+          onRetry={() => void refresh()}
+          hidden={!showSplash && !error}
+        />
+      )}
       {!showSplash && !error && (
         <ReleaseNotesProvider>
           <TraceabilityDrawerProvider>
           <StudioThreadAnchorProvider>
           <div className="le-studio-chrome" inert={mainContentInert || undefined}>
             <StudioDocumentTitle />
-            <header className={`le-header${electronShell ? ' le-header--electron' : ''}`}>
+            <header className={`le-header${electronShell ? ' le-header--electron' : ''}${minimalStudio ? ' le-header--minimal-studio' : ''}`}>
               <div
                 className={`le-header__row le-header__row--brand${electronShell ? ' le-header__row--brand--electron' : ''}`}
               >
@@ -158,15 +191,17 @@ export function Layout() {
                   className={({ isActive }) =>
                     `le-nav__brand le-nav__brand--lockup${isActive ? ' le-nav__brand--home' : ''}`
                   }
-                  to="/"
-                  end
-                  title="Home"
-                  aria-label="Home"
+                  to={minimalStudio ? '/labs/virtual-camera' : '/'}
+                  end={!minimalStudio}
+                  title={minimalStudio ? 'Virtual Camera Studio' : 'Home'}
+                  aria-label={minimalStudio ? 'Virtual Camera Studio' : 'Home'}
                 >
                   <span className="le-brand-icon" aria-hidden="true">
-                    F
+                    {minimalStudio ? 'VC' : 'F'}
                   </span>
-                  <span className="le-brand-text">Forge Studio</span>
+                  <span className="le-brand-text">
+                    {minimalStudio ? 'Virtual Camera Studio' : 'Forge Studio'}
+                  </span>
                 </NavLink>
                 {electronShell ? (
                   <div
@@ -175,8 +210,15 @@ export function Layout() {
                     title="Drag to move window"
                   />
                 ) : null}
-                <HeaderUtilities />
+                {minimalStudio ? (
+                  <div className="le-header-chrome-panel le-header-chrome-panel--minimal">
+                    <WindowChrome />
+                  </div>
+                ) : (
+                  <HeaderUtilities />
+                )}
               </div>
+              {minimalStudio ? null : (
               <nav className="le-nav" aria-label="Studio chrome">
                 <div className="le-nav__bar">
                   <TopNavigation />
@@ -186,9 +228,10 @@ export function Layout() {
                   </div>
                 </div>
               </nav>
+              )}
             </header>
             <div className="le-shell">
-              <SectionSidebar />
+              {minimalStudio ? null : <SectionSidebar />}
               <div className="le-shell__workspace">
                 <div className="le-shell__main-column" id={STUDIO_EXPORT_ROOT_ID}>
                   <StudioShellChrome>
@@ -196,10 +239,14 @@ export function Layout() {
                     <Outlet />
                   </StudioShellChrome>
                 </div>
-                <LensesCopilotRail />
+                {minimalStudio ? null : (
+                <Suspense fallback={null}>
+                  <LensesCopilotRail />
+                </Suspense>
+                )}
               </div>
             </div>
-            <TraceabilityDrawer />
+            {minimalStudio ? null : <TraceabilityDrawer />}
           </div>
           </StudioThreadAnchorProvider>
           </TraceabilityDrawerProvider>

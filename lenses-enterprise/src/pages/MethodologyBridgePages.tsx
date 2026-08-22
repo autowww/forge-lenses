@@ -6,7 +6,11 @@ import { PageHeader, StatePanel, TechnicalDetails } from '../components/page'
 import { StatePanelAssistShortcuts } from '../components/page/StatePanelAssistShortcuts'
 import { mergePlanningScopeIntoTo } from '../lib/planningClusterScope'
 import { assistShortcutsForContext, resolveUxFailure, type UxResolvedFailure } from '../lib/uxPageState'
+import { fetchDiscoveredReleases, type DiscoveredRelease } from '../lib/discoveredReleases'
 import { KNOWLEDGE_PUBLISH_COPILOT, METHODOLOGY_UX, METHODOLOGY_UX_RECORD } from '../nav/studioVisibleCopy'
+import { KnowledgeEmptyGuidance } from '../components/knowledge/KnowledgeEmptyGuidance'
+import { KnowledgeSectionChrome } from '../components/knowledge/KnowledgeSectionChrome'
+import { readFeatureDisabled } from '../lib/apiInternalFields'
 
 function OutcomeLearningHint() {
   const [on, setOn] = useState<boolean | null>(null)
@@ -74,12 +78,12 @@ export function MethodologyEvidenceRegistryPage() {
       setFetchFailure(null)
       try {
         const [ev, art, rp, ap] = await Promise.all([
-          apiGetJson<{ ok?: boolean; hits?: IdRow[]; feature_disabled?: boolean }>('/api/evidence/search?q=&limit=80'),
-          apiGetJson<{ ok?: boolean; artifacts?: IdRow[]; feature_disabled?: boolean }>('/api/artifacts?limit=100'),
-          apiGetJson<{ ok?: boolean; packs?: IdRow[]; feature_disabled?: boolean }>('/api/review-packs'),
-          apiGetJson<{ ok?: boolean; packets?: IdRow[]; feature_disabled?: boolean }>('/api/assay-packets'),
+          apiGetJson<Record<string, unknown>>('/api/evidence/search?q=&limit=80'),
+          apiGetJson<Record<string, unknown>>('/api/artifacts?limit=100'),
+          apiGetJson<Record<string, unknown>>('/api/review-packs'),
+          apiGetJson<Record<string, unknown>>('/api/assay-packets'),
         ])
-        if (ev.feature_disabled || art.feature_disabled) {
+        if (readFeatureDisabled(ev) || readFeatureDisabled(art)) {
           setFeatureErr('Methodology and evidence views are turned off for this workspace (or the orchestration graph is disabled).')
           setHits([])
           setArtifacts([])
@@ -87,10 +91,10 @@ export function MethodologyEvidenceRegistryPage() {
           setPackets([])
           return
         }
-        setHits(ev.hits ?? [])
-        setArtifacts(art.artifacts ?? [])
-        setPacks(rp.packs ?? [])
-        setPackets(ap.packets ?? [])
+        setHits((ev.hits as IdRow[] | undefined) ?? [])
+        setArtifacts((art.artifacts as IdRow[] | undefined) ?? [])
+        setPacks((rp.packs as IdRow[] | undefined) ?? [])
+        setPackets((ap.packets as IdRow[] | undefined) ?? [])
       } catch (e: unknown) {
         setFetchFailure(resolveUxFailure(e))
       } finally {
@@ -113,6 +117,7 @@ export function MethodologyEvidenceRegistryPage() {
           { key: 'decisions', label: 'Decision registry', to: '/knowledge/methodology/decisions' },
         ]}
       />
+      <KnowledgeSectionChrome />
       <p className="forge-support">{METHODOLOGY_UX.evidenceLead}</p>
       <TechnicalDetails summary="Technical — how this page loads">
         <p className="forge-support" style={{ margin: 0 }}>
@@ -169,7 +174,9 @@ export function MethodologyEvidenceRegistryPage() {
       ) : null}
 
       {!loading && !blocked && totalRows === 0 ? (
-        <StatePanel
+        <>
+          <KnowledgeEmptyGuidance variant="evidence" />
+          <StatePanel
           variant="empty"
           title="No methodology evidence yet"
           description={METHODOLOGY_UX.evidenceEmpty}
@@ -194,6 +201,7 @@ export function MethodologyEvidenceRegistryPage() {
           }
           telemetryTag="methodology_evidence_empty"
         />
+        </>
       ) : null}
 
       {!loading && !blocked ? <OutcomeLearningHint /> : null}
@@ -283,13 +291,11 @@ export function MethodologyDecisionsRegistryPage() {
       setFeatureErr(null)
       setFetchFailure(null)
       try {
-        const r = await apiGetJson<{ ok?: boolean; decisions?: typeof rows; feature_disabled?: boolean }>(
-          '/api/decisions?limit=200',
-        )
-        if (r.feature_disabled) {
+        const r = await apiGetJson<Record<string, unknown>>('/api/decisions?limit=200')
+        if (readFeatureDisabled(r)) {
           setFeatureErr('Decision registry is turned off for this workspace (or the orchestration graph is disabled).')
           setRows([])
-        } else setRows(r.decisions ?? [])
+        } else setRows((r.decisions as typeof rows | undefined) ?? [])
       } catch (e: unknown) {
         setFetchFailure(resolveUxFailure(e))
       } finally {
@@ -360,7 +366,9 @@ export function MethodologyDecisionsRegistryPage() {
       ) : null}
 
       {!loading && !blocked && rows.length === 0 ? (
-        <StatePanel
+        <>
+          <KnowledgeEmptyGuidance variant="decisions" />
+          <StatePanel
           variant="empty"
           title="No decisions in the graph yet"
           description={METHODOLOGY_UX.decisionsEmpty}
@@ -377,6 +385,7 @@ export function MethodologyDecisionsRegistryPage() {
           }
           telemetryTag="methodology_decisions_empty"
         />
+        </>
       ) : null}
 
       {!loading && !blocked && rows.length > 0 ? (
@@ -521,6 +530,74 @@ export function MethodologyGraphRecordPage() {
 
 const READINESS_EXAMPLE_IDS = ['ogs:demo:release:v1.4.0', 'ogs:demo:release:v1.5.0']
 
+function ReleaseChecklistPicker({
+  releaseId,
+  onReleaseIdChange,
+  onCheck,
+}: {
+  releaseId: string
+  onReleaseIdChange: (id: string) => void
+  onCheck: () => void
+}) {
+  const [discoveredReleases, setDiscoveredReleases] = useState<DiscoveredRelease[]>([])
+  const [loadingReleases, setLoadingReleases] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    void fetchDiscoveredReleases()
+      .then((rows) => {
+        if (!cancelled) setDiscoveredReleases(rows)
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingReleases(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const options =
+    discoveredReleases.length > 0
+      ? discoveredReleases
+      : READINESS_EXAMPLE_IDS.map((id) => ({ id, display_name: id.replace(/^ogs:demo:release:/, 'Release ') }))
+
+  return (
+    <div className="readinessPicker le-card" style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem' }}>
+      <h2 style={{ fontSize: '0.95rem', margin: '0 0 0.35rem' }}>Release checklist</h2>
+      <p className="forge-support" style={{ marginTop: 0 }}>
+        Pick a release discovered from your orchestration graph — not a free-text graph id.
+      </p>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <label>
+          Release
+          <select
+            className="le-select releasePicker"
+            style={{ display: 'block', marginTop: '0.25rem', minWidth: '16rem' }}
+            value={releaseId}
+            disabled={loadingReleases}
+            onChange={(e) => onReleaseIdChange(e.target.value)}
+            aria-describedby="readiness-release-hint"
+          >
+            {options.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.display_name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className="le-btn le-btn--primary" onClick={onCheck}>
+          Check readiness
+        </button>
+      </div>
+      {discoveredReleases.length > 0 ? (
+        <p className="forge-support" style={{ fontSize: '0.82rem', marginBottom: 0 }}>
+          {discoveredReleases.length} release(s) discoveredRelease from graph-linked assay packets and trace.
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
 export function MethodologyReadinessPage() {
   useLensesCopilotPage({ route: 'knowledge', defaultQuery: KNOWLEDGE_PUBLISH_COPILOT.releaseReadiness })
   const location = useLocation()
@@ -543,7 +620,7 @@ export function MethodologyReadinessPage() {
         const p = await apiGetJson<Record<string, unknown>>(
           `/api/methodology/readiness?release_id=${encodeURIComponent(rid)}`,
         )
-        if ((p as { feature_disabled?: boolean }).feature_disabled) {
+        if (readFeatureDisabled(p)) {
           setFeatureErr('Release readiness checks are turned off for this workspace (or the orchestration graph is disabled).')
           setPayload(null)
           return
@@ -588,31 +665,13 @@ export function MethodologyReadinessPage() {
         <StatePanelAssistShortcuts actions={assistShortcutsForContext({ context: 'Release readiness' })} />
       </section>
 
-      <div className="le-card" style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <label>
-          Release identifier
-          <input
-            className="le-input"
-            style={{ display: 'block', marginTop: '0.25rem' }}
-            value={releaseId}
-            onChange={(e) => setReleaseId(e.target.value)}
-            size={42}
-            aria-describedby="readiness-release-hint"
-          />
-        </label>
-        <button
-          type="button"
-          className="le-btn le-btn--primary"
-          onClick={() => {
-            setSearchParams({ release_id: releaseId })
-          }}
-        >
-          Check readiness
-        </button>
-      </div>
+      <ReleaseChecklistPicker
+        releaseId={releaseId}
+        onReleaseIdChange={setReleaseId}
+        onCheck={() => setSearchParams({ release_id: releaseId })}
+      />
       <p id="readiness-release-hint" className="forge-support" style={{ fontSize: '0.82rem' }}>
-        Examples: {READINESS_EXAMPLE_IDS.join(', ')} — replace with a release id from your orchestration graph when
-        available.
+        Advanced: record id is stored in the URL as <code className="le-mono">release_id</code> when you run a check.
       </p>
 
       <TechnicalDetails summary="Technical — readiness API">

@@ -1,4 +1,4 @@
-import { apiGetJson } from './http'
+import { apiGetJson, apiPostJson, ApiError } from './http'
 import type { TimeHorizonId } from '../context/ShellChromeContext'
 
 /** Per-repo lines trend (seven period totals, same order as workspace `period_totals`). */
@@ -194,12 +194,205 @@ export function sparklinePeriodHint(timeHorizon: TimeHorizonId, values: number[]
   return `${bucket} Last ${n} periods · 1 ${unit} each · ${right}`
 }
 
+export type OverviewJobProgress = {
+  done?: number
+  total?: number
+  phase?: string
+  detail?: string
+}
+
+export type OverviewJobSnapshot = {
+  job_id?: string
+  status?: string
+  horizon?: string
+  cache_hit?: boolean
+  progress?: OverviewJobProgress
+  elapsed_sec?: number | null
+  result?: OverviewChartPayload
+  error?: string
+}
+
+export type OverviewJobHint = {
+  jobId: string | null
+  status: string
+  phase: string
+  detail: string
+  elapsedSec: number | null
+  repoDone: number
+  repoTotal: number
+}
+
+const OVERVIEW_POLL_MS = 450
+
+function overviewQuery(horizon: TimeHorizonId, force?: boolean): string {
+  const params = new URLSearchParams()
+  if (horizon !== 'week') params.set('horizon', horizon)
+  if (force) params.set('force', '1')
+  const q = params.toString()
+  return q ? `?${q}` : ''
+}
+
+function jobHintFromSnapshot(snap: OverviewJobSnapshot): OverviewJobHint {
+  const prog = snap.progress ?? {}
+  return {
+    jobId: snap.job_id ?? null,
+    status: String(snap.status ?? ''),
+    phase: String(prog.phase ?? ''),
+    detail: String(prog.detail ?? ''),
+    elapsedSec: typeof snap.elapsed_sec === 'number' ? snap.elapsed_sec : null,
+    repoDone: Number(prog.done ?? 0),
+    repoTotal: Number(prog.total ?? 0),
+  }
+}
+
+export async function pollOverviewJob(
+  jobId: string,
+  onProgress?: (hint: OverviewJobHint) => void,
+): Promise<OverviewChartPayload> {
+  for (;;) {
+    const snap = await apiGetJson<OverviewJobSnapshot>(
+      `/api/jobs/overview/${encodeURIComponent(jobId)}`,
+    )
+    const hint = jobHintFromSnapshot(snap)
+    onProgress?.(hint)
+    if (snap.status === 'done' && snap.result) return snap.result
+    if (snap.status === 'error') {
+      throw new ApiError(
+        snap.error ?? 'Overview telemetry job failed.',
+        500,
+        snap.error ?? null,
+      )
+    }
+    await new Promise((r) => window.setTimeout(r, OVERVIEW_POLL_MS))
+  }
+}
+
+/** Fetch overview payload; polls async job when server returns 202 pending. */
+export async function fetchOverviewChartPayload(
+  horizon: TimeHorizonId = 'week',
+  opts?: {
+    force?: boolean
+    onProgress?: (hint: OverviewJobHint) => void
+  },
+): Promise<OverviewChartPayload> {
+  const path = `/api/chart-data/overview${overviewQuery(horizon, opts?.force)}`
+  const url =
+    (import.meta.env.VITE_LENSES_API_BASE as string | undefined)?.trim().replace(/\/$/, '') ??
+    ''
+  const fetchUrl = url ? `${url}${path}` : path
+  const res = await fetch(fetchUrl, {
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  })
+  const text = await res.text()
+  let parsed: Record<string, unknown> = {}
+  try {
+    parsed = text ? (JSON.parse(text) as Record<string, unknown>) : {}
+  } catch {
+    parsed = { raw: text }
+  }
+  if (res.status === 202) {
+    const jobId = String(parsed.job_id ?? '')
+    const stale =
+      parsed.stale_snapshot && typeof parsed.stale_snapshot === 'object' && !Array.isArray(parsed.stale_snapshot)
+        ? (parsed.stale_snapshot as OverviewChartPayload)
+        : null
+    const hint: OverviewJobHint = {
+      jobId: jobId || null,
+      status: 'pending',
+      phase: String((parsed.progress as OverviewJobProgress | undefined)?.phase ?? 'queued'),
+      detail: String((parsed.progress as OverviewJobProgress | undefined)?.detail ?? ''),
+      elapsedSec: null,
+      repoDone: Number((parsed.progress as OverviewJobProgress | undefined)?.done ?? 0),
+      repoTotal: Number((parsed.progress as OverviewJobProgress | undefined)?.total ?? 0),
+    }
+    opts?.onProgress?.(hint)
+    if (!jobId) {
+      if (stale) return stale
+      throw new ApiError('Overview job missing job_id.', 202, text)
+    }
+    const fresh = await pollOverviewJob(jobId, opts?.onProgress)
+    return fresh
+  }
+  if (!res.ok) {
+    throw new ApiError('Overview chart request failed.', res.status, text)
+  }
+  const { _meta: _ignored, status: _st, stale_snapshot: _ss, ...payload } = parsed
+  return payload as OverviewChartPayload
+}
+
+export async function startOverviewJob(
+  horizon: TimeHorizonId,
+  force = false,
+): Promise<OverviewJobSnapshot> {
+  return apiPostJson<OverviewJobSnapshot>('/api/jobs/overview', {
+    horizon,
+    force,
+  })
+}
+
+export type OverviewRequestOutcome =
+  | { kind: 'ready'; payload: OverviewChartPayload }
+  | {
+      kind: 'pending'
+      payload: OverviewChartPayload | null
+      jobId: string
+      hint: OverviewJobHint
+    }
+
+/** Low-level overview request — may return stale snapshot + job id for polling. */
+export async function requestOverviewChart(
+  horizon: TimeHorizonId = 'week',
+  opts?: { force?: boolean },
+): Promise<OverviewRequestOutcome> {
+  const path = `/api/chart-data/overview${overviewQuery(horizon, opts?.force)}`
+  const url =
+    (import.meta.env.VITE_LENSES_API_BASE as string | undefined)?.trim().replace(/\/$/, '') ??
+    ''
+  const fetchUrl = url ? `${url}${path}` : path
+  const res = await fetch(fetchUrl, {
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  })
+  const text = await res.text()
+  let parsed: Record<string, unknown> = {}
+  try {
+    parsed = text ? (JSON.parse(text) as Record<string, unknown>) : {}
+  } catch {
+    parsed = { raw: text }
+  }
+  if (res.status === 202) {
+    const jobId = String(parsed.job_id ?? '')
+    const stale =
+      parsed.stale_snapshot && typeof parsed.stale_snapshot === 'object' && !Array.isArray(parsed.stale_snapshot)
+        ? (parsed.stale_snapshot as OverviewChartPayload)
+        : null
+    const hint: OverviewJobHint = {
+      jobId: jobId || null,
+      status: 'pending',
+      phase: String((parsed.progress as OverviewJobProgress | undefined)?.phase ?? 'queued'),
+      detail: String((parsed.progress as OverviewJobProgress | undefined)?.detail ?? ''),
+      elapsedSec: null,
+      repoDone: Number((parsed.progress as OverviewJobProgress | undefined)?.done ?? 0),
+      repoTotal: Number((parsed.progress as OverviewJobProgress | undefined)?.total ?? 0),
+    }
+    if (!jobId) {
+      if (stale) return { kind: 'ready', payload: stale }
+      throw new ApiError('Overview job missing job_id.', 202, text)
+    }
+    return { kind: 'pending', payload: stale, jobId, hint }
+  }
+  if (!res.ok) {
+    throw new ApiError('Overview chart request failed.', res.status, text)
+  }
+  const { _meta: _ignored, status: _st, stale_snapshot: _ss, ...payload } = parsed
+  return { kind: 'ready', payload: payload as OverviewChartPayload }
+}
+
 export function getOverviewChartPayload(
   horizon: TimeHorizonId = 'week',
 ): Promise<OverviewChartPayload> {
-  const q =
-    horizon === 'week' ? '' : `?horizon=${encodeURIComponent(horizon)}`
-  return apiGetJson<OverviewChartPayload>(`/api/chart-data/overview${q}`)
+  return fetchOverviewChartPayload(horizon)
 }
 
 /** Cumulative commit counts within the current window (not used for KPI period sparklines). */

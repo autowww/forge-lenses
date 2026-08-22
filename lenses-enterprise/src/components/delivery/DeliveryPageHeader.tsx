@@ -2,14 +2,10 @@ import { useLocation } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
 import { useNavigationMode } from '../../nav/useNavigationMode'
 import { getPlanningClusterPageIdentity } from '../../nav/planningClusterPageIdentity'
-import { DELIVERY_LENS, FULL_WORKSPACE_UI, STUDIO_GLOSSARY } from '../../nav/studioVisibleCopy'
+import { DELIVERY_LENS } from '../../nav/studioVisibleCopy'
 import { TechnicalDetails } from '../page/TechnicalDetails'
 
-type Props = {
-  classicPlanHref: string
-}
-
-export function DeliveryPageHeader({ classicPlanHref }: Props) {
+export function DeliveryPageHeader() {
   const { pathname, search } = useLocation()
   const { mode } = useNavigationMode()
   const identity = getPlanningClusterPageIdentity(pathname, search, mode)
@@ -25,14 +21,8 @@ export function DeliveryPageHeader({ classicPlanHref }: Props) {
       <p className="le-delivery-header__purpose">
         Execution view for the selected scope—blockers, gates, and delivery signals first.
       </p>
-      <TechnicalDetails summary="About Today vs plan & classic workspace">
+      <TechnicalDetails summary="About Today vs plan">
         <p className="le-delivery-header__lens forge-support">{DELIVERY_LENS.todayVersusPlanning}</p>
-        <p className="forge-support">
-          <a href={classicPlanHref}>{FULL_WORKSPACE_UI.openPlanSameScope}</a>{' '}
-          <span className="le-shortcut-pill">Full workspace</span>
-          {' — '}
-          <span title={STUDIO_GLOSSARY.fullWorkspaceUi.long}>{STUDIO_GLOSSARY.fullWorkspaceUi.short}</span>
-        </p>
       </TechnicalDetails>
     </header>
   )

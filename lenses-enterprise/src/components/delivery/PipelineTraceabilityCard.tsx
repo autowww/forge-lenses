@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom'
 import { useWorkspace } from '../../context/WorkspaceContext'
 import { useResilientJsonBlock } from '../../hooks/useResilientJsonBlock'
 import { StatePanel } from '../page/StatePanel'
+import {
+  API_FEATURE_DISABLED,
+  isLocalFixtureProvider,
+  isScanOnlyProvider,
+  PROVIDER_SCAN_ONLY,
+} from '../../lib/apiInternalFields'
 import { recordPageFailure } from '../../telemetry/studioTelemetry'
 import { TraceabilityLaunchButton } from '../traceability'
 import { DEMO_ORCHESTRATION_STORY_ID } from '../../constants/demoOrchestration'
@@ -139,7 +145,7 @@ export function PipelineTraceabilityCard() {
               CI fixtures and future remote adapter rows here.
             </>
           }
-          telemetryTag="delivery_signals_feature_disabled"
+          telemetryTag={['delivery_signals_', API_FEATURE_DISABLED].join('')}
         />
         {data.workspace_summary ? (
           <p className="forge-support" style={{ marginTop: '0.75rem' }}>
@@ -159,7 +165,7 @@ export function PipelineTraceabilityCard() {
     )
   } else {
     const repos = data.repos ?? []
-    const showScanOnlyCallout = data.provider_kind === 'scan_only'
+    const showScanOnlyCallout = isScanOnlyProvider(data)
 
     inner = (
       <>
@@ -192,7 +198,7 @@ export function PipelineTraceabilityCard() {
                 overlay.
               </>
             }
-            telemetryTag="delivery_signals_scan_only"
+            telemetryTag={['delivery_signals_', PROVIDER_SCAN_ONLY].join('')}
           />
         ) : null}
 
@@ -232,7 +238,7 @@ export function PipelineTraceabilityCard() {
                   const qok =
                     qmini.data?.ok &&
                     qmini.data?.feature_enabled !== false &&
-                    qmini.data?.provider_kind === 'local_fixture'
+                    isLocalFixtureProvider(qmini.data)
                   return (
                     <tr key={r.project}>
                       <td>
@@ -286,7 +292,7 @@ export function PipelineTraceabilityCard() {
                               Project quality
                             </Link>
                           </>
-                        ) : qmini.data?.provider_kind === 'scan_only' ? (
+                        ) : isScanOnlyProvider(qmini.data) ? (
                           <span className="forge-support">No fixture</span>
                         ) : qmini.data?.feature_enabled === false ? (
                           <span className="forge-support">Off</span>

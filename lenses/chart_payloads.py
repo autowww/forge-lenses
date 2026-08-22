@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+
+ProgressCallback = Callable[[dict[str, Any]], None]
 
 from lenses.kpi_history import load_kpi_snapshots, median_from_prior_six, snapshot_period_totals
 from lenses.kpi_trends import (
@@ -118,11 +120,25 @@ def _avg_compliance(sorted_children: list[dict[str, Any]]) -> int | None:
     return int(round(sum(scores) / len(scores)))
 
 
+def _emit_progress(
+    cb: ProgressCallback | None,
+    *,
+    done: int,
+    total: int,
+    phase: str,
+    detail: str = "",
+) -> None:
+    if cb is None:
+        return
+    cb({"done": done, "total": total, "phase": phase, "detail": detail})
+
+
 def build_overview_chart_payload(
     state: dict[str, Any],
     *,
     days: int = 7,
     horizon_id: str = "week",
+    on_progress: ProgressCallback | None = None,
 ) -> dict[str, Any]:
     """Workspace-level chart bundle for `GET /api/chart-data/overview`."""
     days = max(1, min(int(days), 366))
@@ -136,14 +152,34 @@ def build_overview_chart_payload(
     ]
     sorted_children = sorted(children, key=lambda ch: str(ch.get("name", "")).lower())
     max_workers = min(12, max(1, len(sorted_children)))
+    repo_total = max(1, len(sorted_children))
+
+    _emit_progress(on_progress, done=0, total=repo_total, phase="commits", detail="commit history")
 
     range_maps: dict[str, dict[str, int]] = {}
+    done_commits = 0
     for c in sorted_children:
         if not c.get("is_git"):
+            done_commits += 1
+            _emit_progress(
+                on_progress,
+                done=done_commits,
+                total=repo_total,
+                phase="commits",
+                detail=str(c.get("name", "")),
+            )
             continue
         name = str(c.get("name", ""))
         path = Path(str(c.get("path", "")))
         range_maps[name] = commits_by_day_dict_range(path, oldest, today)
+        done_commits += 1
+        _emit_progress(
+            on_progress,
+            done=done_commits,
+            total=repo_total,
+            phase="commits",
+            detail=name,
+        )
 
     rows_data: list[Any] = []
     if sorted_children:
@@ -153,8 +189,22 @@ def build_overview_chart_payload(
             dm = range_maps.get(nm)
             return overview_repo_row_metrics(ch, days=days, day_dict=dm)
 
+        row_by_name: dict[str, Any] = {}
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            rows_data = list(pool.map(row_for_child, sorted_children))
+            futures = {pool.submit(row_for_child, ch): ch for ch in sorted_children}
+            done_loc = 0
+            for fut in as_completed(futures):
+                ch = futures[fut]
+                row_by_name[str(ch.get("name", ""))] = fut.result()
+                done_loc += 1
+                _emit_progress(
+                    on_progress,
+                    done=done_loc,
+                    total=repo_total,
+                    phase="loc",
+                    detail=str(ch.get("name", "")),
+                )
+        rows_data = [row_by_name[str(ch.get("name", ""))] for ch in sorted_children]
 
     loc_chart_rows: list[tuple[str, int]] = []
     loc_total_rows: list[tuple[str, int]] = []
@@ -191,6 +241,7 @@ def build_overview_chart_payload(
     git_children = [c for c in sorted_children if c.get("is_git")]
     per_repo_periods: dict[str, list[int]] = defaultdict(list)
     lines_period_totals: list[int] = []
+    _emit_progress(on_progress, done=0, total=repo_total, phase="numstat", detail="lines by period")
     for k in range(6, -1, -1):
         sk, ek = period_start_end(today, days, k)
 
@@ -201,10 +252,26 @@ def build_overview_chart_payload(
             return nm, int(a)
 
         if git_children:
+            pairs_by_name: dict[str, tuple[str, int]] = {}
             with ThreadPoolExecutor(max_workers=max_workers) as pool:
-                pairs = list(pool.map(lines_pair, git_children))
+                futures = {pool.submit(lines_pair, ch): ch for ch in git_children}
+                done_ns = 0
+                for fut in as_completed(futures):
+                    ch = futures[fut]
+                    nm, add = fut.result()
+                    pairs_by_name[nm] = (nm, add)
+                    done_ns += 1
+                    _emit_progress(
+                        on_progress,
+                        done=done_ns,
+                        total=len(git_children),
+                        phase="numstat",
+                        detail=f"period {7 - k}: {nm}",
+                    )
             period_sum = 0
-            for nm, add in pairs:
+            for ch in git_children:
+                nm = str(ch.get("name", "")).strip()
+                _nm, add = pairs_by_name.get(nm, (nm, 0))
                 per_repo_periods[nm].append(add)
                 period_sum += add
             lines_period_totals.append(period_sum)
@@ -350,6 +417,8 @@ def build_overview_chart_payload(
         if isinstance(sc, dict) and "score" in sc:
             score_rows.append([str(c.get("name", "")), int(sc.get("score") or 0)])
     score_rows.sort(key=lambda x: -x[1])
+
+    _emit_progress(on_progress, done=repo_total, total=repo_total, phase="finalize", detail="complete")
 
     return {
         "version": 2,

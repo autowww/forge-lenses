@@ -1,6 +1,29 @@
 import { Link } from 'react-router-dom'
 import { EVIDENCE_IA, PROJECT_OBJECT_HOME, STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
 
+/** concreteNext — map a risk line to the best Studio destination. */
+function riskDestination(risk: string): string {
+  const lower = risk.toLowerCase()
+  if (lower.includes('evidence') || lower.includes('charge')) {
+    return '/knowledge/methodology/evidence'
+  }
+  if (lower.includes('decision') || lower.includes('adr')) {
+    return '/knowledge/methodology/decisions'
+  }
+  if (lower.includes('release') || lower.includes('readiness')) {
+    return '/knowledge/methodology/readiness'
+  }
+  return '/plan?tab=today'
+}
+
+function resolveRiskLabel(risk: string): string {
+  const dest = riskDestination(risk)
+  if (dest.includes('evidence')) return 'Review evidence'
+  if (dest.includes('decisions')) return 'Open decisions'
+  if (dest.includes('readiness')) return 'Check readiness'
+  return 'Open Today'
+}
+
 export type WorkItemLinkRow = {
   story_id?: string
   pr_url?: string
@@ -18,6 +41,7 @@ type Props = {
   metricFiles: string | number
   metricOpenPrs: string | number
   workItemLinks: WorkItemLinkRow[]
+  thisWeekNarrative?: string
 }
 
 /**
@@ -33,6 +57,7 @@ export function ProjectAtAGlance({
   metricFiles,
   metricOpenPrs,
   workItemLinks,
+  thisWeekNarrative,
 }: Props) {
   const base = `/projects/${encodedProject}`
   const planHref = `/plan?repo=${encodeURIComponent(projectName)}`
@@ -66,7 +91,12 @@ export function ProjectAtAGlance({
           {riskLines.length > 0 ? (
             <ul className="le-project-at-a-glance__list">
               {riskLines.map((t) => (
-                <li key={t}>{t}</li>
+                <li key={t}>
+                  {t}{' '}
+                  <Link className="le-project-at-a-glance__concreteNext" to={riskDestination(t)}>
+                    {resolveRiskLabel(t)} →
+                  </Link>
+                </li>
               ))}
             </ul>
           ) : (
@@ -74,6 +104,16 @@ export function ProjectAtAGlance({
               {PROJECT_OBJECT_HOME.atAGlanceRisksEmpty}
             </p>
           )}
+        </div>
+
+        <div className="le-project-at-a-glance__card le-project-at-a-glance__card--wide">
+          <h3 className="le-project-at-a-glance__card-title">This week</h3>
+          <p className="forge-support" style={{ margin: 0 }}>
+            {thisWeekNarrative ??
+              (riskLines.length > 0
+                ? `Focus on ${riskLines[0]?.toLowerCase() ?? 'open risks'} before expanding scope — charts and strategy stay one click away when you need depth.`
+                : `No urgent flags in the latest scan for ${projectName}. Keep charge and evidence current, then use ${STUDIO_VOCAB.today} for delivery execution.`)}
+          </p>
         </div>
 
         <div className="le-project-at-a-glance__card le-project-at-a-glance__card--cta">

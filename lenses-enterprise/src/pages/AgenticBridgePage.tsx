@@ -5,7 +5,9 @@ import { PageHeader, StatePanel, TechnicalDetails } from '../components/page'
 import { StatePanelAssistShortcuts } from '../components/page/StatePanelAssistShortcuts'
 import { assistShortcutsForContext, resolveUxFailure, type UxResolvedFailure } from '../lib/uxPageState'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
-import { KNOWLEDGE_PUBLISH_COPILOT, METHODOLOGY_UX_AGENTIC, ROUTE_SUBTITLE } from '../nav/studioVisibleCopy'
+import { KNOWLEDGE_PUBLISH_COPILOT, METHODOLOGY_UX_AGENTIC, ROUTE_SUBTITLE, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { AgenticStartHere } from '../components/agentic/AgenticStartHere'
+import { readFeatureDisabled } from '../lib/apiInternalFields'
 
 type DriftPayload = {
   ok?: boolean
@@ -47,7 +49,7 @@ export function AgenticBridgePage() {
           apiGetJson<Record<string, unknown>>('/api/agents/approvals', opt),
           apiGetJson<Record<string, unknown>>('/api/agents/policies', opt),
         ])
-        if ((v as { feature_disabled?: boolean }).feature_disabled) {
+        if (readFeatureDisabled(v as Record<string, unknown>)) {
           setFeatureErr('Agent automation views are turned off for this workspace (or the orchestration graph is disabled).')
           return
         }
@@ -82,7 +84,7 @@ export function AgenticBridgePage() {
   return (
     <>
       <PageHeader
-        title="Agentic bridge"
+        title={STUDIO_VOCAB.agenticBridge}
         purpose={METHODOLOGY_UX_AGENTIC.bridgePurpose}
         subtitle={ROUTE_SUBTITLE.agenticBridge}
         statusChips={[{ label: 'Read-only catalog', tone: 'muted' }]}
@@ -92,6 +94,9 @@ export function AgenticBridgePage() {
         ]}
       />
       <p className="forge-support">{METHODOLOGY_UX_AGENTIC.lead}</p>
+
+      <AgenticStartHere />
+
       <TechnicalDetails summary="Technical — agent registry HTTP endpoints">
         <p className="forge-support" style={{ margin: 0 }}>
           Read-only discovery uses <code className="le-mono">GET /api/agents/versonas</code>,{' '}

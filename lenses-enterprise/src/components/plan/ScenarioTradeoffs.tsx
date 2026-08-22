@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { qs } from '../../api/http'
+import { readFeatureDisabled } from '../../lib/apiInternalFields'
 import { useResilientJsonBlock } from '../../hooks/useResilientJsonBlock'
 import { DataResilienceBar, StatePanel } from '../page'
 
 type PortfolioCtx = {
   ok?: boolean
-  feature_disabled?: boolean
   scenario_compare?: {
     ok?: boolean
     a?: { display_name?: string; id?: string; payload?: Record<string, unknown> }
@@ -86,7 +86,7 @@ export function ScenarioTradeoffs() {
   }
 
   const data = block.data
-  if (data?.feature_disabled) {
+  if (readFeatureDisabled(data)) {
     return (
       <section className="le-plan-section" aria-labelledby="le-plan-scenario-h">
         <h2 id="le-plan-scenario-h" className="le-plan-section__title">

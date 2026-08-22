@@ -294,16 +294,8 @@ function SiteRow({
           </div>
           <div className="le-sites-links">
             <Link className="le-sites-link-secondary" to={`/websites/browse/${enc}`}>
-              {STUDIO_VIEWER.ctaEmbeddedSitesPreview}
-            </Link>
-            {' · '}
-            <Link className="le-sites-link-secondary" to={`/view/local-site/${enc}/`}>
               {STUDIO_VIEWER.ctaStaticPreviewInStudio}
             </Link>
-            {' · '}
-            <a className="le-sites-link-secondary" href={`/websites/browse?site=${enc}`}>
-              {FULL_WORKSPACE_UI.sitesBrowseFullUi}
-            </a>
           </div>
         </td>
       </tr>

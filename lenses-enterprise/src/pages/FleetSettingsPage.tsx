@@ -559,7 +559,7 @@ export function FleetSettingsPage() {
       `}</style>
       <PageHeader
         title={STUDIO_VOCAB.fleetPreferences}
-        purpose="Multiple Fleet servers: lower priority number is tried first; disabled or overloaded nodes are skipped when another healthy node is available."
+        purpose="When Studio uses this runner: documentation review jobs and other Fleet argv work stay on infrastructure you own. Docs review example — remediation clusters dispatch here when Fleet nodes are connected."
         subtitle={ROUTE_SUBTITLE.fleetPreferencesUtility}
         secondaryMenuItems={[
           { key: 'llm', to: '/settings/llm', label: STUDIO_VOCAB.llmPreferences },

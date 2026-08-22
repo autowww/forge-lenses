@@ -64,6 +64,14 @@ export function AgentRuntimeInspectPage() {
         <StatePanel variant="loading" title="Loading" description="Reading agent runtime overview from the workspace server." />
       ) : data?.ok ? (
         <>
+          <section className="le-panel le-agent-runtime-approval-summary" aria-label="approvalSummary">
+            <h2 className="le-panel__title">Automatic vs Needs approval</h2>
+            <p className="forge-support">
+              Read-only discovery and chat stay automatic. Packaging, exports, and Fleet argv jobs surface as{' '}
+              <strong>Needs approval</strong> until you confirm — review the dispatch policy below before delegating
+              write paths.
+            </p>
+          </section>
           <section className="le-panel" aria-labelledby={hPolicy}>
             <h2 id={hPolicy} className="le-panel__title">
               Dispatch policy

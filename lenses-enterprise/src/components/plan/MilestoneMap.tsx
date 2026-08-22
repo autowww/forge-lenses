@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { PlanMilestone } from '../../lib/planMetrics'
 
+/** businessOutcome — human label for milestone intent (outcomeField on spine payloads). */
+function outcomeField(ms: PlanMilestone): string | null {
+  const raw = (ms as { businessOutcome?: string; outcome?: string }).businessOutcome ?? (ms as { outcome?: string }).outcome
+  const text = typeof raw === 'string' ? raw.trim() : ''
+  return text || null
+}
+
 type Props = {
   milestones: PlanMilestone[]
   /** Opens the story detail modal (stays on Plan overview). */
@@ -56,6 +63,11 @@ export function MilestoneMap({ milestones, onOpenStoryDetails, maxVisible = 20 }
                     {ms.epic_key ?? 'Milestone'}
                   </span>
                   <h3 className="le-plan-milestone-card__title">{ms.title ?? ms.epic_key ?? 'Untitled'}</h3>
+                  {outcomeField(ms) ? (
+                    <p className="le-plan-milestone-card__outcome forge-support">
+                      <strong>Business outcome:</strong> {outcomeField(ms)}
+                    </p>
+                  ) : null}
                   {ms.theme ? <p className="le-plan-milestone-card__theme">{ms.theme}</p> : null}
                   <p className="le-plan-milestone-card__summary">{milestoneSummary(ms)}</p>
                 </header>

@@ -20,6 +20,7 @@ import {
 import { DEMO_BRIDGE_DEMAND_ID, DEMO_ORCHESTRATION_STORY_ID } from '../constants/demoOrchestration'
 import { chargeMdCandidates } from '../lib/copilotPageEvidence'
 import { EVIDENCE_IA, PROJECT_OBJECT_HOME, STUDIO_GLOSSARY, STUDIO_IA, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { resolveUxFailure } from '../lib/uxPageState'
 
 function hubQueryString(contextProjectName: string): string {
   if (!contextProjectName.trim()) return ''
@@ -37,11 +38,13 @@ export function WorkspaceMdPage() {
 
   const [text, setText] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [errTechnical, setErrTechnical] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const [indexFiles, setIndexFiles] = useState<WorkspaceMdIndexEntry[]>([])
   const [indexLoading, setIndexLoading] = useState(true)
   const [indexErr, setIndexErr] = useState<string | null>(null)
+  const [indexErrTechnical, setIndexErrTechnical] = useState<string | null>(null)
   const [indexTruncated, setIndexTruncated] = useState(false)
 
   const [pinned, setPinned] = useState(readWorkspaceMdPinned)
@@ -97,15 +100,19 @@ export function WorkspaceMdPage() {
           setIndexFiles(r.files)
           setIndexTruncated(!!r.truncated)
           setIndexErr(null)
+          setIndexErrTechnical(null)
         } else {
           setIndexFiles([])
-          setIndexErr('Unexpected index response from server.')
+          setIndexErr('Lenses could not load the evidence index for this workspace.')
+          setIndexErrTechnical('Unexpected index response from server.')
         }
       })
       .catch((e) => {
         if (!cancel) {
           setIndexFiles([])
-          setIndexErr(e instanceof Error ? e.message : String(e))
+          const ux = resolveUxFailure(e)
+          setIndexErr(ux.description)
+          setIndexErrTechnical(ux.technical)
         }
       })
       .finally(() => {
@@ -121,27 +128,33 @@ export function WorkspaceMdPage() {
       /* eslint-disable react-hooks/set-state-in-effect -- clear viewer when path param is empty */
       setText(null)
       setErr(null)
+      setErrTechnical(null)
       setLoading(false)
       /* eslint-enable react-hooks/set-state-in-effect */
       return
     }
     setLoading(true)
     setErr(null)
+    setErrTechnical(null)
     apiGetJson<{ ok?: boolean; text?: string }>(`/api/workspace-md-file?p=${encodeURIComponent(p)}`)
       .then((r) => {
         if (r.ok && r.text != null) {
           setText(r.text)
           setErr(null)
+          setErrTechnical(null)
           recordWorkspaceMdRecent(p.trim())
           setRecent(readWorkspaceMdRecent())
         } else {
           setText(null)
-          setErr('Not found or not allowlisted for this workspace notes path.')
+          setErr('This markdown file is not available in your workspace evidence list.')
+          setErrTechnical('Not found or not allowlisted for this workspace notes path.')
         }
       })
       .catch((e) => {
         setText(null)
-        setErr(e instanceof Error ? e.message : String(e))
+        const ux = resolveUxFailure(e)
+        setErr(ux.description)
+        setErrTechnical(ux.technical)
       })
       .finally(() => setLoading(false))
   }, [p])
@@ -334,7 +347,7 @@ export function WorkspaceMdPage() {
           variant="error"
           title="Could not open this markdown file"
           description="Paths must be allowlisted on the server. Go back to Evidence home for pinned, recent, and indexed files — or open a link from Plan or your project dashboard. Expert path entry stays collapsed under “Open a different path” when you already have a file open."
-          technicalDetail={err}
+          technicalDetail={errTechnical}
           actions={
             <>
               <Link className="le-btn le-btn--primary" to={`/workspace-md${hubQueryString(contextProjectName)}`}>
@@ -349,6 +362,11 @@ export function WorkspaceMdPage() {
             </>
           }
         />
+      ) : null}
+      {!hasPath && indexErrTechnical ? (
+        <TechnicalDetails summary="Technical details" defaultOpen={false}>
+          <pre className="le-preview le-json">{indexErrTechnical}</pre>
+        </TechnicalDetails>
       ) : null}
       {text != null ? (
         <>

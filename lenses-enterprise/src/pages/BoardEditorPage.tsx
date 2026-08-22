@@ -11,7 +11,7 @@ import {
 } from '../components/boards'
 import { ObjectMetaBar, PageHeader, StatePanel } from '../components/page'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
-import { DELIVERY_LENS, FULL_WORKSPACE_UI, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { DELIVERY_LENS, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 
 function stripForPost(b: WorkshopBoardPayload): WorkshopBoardPayload {
   const { board_acl, ...rest } = b as WorkshopBoardPayload & { board_acl?: unknown }
@@ -180,10 +180,6 @@ export function BoardEditorPage() {
                 Sort by priority
               </button>
             ) : null}
-            <a className="le-btn" href={`/board/${encodeURIComponent(boardId)}`}>
-              {FULL_WORKSPACE_UI.openFullBoardEditor}{' '}
-              <span className="le-shortcut-pill">Classic</span>
-            </a>
           </>
         }
       />

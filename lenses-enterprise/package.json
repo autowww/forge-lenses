@@ -1,7 +1,7 @@
 {
   "name": "lenses-enterprise",
   "private": true,
-  "version": "1.0.52",
+  "version": "1.0.79",
   "type": "module",
   "engines": {
     "node": ">=20.12.0"
@@ -19,6 +19,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e:docs-health": "playwright test e2e/docs-health-scan.spec.ts e2e/docs-health-session.spec.ts",
+    "test:e2e:human-copy": "playwright test e2e/studio-human-copy-oracle.spec.ts",
     "sync-kitchensink-react": "sh scripts/sync-kitchensink-react.sh"
   },
   "dependencies": {

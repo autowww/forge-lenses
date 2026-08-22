@@ -13,6 +13,13 @@ export function autonomyMaturityFeatureEnabled(): boolean {
   return false
 }
 
+/** Virtual Camera Studio — on when VITE_EXPERIMENTAL_VIRTUAL_CAMERA is not 0. */
+export function virtualCameraFeatureEnabled(): boolean {
+  const v = import.meta.env.VITE_EXPERIMENTAL_VIRTUAL_CAMERA
+  if (v === 'false' || v === '0') return false
+  return true
+}
+
 /** Doc Management / Hydration v2 Studio sessions — on by default unless VITE_EXPERIMENTAL_DOC_MANAGEMENT=0. */
 export function docManagementFeatureEnabled(): boolean {
   const v = import.meta.env.VITE_EXPERIMENTAL_DOC_MANAGEMENT

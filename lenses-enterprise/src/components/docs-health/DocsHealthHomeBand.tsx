@@ -1,26 +1,12 @@
-import { useEffect, useId, useState } from 'react'
+import { useId } from 'react'
 import { Link } from 'react-router-dom'
-import { getDocsHealthWorkspaceSummary, type DocsHealthWorkspaceSummary } from '../../api/docsHealth'
 import { STUDIO_VOCAB } from '../../nav/studioVisibleCopy'
+import { useDocsHealthSummary } from '../../context/DocsHealthSummaryContext'
 
 export function DocsHealthHomeBand() {
   const hId = useId()
   const rollupId = useId()
-  const [data, setData] = useState<DocsHealthWorkspaceSummary | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    void getDocsHealthWorkspaceSummary()
-      .then((d) => {
-        if (!cancelled) setData(d)
-      })
-      .catch(() => {
-        if (!cancelled) setData(null)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const { data } = useDocsHealthSummary()
 
   if (!data?.ok || !data.projects?.length) return null
 

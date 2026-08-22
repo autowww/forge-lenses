@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useWorkspace } from '../../context/WorkspaceContext'
 import {
   commitsKpiLabel,
-  getOverviewChartPayload,
   linesAddedKpiLabel,
   sparklinePeriodHint,
   sparklinePeriodTotals,
   sumCommitDailySevenDay,
   workspaceLocTotal,
-  type OverviewChartPayload,
 } from '../../api/chartOverview'
 import type { WorkspaceChild } from '../../api/workspace'
+import { useOverviewTelemetry } from '../../context/OverviewTelemetryContext'
 import { useShellChrome } from '../../context/ShellChromeContext'
-import { formatDelta, tierToClass } from '../../lib/kpiTrendUi'
+import { formatDelta, heatIntensityClass, tierToClass } from '../../lib/kpiTrendUi'
 import { KpiMetricTile, KpiSnapshotTile } from './KpiMetricTile'
+import { OverviewKpiFlyout, type OverviewKpiFlyoutKind } from './OverviewKpiFlyout'
 
 function formatResolvedShort(iso: string | undefined): string {
   if (!iso) return '—'
@@ -47,39 +47,14 @@ function avgCompliance(children: WorkspaceChild[]): number | null {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
 }
 
-export function ExecutiveSummaryStrip() {
+export function ExecutiveSummaryStrip({ compact = false }: { compact?: boolean }) {
   const { state } = useWorkspace()
-  const {
-    timeHorizon,
-    compareMode,
-    beginOverviewDataLoad,
-    endOverviewDataLoad,
-    overviewDataLoading,
-  } = useShellChrome()
-  const [payload, setPayload] = useState<OverviewChartPayload | null>(null)
-  const [chartErr, setChartErr] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    beginOverviewDataLoad()
-    void (async () => {
-      try {
-        const p = await getOverviewChartPayload(timeHorizon)
-        if (cancelled) return
-        setPayload(p)
-        setChartErr(false)
-      } catch {
-        if (cancelled) return
-        setPayload(null)
-        setChartErr(true)
-      } finally {
-        endOverviewDataLoad()
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [state?.resolved_at, timeHorizon, beginOverviewDataLoad, endOverviewDataLoad])
+  const { compareMode, timeHorizon, overviewDataLoading } = useShellChrome()
+  const { payload, loading, error: chartErr, jobHint, progress } = useOverviewTelemetry()
+  const [flyout, setFlyout] = useState<OverviewKpiFlyoutKind | null>(null)
+  const commitsRef = useRef<HTMLDivElement | null>(null)
+  const linesRef = useRef<HTMLDivElement | null>(null)
+  const standardsRef = useRef<HTMLDivElement | null>(null)
 
   if (!state) return null
 
@@ -143,18 +118,34 @@ export function ExecutiveSummaryStrip() {
       ? formatDelta(standVal, Math.round(snapStand.previous_total), compareMode)
       : null
 
-  const evidenceHref =
-    timeHorizon === 'week'
-      ? '/api/chart-data/overview'
-      : `/api/chart-data/overview?horizon=${encodeURIComponent(timeHorizon)}`
+  const dataLoading = overviewDataLoading || loading
+  const commitsHeat =
+    typeof commitsTrend?.current_total === 'number'
+      ? heatIntensityClass(commitsTrend.current_total, commitsTrend.median_prior_6 ?? null)
+      : ''
+  const linesHeat =
+    typeof locCurrent === 'number'
+      ? heatIntensityClass(locCurrent, linesTrend?.median_prior_6 ?? null)
+      : ''
+  const standHeat =
+    standVal != null
+      ? heatIntensityClass(standVal, snapStand?.median_prior_6 ?? null)
+      : ''
+
+  const flyoutAnchor =
+    flyout === 'commits' ? commitsRef : flyout === 'lines' ? linesRef : standardsRef
 
   return (
     <section
-      className={overviewDataLoading ? 'le-kpi-strip le-kpi-strip--loading' : 'le-kpi-strip'}
+      className={
+        dataLoading
+          ? `le-kpi-strip${compact ? ' le-kpi-strip--compact' : ''} le-kpi-strip--loading`
+          : `le-kpi-strip${compact ? ' le-kpi-strip--compact' : ''}`
+      }
       aria-label="Executive summary"
       aria-describedby="le-kpi-period-hint"
     >
-      {overviewDataLoading ? (
+      {dataLoading ? (
         <div className="le-kpi-strip__blade le-loading-blade" aria-hidden />
       ) : null}
       <p className="le-kpi-strip__period-note" id="le-kpi-period-hint">
@@ -191,38 +182,46 @@ export function ExecutiveSummaryStrip() {
           to="/plan"
           ariaLabel={`Planning artifacts: ${planArtifacts}. Open plans.`}
         />
-        <KpiMetricTile
-          label={commitsKpiLabel(timeHorizon)}
-          spark={commitSpark}
-          value={chartErr ? '—' : commits7d ?? '—'}
-          tierClass={tierToClass(commitsTrend?.tier)}
-          delta={commitsDelta}
-          compareMode={compareMode}
-          href={evidenceHref}
-          ariaLabel={
-            chartErr
-              ? 'Commits trend unavailable.'
-              : `Commits: ${commits7d ?? '—'}. Open workspace chart evidence (JSON).`
-          }
-        />
-        <KpiMetricTile
-          label={linesAddedKpiLabel(timeHorizon)}
-          spark={locSpark}
-          value={
-            chartErr || typeof locCurrent !== 'number'
-              ? '—'
-              : locCurrent.toLocaleString()
-          }
-          tierClass={tierToClass(linesTrend?.tier)}
-          delta={locDelta}
-          compareMode={compareMode}
-          href={evidenceHref}
-          ariaLabel={
-            chartErr
-              ? 'Lines added trend unavailable.'
-              : `Lines added in workspace: ${typeof locCurrent === 'number' ? locCurrent.toLocaleString() : '—'}. Open chart evidence (JSON).`
-          }
-        />
+        <div ref={commitsRef}>
+          <KpiMetricTile
+            label={commitsKpiLabel(timeHorizon)}
+            spark={commitSpark}
+            value={chartErr ? '—' : commits7d ?? '—'}
+            tierClass={`${tierToClass(commitsTrend?.tier)} ${commitsHeat}`.trim()}
+            delta={commitsDelta}
+            compareMode={compareMode}
+            onActivate={() => setFlyout('commits')}
+            progress={progress}
+            jobHint={jobHint}
+            ariaLabel={
+              chartErr
+                ? 'Commits trend unavailable.'
+                : `Commits: ${commits7d ?? '—'}. Open commits detail fly-out.`
+            }
+          />
+        </div>
+        <div ref={linesRef}>
+          <KpiMetricTile
+            label={linesAddedKpiLabel(timeHorizon)}
+            spark={locSpark}
+            value={
+              chartErr || typeof locCurrent !== 'number'
+                ? '—'
+                : locCurrent.toLocaleString()
+            }
+            tierClass={`${tierToClass(linesTrend?.tier)} ${linesHeat}`.trim()}
+            delta={locDelta}
+            compareMode={compareMode}
+            onActivate={() => setFlyout('lines')}
+            progress={progress}
+            jobHint={jobHint}
+            ariaLabel={
+              chartErr
+                ? 'Lines added trend unavailable.'
+                : `Lines added in workspace: ${typeof locCurrent === 'number' ? locCurrent.toLocaleString() : '—'}. Open lines detail fly-out.`
+            }
+          />
+        </div>
         <KpiMetricTile
           label="LoC total (approx.)"
           spark={[]}
@@ -231,31 +230,45 @@ export function ExecutiveSummaryStrip() {
           delta={null}
           compareMode={compareMode}
           to="/projects"
+          progress={progress}
+          jobHint={jobHint}
           ariaLabel={
             locTotalApprox != null
               ? `Approximate tracked lines in workspace: ${locTotalApprox.toLocaleString()}. Open projects for per-repository charts.`
               : 'Approximate workspace lines of code. Open projects portfolio.'
           }
         />
-        <KpiMetricTile
-          label="Standards (avg)"
-          spark={standSpark}
-          value={complianceAvg != null ? `${complianceAvg}` : '—'}
-          tierClass={tierToClass(snapStand?.tier)}
-          delta={standDelta}
-          compareMode={compareMode}
-          to={{ pathname: '/', hash: 'le-cc-standards' }}
-          ariaLabel={
-            complianceAvg != null
-              ? `Standards average: ${complianceAvg}. Open standards section.`
-              : 'Standards average. Open standards section.'
-          }
-        />
+        <div ref={standardsRef}>
+          <KpiMetricTile
+            label="Standards (avg)"
+            spark={standSpark}
+            value={complianceAvg != null ? `${complianceAvg}` : '—'}
+            tierClass={`${tierToClass(snapStand?.tier)} ${standHeat}`.trim()}
+            delta={standDelta}
+            compareMode={compareMode}
+            onActivate={() => setFlyout('standards')}
+            ariaLabel={
+              complianceAvg != null
+                ? `Standards average: ${complianceAvg}. Open standards detail fly-out.`
+                : 'Standards average. Open standards detail fly-out.'
+            }
+          />
+        </div>
+        {!compact ? (
         <KpiSnapshotTile
           resolvedLabel={formatResolvedShort(state.resolved_at)}
           confidenceLine={`Confidence: ${conf.label}. ${conf.hint}`}
         />
+        ) : null}
       </div>
+      <OverviewKpiFlyout
+        open={flyout != null}
+        kind={flyout ?? 'commits'}
+        onClose={() => setFlyout(null)}
+        payload={payload}
+        timeHorizon={timeHorizon}
+        anchorRef={flyoutAnchor}
+      />
     </section>
   )
 }

@@ -23,6 +23,31 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, '../lenses/static/studio'),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom')) return 'react-dom'
+          if (id.includes('node_modules/react/')) return 'react'
+          if (id.includes('node_modules/react-router')) return 'router'
+          if (id.includes('node_modules/jspdf')) return 'jspdf'
+          if (id.includes('node_modules/html2canvas')) return 'html2canvas'
+          if (id.includes('/pages/Foundry') || id.includes('/pages/FoundryRun')) return 'foundry'
+          if (id.includes('blueprints-wizard')) return 'wizard'
+          if (id.includes('/pages/HomePage')) return 'home'
+          if (id.includes('/pages/ProjectsPage') || id.includes('/pages/ProjectDetailPage')) return 'projects'
+          if (id.includes('/components/shell/') || id.includes('/components/TopNavigation')) return 'shell'
+          if (id.includes('PlanMatrixPage') || id.includes('TimelinePage') || id.includes('TimelineGantt') || id.includes('NestedRoadmapHorizon')) {
+            return 'plan-depth'
+          }
+          if (id.includes('LensesCopilotRail') || id.includes('/copilot/')) return 'copilot'
+          if (id.includes('/components/Layout') || id.includes('TraceabilityDrawer') || id.includes('SectionSidebar')) {
+            return 'layout'
+          }
+          if (id.includes('/context/WorkspaceContext')) return 'workspace'
+          if (id.includes('/pages/') && !id.includes('/pages/HomePage')) return 'pages'
+        },
+      },
+    },
   },
   // Single-port workflow: run `python3 -m lenses` (default :8080), open /studio/, and use
   // `npm run watch` to rebuild the SPA into ../lenses/static/studio on file changes.

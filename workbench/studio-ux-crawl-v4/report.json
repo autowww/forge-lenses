@@ -1,0 +1,348 @@
+{
+  "capturedAt": "2026-07-24T10:17:41.102Z",
+  "base": "http://127.0.0.1:17556/studio",
+  "splashCleared": true,
+  "routeCount": 16,
+  "jargonRoutes": [],
+  "splashRoutes": [],
+  "sparseRoutes": [],
+  "matrixSparseRoutes": [],
+  "results": [
+    {
+      "route": "/",
+      "url": "http://127.0.0.1:17556/studio/",
+      "ok": true,
+      "data": {
+        "title": "Home › Overview · Forge Studio",
+        "h1": [
+          "Overview"
+        ],
+        "bodyLen": 6334,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN\n→\n▾\ntmp.fRwDaJ3pDG / Home / Overview\nHOME\n\nWorkspace overview and shortcuts. Find, Ask, and Do live in the header.\n\nPortfolio overview\nWhat needs attention today\nSHORTCUT\nOpens in Work\nExecution boards\nSHORTCUT\nOpens in Work\nAll projects\nSHORTCUT\nOpens in Projects\nSCOPE\n/tmp/tmp.fRwDaJ3pDG\nTIME HORIZON\nLast 24 hours\nThis week\nThis month\nThis quarter\nCOMPARE TO\nNone\nPrevious period\nSAVED VIEW\nDefault\nFILTERS\nNone\n\nEach sparkline point is one full week (7 consecutive UTC days), not a single day. Need at least two periods to draw a trend.\n\nGIT REPOSITORIES\n4\nPUBLISHED SITES\n0\nPLANNING ARTIFACTS\n4\nCOMMITS (7 DAYS)\n—\nLOC ADDED (7D)\n—\nLOC TOTAL (APPROX.)\n—\nSTANDARDS (AVG)\n47\nSNAPSHOT TIME\nJul 24, 2026, 1:16 PM\n\nConfidence: High. Scan finished in the last few minutes.\n\nOverview\n\nLast scan: Jul 24, 2026, 1:16 PM\n\nOpen Today\nMore\n\nScan-first control tower — not Plan editing. See repos, signals, and what moved.\n\nOPERATIONAL CONTROL TOWER\n\nDecision center for this workspace — urgency, freshness, and ownership. Scan: Jul 24, 2026, 1:16 PM. This is not the same as Plan detail; use the cards"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/projects",
+      "url": "http://127.0.0.1:17556/studio/projects",
+      "ok": true,
+      "data": {
+        "title": "Projects · Forge Studio",
+        "h1": [
+          "Projects"
+        ],
+        "bodyLen": 1787,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN\n←\nBack\n→\n▾\nPROJECTS\n\nRepositories in this scan—open one for health, charts, and evidence.\n\nAll projects\nProject dashboard\nRepository charts\nArchitecture & repo strategy\nEvidence (browse)\nSHORTCUT\nOpens in Knowledge\n\nEach sparkline point is one full week (7 consecutive UTC days), not a single day. Last 5 periods · 1 week each · Rightmost = current period.\n\nGIT REPOSITORIES\n4\nPUBLISHED SITES\n0\nPLANNING ARTIFACTS\n4\nCOMMITS (7 DAYS)\n4\nLOC ADDED (7D)\n93\nLOC TOTAL (APPROX.)\n93\nSTANDARDS (AVG)\n47\nSNAPSHOT TIME\nJul 24, 2026, 1:16 PM\n\nConfidence: High. Scan finished in the last few minutes.\n\nProjects\n\nPick a repository for an action-first dashboard: health, risks, PR signals, and workspace evidence — then open charts or strategy when you need depth.\n\nalpha\n\nGit repository· At risk\n\nDashboard →\nbeta\n\nGit repository· At risk\n\nDashboard →\ne2e_doc_proj\n\nGit repository· At risk\n\nDashboard →\nforge-df-test-project\n\nGit repository· At risk\n\nDashboard →\nPROJECTS PORTFOLIO\nHide\nLAST SCAN\nJul 24, 2026, 1:16 PM · 4\n\nPick a repository for charts and strategy, or run cross-repo automati"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/plan",
+      "url": "http://127.0.0.1:17556/studio/plan",
+      "ok": true,
+      "data": {
+        "title": "Work › Plan summary · Forge Studio",
+        "h1": [
+          "Plan summary"
+        ],
+        "bodyLen": 3978,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Work / Plan summary\nWORK\n\nPlan and run delivery for the scope in your URL—deeper tools are in the list below.\n\nToday\nPlan summary\nBoards\nTimeline\nStory\nSources\nADVANCED & LEGACY (WORK)\n\nEach sparkline point is one full week (7 consecutive UTC days), not a single day. Need at least two periods to draw a trend.\n\nGIT REPOSITORIES\n4\nPUBLISHED SITES\n0\nPLANNING ARTIFACTS\n4\nCOMMITS (7 DAYS)\n—\nLOC ADDED (7D)\n—\nLOC TOTAL (APPROX.)\n—\nSTANDARDS (AVG)\n47\nPlan summary\n\nLast scan: Jul 24, 2026, 1:16 PM · Fresh scan·Scope incomplete\n\nRoadmap, scope, and structure for the selected backlog — same Work journey as Today and Boards.\n\nPrimary Work steps: today, plan summary, boards, timeline, story, sources, readiness\nToday\n·\nPlan summary\n·\nBoards\n·\nTimeline\n·\nStory\n·\nSources\n·\nReadiness\nAdvanced & more\n\nMain path: Today → Plan → Boards → Timeline → Story → Sources → Readiness — one shared scope in the URL. Matrix, WBS, roadmap previews, and classic roadmaps sit under Advanced & more.\n\nWORK BACKLOG\n▾\nChoose a product backlog\nOne product · often one WBS file (or a small"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/plan/matrix",
+      "url": "http://127.0.0.1:17556/studio/plan/matrix",
+      "ok": true,
+      "data": {
+        "title": "Work › Roadmap matrix · Forge Studio",
+        "h1": [
+          "Roadmap matrix"
+        ],
+        "bodyLen": 1761,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": true,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Work / Roadmap matrix\nWORK\n\nPlan and run delivery for the scope in your URL—deeper tools are in the list below.\n\nToday\nPlan summary\nBoards\nTimeline\nStory\nSources\nADVANCED & LEGACY (WORK)\nPrimary Work steps: today, plan summary, boards, timeline, story, sources, readiness\nToday\n·\nPlan summary\n·\nBoards\n·\nTimeline\n·\nStory\n·\nSources\n·\nReadiness\nAdvanced & more\n\nMain path: Today → Plan → Boards → Timeline → Story → Sources → Readiness — one shared scope in the URL. Matrix, WBS, roadmap previews, and classic roadmaps sit under Advanced & more.\n\nEach sparkline point is one full week (7 consecutive UTC days), not a single day. Need at least two periods to draw a trend.\n\nGIT REPOSITORIES\n4\nPUBLISHED SITES\n0\nPLANNING ARTIFACTS\n4\nCOMMITS (7 DAYS)\n—\nLOC ADDED (7D)\n—\nLOC TOTAL (APPROX.)\n—\nSTANDARDS (AVG)\n47\nRoadmap matrix\n\nStories mapped across repositories.\n\nThe matrix summarizes which stories touch which repositories at a glance. Milestones roll up from plan spines across each roadmap and every WBS in the same repository. Open a story in the Story tab using t"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/timeline",
+      "url": "http://127.0.0.1:17556/studio/timeline",
+      "ok": true,
+      "data": {
+        "title": "Work › Timeline · Forge Studio",
+        "h1": [
+          "Timeline"
+        ],
+        "bodyLen": 1572,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Work / Timeline\nWORK\n\nPlan and run delivery for the scope in your URL—deeper tools are in the list below.\n\nToday\nPlan summary\nBoards\nTimeline\nStory\nSources\nADVANCED & LEGACY (WORK)\nPrimary Work steps: today, plan summary, boards, timeline, story, sources, readiness\nToday\n·\nPlan summary\n·\nBoards\n·\nTimeline\n·\nStory\n·\nSources\n·\nReadiness\nAdvanced & more\n\nMain path: Today → Plan → Boards → Timeline → Story → Sources → Readiness — one shared scope in the URL. Matrix, WBS, roadmap previews, and classic roadmaps sit under Advanced & more.\n\nEach sparkline point is one full week (7 consecutive UTC days), not a single day. Need at least two periods to draw a trend.\n\nGIT REPOSITORIES\n4\nPUBLISHED SITES\n0\nPLANNING ARTIFACTS\n4\nCOMMITS (7 DAYS)\n—\nLOC ADDED (7D)\n—\nLOC TOTAL (APPROX.)\n—\nSTANDARDS (AVG)\n47\nTimeline\n\nLast scan: Jul 24, 2026, 1:16 PM\n\nGantt, metrics, and roadmap editor for the scope you pick below — same backlog context as Plan summary.\n\nROADMAP HORIZON\n\nDrill-down roadmap for the scope you select below — same fields as the timeline context.\n\n← In pre"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/board",
+      "url": "http://127.0.0.1:17556/studio/board",
+      "ok": true,
+      "data": {
+        "title": "Work › Boards · Forge Studio",
+        "h1": [
+          "Boards"
+        ],
+        "bodyLen": 3547,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Work / Boards\nWORK\n\nPlan and run delivery for the scope in your URL—deeper tools are in the list below.\n\nToday\nPlan summary\nBoards\nTimeline\nStory\nSources\nADVANCED & LEGACY (WORK)\nBoards\n\nSticker boards for active execution—freshness and ownership here. Plan summary, timeline, and readiness stay in the same Work scope via the strip above.\n\nMore Work and workspace links\n\nJump to Today, Plan, or timeline with the same scope when your URL includes backlog picks.\n\nTodaySHORTCUT\nPlan summarySHORTCUT\nTimelineSHORTCUT\nSearchSHORTCUT\nWorkspace notesSHORTCUT\nProjectsSHORTCUT\nLoading board registry\nShortcuts and create actions below stay available while this request finishes.\nOperational snapshot\n\nRegistry snapshot: —. Preview image mtime proxies last capture, not every sticker edit. Unowned means no owner_login in the registry entry.\n\n—\nTotal boards\n—\nActive\n—\nUnowned\n—\nStale\nTemplates by use case\n\nEach template creates a real board with workshop columns. Product map workshop can prefill stickers from the project WBS. Workshop kickoff imports a"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/search",
+      "url": "http://127.0.0.1:17556/studio/search",
+      "ok": true,
+      "data": {
+        "title": "Tools › Search · Forge Studio",
+        "h1": [
+          "Search"
+        ],
+        "bodyLen": 1697,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Tools / Search\nHOME\n\nWorkspace overview and shortcuts. Find, Ask, and Do live in the header.\n\nPortfolio overview\nWhat needs attention today\nSHORTCUT\nOpens in Work\nExecution boards\nSHORTCUT\nOpens in Work\nAll projects\nSHORTCUT\nOpens in Projects\nSearch\nWORKSPACE TOOL\nSearch\nMore\n\nAdvanced mode: full result lists, paging, and repository filters. Use header Find for quick lookup and navigation.\n\nSUGGESTED FOCUS\n\nWhat changed\nNo query yet — run a search or open Ask from the header.\n\nWhy it matters\nUse results to open evidence and docs; narrow with the repo filter below when the workspace is large.\n\nNext\nAsk in command bar\nCopilot page\nSearch\nSearch your workspace\nUse the search field in the header or below, then press Enter. Results come from the workspace index—distinct from Tutorials or Lenses reference in Knowledge.\n\nFocus header search: Ctrl+K or ⌘K (when not typing in a field).\nTutorials (Knowledge)\nSEARCH\nHide\nLAST SCAN\nJul 24, 2026, 1:16 PM\nNEXT STEPS\nTutorials & handbooks\nMORE LINKS\nLENSES COPILOT\n\nGrounded on your workspace scan. C"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/chat",
+      "url": "http://127.0.0.1:17556/studio/chat",
+      "ok": true,
+      "data": {
+        "title": "Tools › Lenses Copilot · Forge Studio",
+        "h1": [
+          "Lenses Copilot"
+        ],
+        "bodyLen": 1782,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Tools / Lenses Copilot\nHOME\n\nWorkspace overview and shortcuts. Find, Ask, and Do live in the header.\n\nPortfolio overview\nWhat needs attention today\nSHORTCUT\nOpens in Work\nExecution boards\nSHORTCUT\nOpens in Work\nAll projects\nSHORTCUT\nOpens in Projects\nLenses Copilot\nGROUNDED\nOPERATOR-REVIEWED\nAI Setup\nMore\n\nLong-form Copilot: threads, history, and optional legacy chat. Quick grounded questions: use header Ask. Provider and model defaults live under AI Setup.\n\nMode\nChat\nThreads\n\nEach send records the last Studio page you were on before this screen. Your lines show a title link back there and a short locator hint underneath. This conversation is saved in this browser for this workspace so you can pick it up after closing Studio.\n\nSUGGESTED FOCUS\n\nWhat changed\nConversation and workspace context stay in the Lenses Copilot rail on the right.\n\nWhy it matters\nPrefer header Ask for quick checks; use this page for legacy multi-turn chat, exports, or provider experiments.\n\nNext\nAsk in command bar\nSearch\nLLM CHAT\nHide\nLAST SCAN\nJul 24, 2026, 1:17"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/settings/llm",
+      "url": "http://127.0.0.1:17556/studio/settings/llm",
+      "ok": true,
+      "data": {
+        "title": "Tools › AI Setup · Forge Studio",
+        "h1": [
+          "AI Setup"
+        ],
+        "bodyLen": 7883,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Tools / AI Setup\nHOME\n\nWorkspace overview and shortcuts. Find, Ask, and Do live in the header.\n\nPortfolio overview\nWhat needs attention today\nSHORTCUT\nOpens in Work\nExecution boards\nSHORTCUT\nOpens in Work\nAll projects\nSHORTCUT\nOpens in Projects\nAI Setup\nMore\n\nTell Studio which models may answer you on this computer, then sanity-check with Chat.\n\nWire model sources on this machine, then try Chat. Optional for Plan and Boards unless you rely on AI answers.\n\nWho this is for: Anyone making Chat, Ask, or copilot work in this workspace.\nWhat it affects: Which models answer you on this Lenses host—credentials stay local, not in the browser.\nWhen to use it: First-time setup, after switching laptops, or when a provider stops responding.\nSafety: Wrong settings usually mean “no AI answer” until fixed; they do not change your repos from this page alone.\n\nWhere to go next: Lenses Copilot · Day-to-day delivery: Today, Boards, Projects. Other inspect tools stay under Settings (gear) → Admin & inspect.\n\nKeys stay on this computer. API keys and model "
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/settings/fleet",
+      "url": "http://127.0.0.1:17556/studio/settings/fleet",
+      "ok": true,
+      "data": {
+        "title": "Tools › Forge Fleet · Forge Studio",
+        "h1": [
+          "Forge Fleet"
+        ],
+        "bodyLen": 3509,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Tools / Forge Fleet\nHOME\n\nWorkspace overview and shortcuts. Find, Ask, and Do live in the header.\n\nPortfolio overview\nWhat needs attention today\nSHORTCUT\nOpens in Work\nExecution boards\nSHORTCUT\nOpens in Work\nAll projects\nSHORTCUT\nOpens in Projects\nForge Fleet\nMore\n\nWhen Studio uses this runner: documentation review jobs and other Fleet argv work stay on infrastructure you own. Docs review example — remediation clusters dispatch here when Fleet nodes are connected.\n\nOne or more Fleet base URLs with bearer auth, priority, and optional CPU/memory ceilings — Lenses skips busy or unhealthy nodes. Env vars still override with a single node.\n\nLAN discovery (ports 18765 / 18766 / 18767)\n\nScan runs on the Lenses workspace server. Ranges follow each interface's IPv4 address and prefix (same as ip -json addr). Each candidate is probed on 18765, 18766, and 18767 (Caddy often exposes Fleet on *:18767 while Fleet itself stays on loopback). Detection uses GET /v1/health (service: forge-fleet).\n\nMode\nQuick (from local IF prefixes)\nFull subnet (per in"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/knowledge/methodology/evidence",
+      "url": "http://127.0.0.1:17556/studio/knowledge/methodology/evidence",
+      "ok": true,
+      "data": {
+        "title": "Knowledge › Evidence registry · Forge Studio",
+        "h1": [
+          "Evidence registry"
+        ],
+        "bodyLen": 2340,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Knowledge / Evidence registry\nKNOWLEDGE\n\nLearn, evidence, governance, and optional Blueprints Wizard—links stay in this area.\n\nLEARN\n\nOnboarding and product reference—curated or embedded read-only.\n\nTutorials\nLenses reference docs\nEVIDENCE\n\nMarkdown in your repo plus methodology-linked proof when the workspace exposes it.\n\nWorkspace notes (evidence)\nEvidence registry (graph)\nGOVERN\n\nSigned decisions and how agents attach to your workspace—review before high-risk automation.\n\nDecisions (graph)\nAI agents\nRelease readiness (gaps)\nSHORTCUT\nOpens in Work\nLABS\n\nExperimental automation and bounded draft runs—optional surfaces for operators.\n\nFoundry (Dark Factory)\nSHORTCUT\nOpens in Work\nBUILD & BOOTSTRAP\n\nGuided Blueprints sessions for early framing; export outcomes into normal Plan and project work.\n\nBlueprints Wizard (experimental)\nEvidence registry\nMETHODOLOGY-LINKED\nMore\n\nOne place to review proof the methodology graph knows about—reviews, packs, and linked rows—after work has been captured elsewhere.\n\nEach sparkline point is one full we"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/knowledge/agentic-bridge",
+      "url": "http://127.0.0.1:17556/studio/knowledge/agentic-bridge",
+      "ok": true,
+      "data": {
+        "title": "Knowledge › AI agents · Forge Studio",
+        "h1": [
+          "AI agents"
+        ],
+        "bodyLen": 2955,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Knowledge / AI agents\nKNOWLEDGE\n\nLearn, evidence, governance, and optional Blueprints Wizard—links stay in this area.\n\nLEARN\n\nOnboarding and product reference—curated or embedded read-only.\n\nTutorials\nLenses reference docs\nEVIDENCE\n\nMarkdown in your repo plus methodology-linked proof when the workspace exposes it.\n\nWorkspace notes (evidence)\nEvidence registry (graph)\nGOVERN\n\nSigned decisions and how agents attach to your workspace—review before high-risk automation.\n\nDecisions (graph)\nAI agents\nRelease readiness (gaps)\nSHORTCUT\nOpens in Work\nLABS\n\nExperimental automation and bounded draft runs—optional surfaces for operators.\n\nFoundry (Dark Factory)\nSHORTCUT\nOpens in Work\nBUILD & BOOTSTRAP\n\nGuided Blueprints sessions for early framing; export outcomes into normal Plan and project work.\n\nBlueprints Wizard (experimental)\nAI agents\nREAD-ONLY CATALOG\nMore\n\nUnderstand how AI agents and recipes are wired to your workspace—browse before turning anything on or changing approvals.\n\nSee how agents, recipes, and approvals are configured here—rea"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/tutorials",
+      "url": "http://127.0.0.1:17556/studio/tutorials",
+      "ok": true,
+      "data": {
+        "title": "Knowledge › Tutorials · Forge Studio",
+        "h1": [
+          "Tutorials & handbooks"
+        ],
+        "bodyLen": 2340,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Knowledge / Tutorials\nKNOWLEDGE\n\nLearn, evidence, governance, and optional Blueprints Wizard—links stay in this area.\n\nLEARN\n\nOnboarding and product reference—curated or embedded read-only.\n\nTutorials\nLenses reference docs\nEVIDENCE\n\nMarkdown in your repo plus methodology-linked proof when the workspace exposes it.\n\nWorkspace notes (evidence)\nEvidence registry (graph)\nGOVERN\n\nSigned decisions and how agents attach to your workspace—review before high-risk automation.\n\nDecisions (graph)\nAI agents\nRelease readiness (gaps)\nSHORTCUT\nOpens in Work\nLABS\n\nExperimental automation and bounded draft runs—optional surfaces for operators.\n\nFoundry (Dark Factory)\nSHORTCUT\nOpens in Work\nBUILD & BOOTSTRAP\n\nGuided Blueprints sessions for early framing; export outcomes into normal Plan and project work.\n\nBlueprints Wizard (experimental)\nTutorials & handbooks\nLEARN\nMore\n\nOnboarding and long-form guides discovered in your workspace scan—pair with Lenses reference for product docs, and with Workspace notes for repo evidence.\n\nHandbooks and guides served a"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/websites",
+      "url": "http://127.0.0.1:17556/studio/websites",
+      "ok": true,
+      "data": {
+        "title": "Sites · Forge Studio",
+        "h1": [
+          "Websites"
+        ],
+        "bodyLen": 1951,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\nPUBLISH\n\nSites and blog from your workspace—preview what ships, then share links.\n\nSITES & PREVIEWS\n\nBuilt HTML your workspace already knows about—preview before sharing links.\n\nAll sites\nBrowse and preview\nSTORIES & UPDATES\n\nRelease notes and narrative posts; draft in Copilot from Plan or evidence, then refresh the feed.\n\nAll posts\nDoc management\nBlog home (live)\n↗\nEXTERNAL\nExternal site\nWebsites\n0 IN SCAN\nMore\n\nOutputs readers can open: each card is a site folder the workspace scan already found—preview here, then share the built URL or Firebase target.\n\nSites are built artifacts tied to your repo (handbooks, product sites, internal previews). Open a card to preview HTML; static preview skips legacy Sites chrome when you only need files.\n\nQUICK ASSIST (ASK / DO)\nDraft release note\nNo published sites detected\nSites appear after a scan finds Firebase or static HTML roots. Until then, capture work in Plan and evidence in Workspace notes—when a site is built, rescan and return here to preview what ships.\nToday\nWorkspace notes\nWorkspace overview\nWEBSITES"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/doc-management",
+      "url": "http://127.0.0.1:17556/studio/doc-management",
+      "ok": true,
+      "data": {
+        "title": "Publish › Doc management · Forge Studio",
+        "h1": [
+          "Doc management"
+        ],
+        "bodyLen": 1816,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n←\nBack\n→\n▾\ntmp.fRwDaJ3pDG / Publish / Doc management\nPUBLISH\n\nSites and blog from your workspace—preview what ships, then share links.\n\nSITES & PREVIEWS\n\nBuilt HTML your workspace already knows about—preview before sharing links.\n\nAll sites\nBrowse and preview\nSTORIES & UPDATES\n\nRelease notes and narrative posts; draft in Copilot from Plan or evidence, then refresh the feed.\n\nAll posts\nDoc management\nBlog home (live)\n↗\nEXTERNAL\nExternal site\nDoc management\nNew session\n\nGoverned hydration sessions — intake seeds, run agents, approve, and promote to sites.\n\nNo sessions yet\nStart a session to paste Markdown, upload a zip of seeds, fetch a URL, or hydrate from a blog post.\nTarget surfaces\nforgesdlc.com blog forgesdlc_blog\nForge Platform handbook forge_platform_architecture\nBlueprints methodology blueprints_methodology\nForge LCDL handbook forge_lcdl_docs\nForge Lenses docs forge_lenses_docs\nForge Fleet learn-101 forge_fleet_docs\n\nBrowse blog posts to start hydration from cached forgesdlc.com content.\n\nTHIS AREA\nHide\nLAST SCAN\nJul 24, 2026, 1:17 PM\n\nContext for publish "
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/autonomy-maturity",
+      "url": "http://127.0.0.1:17556/studio/autonomy-maturity",
+      "ok": true,
+      "data": {
+        "title": "Home › Overview · Forge Studio",
+        "h1": [
+          "Overview"
+        ],
+        "bodyLen": 7467,
+        "onSplash": false,
+        "hasSparseGuide": false,
+        "matrixRich": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nNot signed in\nHome\nWork\nProjects\nKnowledge\nPublishNO SITES IN SCAN9+\n→\n▾\ntmp.fRwDaJ3pDG / Home / Overview\nHOME\n\nWorkspace overview and shortcuts. Find, Ask, and Do live in the header.\n\nPortfolio overview\nWhat needs attention today\nSHORTCUT\nOpens in Work\nExecution boards\nSHORTCUT\nOpens in Work\nAll projects\nSHORTCUT\nOpens in Projects\nSCOPE\n/tmp/tmp.fRwDaJ3pDG\nTIME HORIZON\nLast 24 hours\nThis week\nThis month\nThis quarter\nCOMPARE TO\nNone\nPrevious period\nSAVED VIEW\nDefault\nFILTERS\nNone\n\nEach sparkline point is one full week (7 consecutive UTC days), not a single day. Need at least two periods to draw a trend.\n\nGIT REPOSITORIES\n4\nPUBLISHED SITES\n0\nPLANNING ARTIFACTS\n4\nCOMMITS (7 DAYS)\n—\nLOC ADDED (7D)\n—\nLOC TOTAL (APPROX.)\n—\nSTANDARDS (AVG)\n47\nSNAPSHOT TIME\nJul 24, 2026, 1:17 PM\n\nConfidence: High. Scan finished in the last few minutes.\n\nOverview\n\nLast scan: Jul 24, 2026, 1:17 PM\n\nLOADING CHARTS…\nOpen Today\nMore\n\nScan-first control tower — not Plan editing. See repos, signals, and what moved.\n\nOPERATIONAL CONTROL TOWER\n\nDecision center for this workspace — urgency, freshness, and ownership. Scan: Jul 24, 2026, 1:17 PM. This is not the sa"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    }
+  ]
+}

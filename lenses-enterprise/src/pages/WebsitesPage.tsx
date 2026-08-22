@@ -3,15 +3,16 @@ import { SitesArtifactsHub } from '../components/sites'
 import { StudioInlineAssist } from '../components/StudioInlineAssist'
 import { WorkspaceStateFallback } from '../components/WorkspaceStateFallback'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
-import { PageHeader, StatePanel, TechnicalDetails } from '../components/page'
+import { PageHeader, StatePanel } from '../components/page'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { useNavigationMode } from '../nav/useNavigationMode'
 import {
-  FULL_WORKSPACE_UI,
   KNOWLEDGE_PUBLISH_COPILOT,
   STUDIO_VIEWER,
   STUDIO_VOCAB,
 } from '../nav/studioVisibleCopy'
+
+import { siteHealthSummary } from '../lib/siteHealthSummary'
 
 function WebsitesFlowView() {
   useLensesCopilotPage({ route: 'publish', defaultQuery: KNOWLEDGE_PUBLISH_COPILOT.publishWebsites })
@@ -30,45 +31,31 @@ function WebsitesFlowView() {
           { key: 'today', label: STUDIO_VOCAB.today, to: '/plan?tab=today' },
           { key: 'notes', label: STUDIO_VOCAB.workspaceNotes, to: '/workspace-md' },
           { key: 'blog', label: STUDIO_VOCAB.blog, to: '/blog' },
-          { key: 'static', label: 'Static preview shell', to: '/view/local-site/' },
           { key: 'home', label: STUDIO_VOCAB.overview, to: '/' },
         ]}
       />
-      <TechnicalDetails summary="Classic full-workspace websites list">
-        <p className="forge-support">
-          {FULL_WORKSPACE_UI.openFullWebsitesList}:{' '}
-          <a href="/websites" target="_blank" rel="noreferrer">
-            /websites
-          </a>{' '}
-          <span className="le-shortcut-pill">Legacy UI</span>
-        </p>
-      </TechnicalDetails>
       <StudioInlineAssist />
       <div className="le-card-grid">
-        {sites.map((w) => (
+        {sites.map((w) => {
+          const { healthSummary, readinessScore } = siteHealthSummary(w.html_total)
+          return (
           <div key={w.name} className="le-card">
             <h3>{w.name}</h3>
-            <p className="forge-support">
-              {w.html_total != null ? `${w.html_total} HTML pages` : ''}
+            <p className="forge-support le-site-health">
+              <span className="le-site-health__summary">{healthSummary}</span>
+              {' · '}
+              <span className="le-site-health__readiness">{readinessScore}</span>
             </p>
             <Link
               className="le-btn le-btn--primary"
               to={`/websites/browse/${encodeURIComponent(w.name)}`}
-              title="Embeds legacy full-workspace Sites browse + preview"
+              title="Open static site preview in Studio"
             >
-              {STUDIO_VIEWER.ctaEmbeddedSitesPreview}
+              {STUDIO_VIEWER.ctaStaticPreviewInStudio}
             </Link>
-            <div style={{ marginTop: '0.5rem' }}>
-              <Link
-                className="le-muted"
-                to={`/view/local-site/${encodeURIComponent(w.name)}/`}
-                title="Direct /local-site static tree in Studio—no legacy Sites chrome"
-              >
-                {STUDIO_VIEWER.ctaStaticPreviewInStudio}
-              </Link>
-            </div>
           </div>
-        ))}
+          )
+        })}
       </div>
       {sites.length === 0 ? (
         <StatePanel

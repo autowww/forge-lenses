@@ -45,6 +45,12 @@ const commandBarActionCounts = new Map<string, number>()
 const commandBarAskFailQueries = new Map<string, number>()
 const commandBarContextualSuggestionIds = new Map<string, number>()
 const commandBarDeepLinkCounts = new Map<string, number>()
+const tourStepCounts = new Map<string, number>()
+const wizardStepCounts = new Map<string, number>()
+
+function bumpCount(map: Map<string, number>, key: string) {
+  map.set(key, (map.get(key) ?? 0) + 1)
+}
 
 function consoleEnabled(): boolean {
   try {
@@ -98,6 +104,14 @@ export function recordStudioEvent(name: string, payload?: Record<string, unknown
     const c = String(payload.context)
     failureCounts.set(c, (failureCounts.get(c) ?? 0) + 1)
   }
+  if (name === 'tour_step' && payload?.stepId != null) {
+    const k = `${String(payload.stepId)}:${String(payload.action ?? 'view')}`
+    bumpCount(tourStepCounts, k)
+  }
+  if (name === 'first_run_wizard_step' && payload?.step != null) {
+    const k = `step-${String(payload.step)}:${String(payload.action ?? 'view')}`
+    bumpCount(wizardStepCounts, k)
+  }
   if (name === 'command_bar' && payload?.action != null) {
     const a = String(payload.action)
     commandBarActionCounts.set(a, (commandBarActionCounts.get(a) ?? 0) + 1)
@@ -149,6 +163,16 @@ export function recordPageFailure(context: string, detail?: string) {
   recordStudioEvent('page_failure', { context, detail })
 }
 
+/** In-app tour step impressions — view, next, finish, dismiss. */
+export function recordTourStep(stepId: string, action: 'view' | 'next' | 'finish' | 'dismiss' = 'view') {
+  recordStudioEvent('tour_step', { stepId, action })
+}
+
+/** First-run wizard funnel — step number and action (next, skip, finish). */
+export function recordFirstRunWizardStep(step: number, action: string) {
+  recordStudioEvent('first_run_wizard_step', { step, action })
+}
+
 export type StudioTelemetrySnapshot = {
   generatedAt: number
   events: StudioTelemetryEvent[]
@@ -161,6 +185,8 @@ export type StudioTelemetrySnapshot = {
     commandBarAskFailures: Record<string, number>
     commandBarContextualSuggestions: Record<string, number>
     commandBarDeepLinks: Record<string, number>
+    tourSteps: Record<string, number>
+    firstRunWizardSteps: Record<string, number>
   }
 }
 
@@ -177,6 +203,8 @@ export function getStudioTelemetrySnapshot(): StudioTelemetrySnapshot {
       commandBarAskFailures: Object.fromEntries(commandBarAskFailQueries),
       commandBarContextualSuggestions: Object.fromEntries(commandBarContextualSuggestionIds),
       commandBarDeepLinks: Object.fromEntries(commandBarDeepLinkCounts),
+      tourSteps: Object.fromEntries(tourStepCounts),
+      firstRunWizardSteps: Object.fromEntries(wizardStepCounts),
     },
   }
 }
@@ -191,6 +219,8 @@ export function clearStudioTelemetry() {
   commandBarAskFailQueries.clear()
   commandBarContextualSuggestionIds.clear()
   commandBarDeepLinkCounts.clear()
+  tourStepCounts.clear()
+  wizardStepCounts.clear()
 }
 
 export function installGlobalTelemetryApi() {

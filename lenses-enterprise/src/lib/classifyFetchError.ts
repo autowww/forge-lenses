@@ -1,4 +1,5 @@
 import { ApiError } from '../api/http'
+import { API_FEATURE_DISABLED } from './apiInternalFields'
 
 export type FetchFailureKind =
   | 'permission'
@@ -80,7 +81,7 @@ export type CopilotFailureLike = {
 }
 
 const NON_RETRIABLE_COPILOT_CODES = new Set([
-  'feature_disabled',
+  API_FEATURE_DISABLED,
   'invalid_tool_mode',
   'missing_message',
   'forbidden',

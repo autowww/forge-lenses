@@ -5,7 +5,7 @@ import { ChartMountSection, ObjectMetaBar, PageHeader } from '../components/page
 import { ProjectLocalNav } from '../components/projects'
 import { chargeMdCandidates } from '../lib/copilotPageEvidence'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
-import { FULL_WORKSPACE_UI, PROJECT_OBJECT_HOME, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
+import { PROJECT_OBJECT_HOME, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 
 const BLOCKS: { kind: string; title: string }[] = [
   { kind: 'commit_weekly', title: 'Activity (90 days)' },
@@ -50,18 +50,7 @@ export function ProjectChartsPage() {
             ← {STUDIO_VOCAB.projectDashboard}
           </Link>
         }
-        subtitle={
-          <>
-            {PROJECT_OBJECT_HOME.chartsPageLead}{' '}
-            <a
-              href={`/projects/${enc}/charts-api`}
-              title={FULL_WORKSPACE_UI.navHint}
-            >
-              {FULL_WORKSPACE_UI.chartsApiNote}
-            </a>
-            .
-          </>
-        }
+        subtitle={PROJECT_OBJECT_HOME.chartsPageLead}
       />
       <ProjectLocalNav projectName={decoded} />
       <ObjectMetaBar

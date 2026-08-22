@@ -7,7 +7,7 @@ export { PageAiInsightCard, type PageAiInsightCardProps } from './PageAiInsightC
 export { PageHeaderActionsMenu, type PageHeaderSecondaryItem } from './PageHeaderActionsMenu'
 export { PageHeader, type PageHeaderProps, type PageHeaderStatusChip } from './PageHeader'
 export { PageSummaryBand, type PageSummaryBandProps } from './PageSummaryBand'
-export { TechnicalDetails, type TechnicalDetailsProps } from './TechnicalDetails'
+export { TechnicalDetails, canShowTechnicalDetails, showTechnical, INSPECT_MODE_STORAGE_KEY, type TechnicalDetailsProps } from './TechnicalDetails'
 export { AdvancedSurfaceFraming } from './AdvancedSurfaceFraming'
 export { StatePanel, type StatePanelProps, type StatePanelVariant } from './StatePanel'
 export { ResourceFetchStatus, type ResourceFetchStatusProps } from './ResourceFetchStatus'

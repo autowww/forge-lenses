@@ -15,6 +15,25 @@ type RmOpt = { rel_path: string; repo_hint?: string }
 
 type PickerKind = 'wbs' | 'roadmap' | 'repo' | 'workitem' | null
 
+/** Human-facing backlog title for selects (never raw path as primary label). */
+function backlogLabel(relPath: string, repoHint: string): string {
+  return wbsBacklogPickerLabel(relPath, repoHint)
+}
+
+export function humanLabel(relPath: string, repoHint: string): string {
+  return backlogLabel(relPath, repoHint)
+}
+
+function displayTitle(relPath: string, repoHint: string): string {
+  const product = clusterHeadingLabel(repoHint || '__root__')
+  const loc = backlogLabel(relPath, repoHint)
+  return loc === 'Backlog' ? product : `${product} · ${loc}`
+}
+
+function friendlyTitle(relPath: string, repoHint: string): string {
+  return displayTitle(relPath, repoHint)
+}
+
 type Props = {
   repo: string
   wbsP: string
@@ -543,10 +562,10 @@ export function PlanScopeBar({
               {wbsClusters.flatMap((cl) =>
                 cl.items.map((w) => {
                   const itemRh = (w.repo_hint || '').trim()
-                  const label = wbsBacklogPickerLabel(w.rel_path, itemRh)
+                  const label = friendlyTitle(w.rel_path, itemRh)
                   return (
                     <option key={w.rel_path} value={w.rel_path} title={w.rel_path}>
-                      [{clusterHeadingLabel(cl.repoHint)}] {label}
+                      {label}
                     </option>
                   )
                 }),
@@ -563,10 +582,10 @@ export function PlanScopeBar({
               <option value="">— none —</option>
               {filteredRoadmaps.map((r) => {
                 const rh = (r.repo_hint || '').trim() || scopeRepoHint
-                const label = roadmapLocationLabel(r.rel_path, rh)
+                const loc = roadmapLocationLabel(r.rel_path, rh)
                 return (
                   <option key={r.rel_path} value={r.rel_path} title={r.rel_path}>
-                    {label}
+                    {clusterHeadingLabel(rh || '__root__')} · {loc}
                   </option>
                 )
               })}

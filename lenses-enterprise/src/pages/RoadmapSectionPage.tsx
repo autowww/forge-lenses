@@ -1,27 +1,33 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { apiGetJson } from '../api/http'
-import { NestedRoadmapWorkspaceFrame, PlanningClusterLocalNav } from '../components/plan'
-import { FULL_WORKSPACE_UI } from '../nav/studioVisibleCopy'
+import { NestedRoadmapWorkspaceFrame, PlanningClusterLocalNav, RoadmapSectionPreview } from '../components/plan'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
+
+type RoadmapSectionPayload = {
+  ok?: boolean
+  title?: string
+  section_id?: string
+  body_lines?: string[]
+}
 
 export function RoadmapSectionPage() {
   useLensesCopilotPage({ route: 'roadmap-section' })
   const [sp] = useSearchParams()
   const p = sp.get('p') || ''
   const section = sp.get('section') || ''
-  const [html, setHtml] = useState<string | null>(null)
+  const [payload, setPayload] = useState<RoadmapSectionPayload | null>(null)
 
   useEffect(() => {
     if (!p || !section) {
-      setHtml(null)
+      setPayload(null)
       return
     }
-    apiGetJson<{ ok?: boolean; html?: string }>(
+    apiGetJson<RoadmapSectionPayload>(
       `/api/roadmap-section?p=${encodeURIComponent(p)}&section=${encodeURIComponent(section)}`,
     )
-      .then((r) => setHtml(r.html ?? null))
-      .catch(() => setHtml(null))
+      .then(setPayload)
+      .catch(() => setPayload(null))
   }, [p, section])
 
   return (
@@ -29,12 +35,7 @@ export function RoadmapSectionPage() {
       <PlanningClusterLocalNav />
       <h1 className="le-h1">Roadmap section preview</h1>
       <p className="forge-support">
-        Fragment from <code>/api/roadmap-section</code>. Query: <code>p</code>, <code>section</code>. Secondary full
-        workspace:{' '}
-        <a href="/roadmaps/summary" title={FULL_WORKSPACE_UI.navHint}>
-          {FULL_WORKSPACE_UI.openRoadmapsSummary}
-        </a>
-        .
+        Structured section body from <code>/api/roadmap-section</code>. Query: <code>p</code>, <code>section</code>.
       </p>
       <section className="le-roadmap-section-horizon" aria-label="Roadmap horizon">
         <h2 className="le-plan-section__title">Roadmap horizon</h2>
@@ -44,12 +45,13 @@ export function RoadmapSectionPage() {
         </p>
         <NestedRoadmapWorkspaceFrame frameMinHeight="min(44vh, 24rem)" />
       </section>
-      {html && (
-        <div
-          className="lenses-roadmap-preview-doc md-prose"
-          dangerouslySetInnerHTML={{ __html: html }}
+      {payload?.ok ? (
+        <RoadmapSectionPreview
+          title={payload.title ?? section}
+          bodyLines={payload.body_lines ?? []}
+          sectionId={payload.section_id ?? section}
         />
-      )}
+      ) : null}
     </>
   )
 }

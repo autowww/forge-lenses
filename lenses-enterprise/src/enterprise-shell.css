@@ -1,5 +1,17 @@
 /* Lenses Enterprise shell — Forge / Kitchen Sink aligned tokens */
-:root {
+:root,
+html[data-bs-theme="light"] {
+  --le-bg: #f4f7fb;
+  --le-bg-elevated: #ffffff;
+  --le-text: #0f172a;
+  --le-muted: #64748b;
+  --le-amber: #d97706;
+  --le-cyan: #0891b2;
+  --le-border: rgba(15, 23, 42, 0.12);
+  --le-glow-amber: rgba(245, 158, 11, 0.16);
+}
+
+html[data-bs-theme="dark"] {
   --le-bg: #0a0e17;
   --le-bg-elevated: #111827;
   --le-text: #e5e7eb;
@@ -8,6 +20,9 @@
   --le-cyan: #06b6d4;
   --le-border: rgba(148, 163, 184, 0.14);
   --le-glow-amber: rgba(245, 158, 11, 0.12);
+}
+
+:root {
   /** Shared horizontal inset from any shell edge (window or panel boundary). */
   --le-panel-inset-x: clamp(0.9rem, 2.8vw, 1.85rem);
   /** Main / sidebar vertical padding (keep in sync). */
@@ -132,6 +147,36 @@
   font-size: 0.75rem;
   line-height: 1.45;
   color: rgba(148, 163, 184, 0.85);
+}
+
+.le-splash__progress {
+  margin: 1rem 0 0;
+  text-align: left;
+}
+
+.le-splash__progress-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+}
+
+.le-splash__progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.95), rgba(129, 140, 248, 0.95));
+  transition: width 0.35s ease;
+}
+
+.le-splash__progress-stage {
+  margin: 0.45rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.le-splash__build-inspect {
+  margin-top: 0.85rem;
 }
 
 .le-splash__build {
@@ -686,6 +731,80 @@
   background: transparent;
   color: var(--le-muted);
   cursor: not-allowed;
+}
+
+.le-context-bar__refresh {
+  border-style: solid;
+  cursor: pointer;
+  color: var(--le-text);
+}
+
+.le-context-bar__refresh:not(:disabled):hover {
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+.le-context-bar__refresh:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.le-context-bar__refresh--secondary {
+  margin-left: 0.35rem;
+}
+
+.le-kpi-card__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.le-kpi-card__progress-fill {
+  height: 100%;
+  background: rgba(6, 182, 212, 0.75);
+  transition: width 0.25s ease;
+}
+
+.le-kpi-card__job-hint {
+  margin: 0.2rem 0 0;
+  font-size: 0.68rem;
+  color: var(--le-muted);
+  line-height: 1.2;
+}
+
+.le-kpi-card--link:is(button) {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  appearance: none;
+}
+
+.le-heat--high .le-kpi-card__value,
+.le-heat--high.le-kpi-card__value,
+.le-heat--high {
+  color: #f97316;
+}
+
+.le-heat--mid .le-kpi-card__value,
+.le-heat--mid.le-kpi-card__value,
+.le-heat--mid {
+  color: #eab308;
+}
+
+.le-heat--low .le-kpi-card__value,
+.le-heat--low.le-kpi-card__value,
+.le-heat--low {
+  color: var(--le-text);
+}
+
+.le-cc-table .le-heat--high {
+  color: #f97316;
+}
+
+.le-cc-table .le-heat--mid {
+  color: #eab308;
 }
 
 .le-kpi-strip {
@@ -5785,4 +5904,363 @@
 
 .le-board-share-panel {
   margin: 0.75rem 0 1rem;
+}
+
+/* FLS3-005 — matrix health tier + KPI sparkline accents */
+.le-roadmap-matrix__healthTier {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  background: var(--le-muted, #64748b);
+}
+
+.le-roadmap-matrix__healthTier--green {
+  background: #22c55e;
+}
+
+.le-roadmap-matrix__healthTier--amber {
+  background: #f59e0b;
+}
+
+.le-roadmap-matrix__healthTier--red {
+  background: #ef4444;
+}
+
+.le-roadmap-matrix__healthTier--muted {
+  background: #64748b;
+}
+
+.le-roadmap-matrix__milestoneSparkline {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 1.1rem;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.le-roadmap-matrix__spark {
+  display: block;
+  width: 3px;
+  min-height: 2px;
+  background: rgba(6, 182, 212, 0.85);
+  border-radius: 1px;
+}
+
+/* FLS3-006 — publish health badge + drill-down */
+.le-top-nav__publish-health--ok {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.le-top-nav__publish-health--warn {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+}
+
+.le-top-nav__publish-health--muted {
+  background: rgba(100, 116, 139, 0.25);
+  color: #cbd5e1;
+}
+
+.le-publish-health-popover {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.le-publish-health-popover__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(2, 6, 23, 0.45);
+  pointer-events: auto;
+  cursor: default;
+}
+
+.le-publish-health-popover__panel {
+  position: fixed;
+  z-index: 1201;
+  min-width: min(22rem, calc(100vw - 1.5rem));
+  max-width: 28rem;
+  padding: 0.85rem 1rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  background: var(--le-panel, #0f172a);
+  color: var(--le-fg, #e2e8f0);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.le-publish-health-popover__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.le-publish-health-popover__header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.le-publish-health-popover__sites {
+  list-style: none;
+  margin: 0.75rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.le-publish-health-popover__sites li {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.le-publish-health-popover__footer {
+  margin-top: 0.75rem;
+}
+
+.le-timeline-metrics {
+  margin: 1rem 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.le-timeline-metrics__bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.le-timeline-metrics__bar-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 1fr) 3fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.le-timeline-metrics__bar-track {
+  display: block;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.35);
+  overflow: hidden;
+}
+
+.le-timeline-metrics__bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #06b6d4, #22c55e);
+}
+
+/* FLS4-001 — React nested roadmap horizon */
+.le-nested-roadmap {
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.le-nested-roadmap__header {
+  margin-bottom: 0.65rem;
+}
+
+.le-nested-roadmap__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.le-nested-roadmap__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.le-nested-roadmap__bc-btn {
+  border: 0;
+  background: transparent;
+  color: var(--le-accent, #06b6d4);
+  cursor: pointer;
+  padding: 0;
+}
+
+.le-nested-roadmap__bc-sep {
+  opacity: 0.6;
+  margin: 0 0.15rem;
+}
+
+.le-nested-roadmap__grid {
+  display: grid;
+  grid-template-columns: minmax(5rem, 0.9fr) repeat(var(--le-nrm-cols, 4), minmax(3.5rem, 1fr));
+  gap: 0.35rem 0.5rem;
+  align-items: stretch;
+}
+
+.le-nested-roadmap__track-row {
+  display: contents;
+}
+
+.le-nested-roadmap__track-label {
+  font-size: 0.8rem;
+  color: var(--le-muted, #94a3b8);
+  align-self: center;
+}
+
+.le-nested-roadmap__col-head {
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--le-muted, #94a3b8);
+}
+
+.le-nested-roadmap__lane {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 2 / -1;
+  gap: 0.35rem;
+  min-height: 2rem;
+}
+
+.le-nested-roadmap__bar {
+  border: 0;
+  border-radius: 0.35rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+  text-align: left;
+  min-height: 1.6rem;
+}
+
+.le-nested-roadmap__bar--drill {
+  cursor: pointer;
+}
+
+.le-nested-roadmap__bar--cyan { background: rgba(6, 182, 212, 0.25); }
+.le-nested-roadmap__bar--emerald { background: rgba(34, 197, 94, 0.22); }
+.le-nested-roadmap__bar--amber { background: rgba(245, 158, 11, 0.22); }
+.le-nested-roadmap__bar--violet { background: rgba(139, 92, 246, 0.22); }
+
+.le-nested-roadmap__bar--selected {
+  outline: 2px solid rgba(6, 182, 212, 0.65);
+  outline-offset: 1px;
+}
+
+.le-nested-roadmap__tier-detail {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.le-nested-roadmap__tier-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.le-nested-roadmap__tier-summary {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+}
+
+.le-nested-roadmap__tier-meta {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+}
+
+.le-nested-roadmap__tier-meta dt {
+  color: var(--le-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.le-nested-roadmap__tier-meta dd {
+  margin: 0;
+}
+
+.le-nested-roadmap__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(2, 6, 23, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.le-nested-roadmap__modal-backdrop--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.le-nested-roadmap__modal {
+  width: min(52rem, 96vw);
+  max-height: 80vh;
+  overflow: auto;
+  background: var(--le-panel, #0f172a);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 0.65rem;
+  padding: 0.85rem 1rem;
+  transform: translateY(0.65rem) scale(0.98);
+  opacity: 0;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.le-nested-roadmap__modal--open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.le-nested-roadmap__modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+/* --- Light scheme shell polish (default Studio) ------------------------- */
+html[data-bs-theme="light"] .le-header {
+  background: rgba(255, 255, 255, 0.94);
+}
+
+html[data-bs-theme="light"] .le-header--electron {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-bottom-color: var(--le-border);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+}
+
+html[data-bs-theme="light"] .le-header--electron .le-header__row--brand {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.06);
+}
+
+html[data-bs-theme="light"] .le-header--electron .le-nav {
+  background: rgba(248, 250, 252, 0.98);
+  border-top-color: rgba(8, 145, 178, 0.12);
+}
+
+html[data-bs-theme="light"] .le-kpi-strip {
+  background: rgba(6, 182, 212, 0.06);
+}
+
+html[data-bs-theme="light"] .le-splash__panel {
+  box-shadow: 0 12px 48px rgba(15, 23, 42, 0.1);
+}
+
+html[data-bs-theme="light"] .le-brand-icon {
+  color: #ffffff;
 }

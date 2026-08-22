@@ -40,6 +40,14 @@ Symptoms during [Studio 101](05-studio-101.md) or daily review — before assumi
 1. Filter Network tab for **`/api/`** — paths should hit your Lenses host, not an old Forge Fleet URL.
 2. Cross-check [Configuration reference](../reference/config-env.md) for `LENSES_*` overrides that rewrite Studio’s fetch base.
 
+## Sparse workspace / thin pages
+
+When Studio shows **“What you'll see with a multi-repo workspace”** cards on Home, Projects, or Plan, the scan root is too narrow or missing WBS/roadmap files.
+
+1. Set **`LENSES_WORKSPACE_ROOT`** to your multi-repo hub (e.g. the folder that contains `forge-lenses/`, `forgesdlc/`, `blueprints/`).
+2. Restart Lenses and wait for the workspace scan to finish (splash clears).
+3. Confirm backlog and roadmap markdown exist in scanned repos — see [Classic UI retirement](studio-classic-ui-retirement.md) for Studio vs Classic surface map.
+
 ## Decision aid
 
 See the **blank Studio** diagram in [Studio route atlas](14-studio-route-map.md) for the same decision tree in visual form.

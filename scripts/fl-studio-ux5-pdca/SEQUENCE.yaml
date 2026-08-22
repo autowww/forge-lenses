@@ -1,0 +1,25 @@
+# Forge Lenses Studio UX5 remediation — phase order
+
+phases:
+  W00:
+    title: PDCA scaffold and gate harness
+    depends_on: []
+  W01:
+    title: Nested roadmap parity polish
+    backlog: [FLS5-001]
+    depends_on: [W00]
+  W02:
+    title: Sites browse unified chrome
+    backlog: [FLS5-002]
+    depends_on: [W01]
+  W03:
+    title: Index bundle split (<600 KB)
+    backlog: [FLS5-003]
+    depends_on: [W02]
+  W04:
+    title: Classic render.py page builder deletion
+    backlog: [FLS5-004]
+    depends_on: [W03]
+  W05:
+    title: Playwright crawl v6 + backlog v6 + closeout
+    depends_on: [W04]

@@ -3,7 +3,26 @@
  */
 const { contextBridge, ipcRenderer } = require("electron");
 
+function resolveStudioMode() {
+  if (
+    process.env.LENSES_VIRTUAL_CAMERA_STUDIO === "1" ||
+    process.env.LENSES_VIRTUAL_CAMERA_STUDIO === "true"
+  ) {
+    return "virtual-camera";
+  }
+  if (
+    process.env.LENSES_STUDIO_UI === "1" ||
+    process.env.LENSES_STUDIO_UI === "true" ||
+    process.env.LENSES_ENTERPRISE_UI === "1" ||
+    process.env.LENSES_ENTERPRISE_UI === "true"
+  ) {
+    return "studio";
+  }
+  return null;
+}
+
 contextBridge.exposeInMainWorld("lensesElectron", {
+  studioMode: resolveStudioMode(),
   minimize: () => ipcRenderer.invoke("win-minimize"),
   maximize: () => ipcRenderer.invoke("win-maximize"),
   close: () => ipcRenderer.invoke("win-close"),

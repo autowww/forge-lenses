@@ -2,6 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 import { WorkspaceLensControl } from './WorkspaceLensControl'
+import { getAuthStatus, type AuthStatus } from '../api/auth'
+import { useWorkspace } from '../context/WorkspaceContext'
 import { getStudioAboutVersionLine } from '../util/studioBuildInfo'
 import { useReleaseNotes } from '../context/ReleaseNotesContext'
 import { useNavigationMode } from '../nav/useNavigationMode'
@@ -78,10 +80,20 @@ export function HeaderSettingsMenu() {
   const menuId = useId()
   const [open, setOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const { mode } = useNavigationMode()
   const { openReleaseNotes } = useReleaseNotes()
   const gearSections = getSettingsGearMenuSections(mode)
+  const { state } = useWorkspace()
+  const workspaceProfile =
+    state?.workspace_root?.split(/[/\\]/).filter(Boolean).pop() ?? 'Local workspace'
+
+  useEffect(() => {
+    void getAuthStatus()
+      .then(setAuthStatus)
+      .catch(() => setAuthStatus(null))
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -119,7 +131,38 @@ export function HeaderSettingsMenu() {
       </button>
       {open ? (
         <div id={menuId} className="le-settings-menu" role="menu">
-          <p className="le-settings-menu__section">{ADMIN_INSPECT_COPY.settingsSectionPreferences}</p>
+          {!authStatus?.session_ok ? (
+            <p className="le-settings-menu__localIdentity le-settings-menu__micro">
+              <span className="le-settings-menu__workspaceProfile" title={state?.workspace_root}>
+                Workspace: {workspaceProfile}
+              </span>
+              {' — '}
+              <span className="le-settings-menu__guidedSignIn">
+                {authStatus?.expected_configured
+                  ? 'Sign in optional — GitHub token enriches attribution.'
+                  : 'Local-first profile — no sign-in required.'}
+              </span>
+              {' '}
+              <NavLink to="/tutorials" className="le-settings-menu__item--link" onClick={close}>
+                Workspace docs
+              </NavLink>
+              {authStatus?.expected_configured ? (
+                <>
+                  {' · '}
+                  <NavLink to="/settings/llm" className="le-settings-menu__item--link" onClick={close}>
+                    Sign in
+                  </NavLink>
+                </>
+              ) : null}
+            </p>
+          ) : (
+            <p className="le-settings-menu__localIdentity le-settings-menu__micro">
+              <span className="le-settings-menu__workspaceProfile">Signed in as {authStatus.session_login}</span>
+              {' · '}
+              <span className="le-settings-menu__workspaceProfile">Workspace: {workspaceProfile}</span>
+            </p>
+          )}
+          <p className="le-settings-menu__section">{ADMIN_INSPECT_COPY.settingsSectionSetup}</p>
           <p className="le-settings-menu__micro" id="le-gear-pref-intro">
             {ADMIN_INSPECT_COPY.gearMenuPreferencesIntro}
           </p>

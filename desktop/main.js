@@ -65,13 +65,51 @@ function lensesEnterpriseBuildMeta() {
   return { version, commit, buildTime: "" };
 }
 
+function virtualCameraStudioFromEnv() {
+  return (
+    process.env.LENSES_VIRTUAL_CAMERA_STUDIO === "1" ||
+    process.env.LENSES_VIRTUAL_CAMERA_STUDIO === "true"
+  );
+}
+
 function studioUiFromEnv() {
   return (
+    virtualCameraStudioFromEnv() ||
     process.env.LENSES_STUDIO_UI === "1" ||
     process.env.LENSES_STUDIO_UI === "true" ||
     process.env.LENSES_ENTERPRISE_UI === "1" ||
     process.env.LENSES_ENTERPRISE_UI === "true"
   );
+}
+
+function productDisplayName() {
+  if (virtualCameraStudioFromEnv()) return "Virtual Camera Studio";
+  if (
+    process.env.LENSES_STUDIO_UI === "1" ||
+    process.env.LENSES_STUDIO_UI === "true" ||
+    process.env.LENSES_ENTERPRISE_UI === "1" ||
+    process.env.LENSES_ENTERPRISE_UI === "true"
+  ) {
+    return "Forge Studio";
+  }
+  return "Forge Lenses";
+}
+
+/** Client-side route under `/studio` basename (leading slash). */
+function studioInitialSubpath() {
+  if (virtualCameraStudioFromEnv()) return "/labs/virtual-camera";
+  const raw = (process.env.LENSES_STUDIO_INITIAL_PATH || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("/")) return raw.replace(/\/+$/, "") || "";
+  return "/" + raw.replace(/^\/+/, "");
+}
+
+/** @param {number} port */
+function studioDashboardUrl(port) {
+  const base = `http://127.0.0.1:${port}/studio`;
+  const sub = studioInitialSubpath();
+  if (!sub) return `${base}/`;
+  return `${base}${sub}`;
 }
 
 /** @param {string} base */
@@ -166,6 +204,10 @@ let splashRevealTimer = null;
 let splashWaitInterval = null;
 
 /** Minimum time the splash stays visible (ms), then the main window appears. */
+function splashMinVisibleMs() {
+  return virtualCameraStudioFromEnv() ? 400 : SPLASH_MIN_VISIBLE_MS;
+}
+
 const SPLASH_MIN_VISIBLE_MS = 2000;
 
 let intentionalShutdown = false;
@@ -261,13 +303,17 @@ function openSplashWindow() {
     show: false,
     center: true,
     icon: appIconPath(),
-    title: studioUiFromEnv() ? "Forge Studio" : "Forge Lenses",
+    title: productDisplayName(),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
-  const variant = studioUiFromEnv() ? "studio" : "lenses";
+  const variant = virtualCameraStudioFromEnv()
+    ? "virtual-camera"
+    : studioUiFromEnv()
+      ? "studio"
+      : "lenses";
   const meta = lensesEnterpriseBuildMeta();
   /** @type {Record<string, string>} */
   const query = { variant };
@@ -440,8 +486,10 @@ async function resolveWorkspaceRoot() {
   return path.resolve(chosen);
 }
 
-/** Default `python3 -m lenses` port (matches CLI). Studio always uses this (see resolvePortAndAttachMode). */
+/** Default `python3 -m lenses` port (matches CLI). Full Studio uses this. */
 const DEFAULT_LENSES_PORT = 8080;
+/** Virtual Camera Studio runs its own Lenses instance so it does not share :8080 with Forge Studio. */
+const DEFAULT_VIRTUAL_CAMERA_STUDIO_PORT = 8096;
 
 /**
  * @returns {number}
@@ -451,6 +499,9 @@ function studioLensesPort() {
   const envPort = raw && String(raw).trim() ? parseInt(String(raw).trim(), 10) : NaN;
   if (Number.isFinite(envPort) && envPort > 0 && envPort < 65536) {
     return envPort;
+  }
+  if (virtualCameraStudioFromEnv()) {
+    return DEFAULT_VIRTUAL_CAMERA_STUDIO_PORT;
   }
   return DEFAULT_LENSES_PORT;
 }
@@ -551,7 +602,7 @@ async function waitForTcpPortFree(port, timeoutMs = 10_000) {
 function probeExistingLensesServer(port, expectedWorkspaceRoot) {
   const url = `http://127.0.0.1:${port}/api/workspace-state`;
   return new Promise((resolve) => {
-    const req = http.get(url, { timeout: 1500 }, (res) => {
+    const req = http.get(url, { timeout: 8000 }, (res) => {
       const chunks = [];
       res.on("data", (c) => chunks.push(c));
       res.on("end", () => {
@@ -582,8 +633,8 @@ function probeExistingLensesServer(port, expectedWorkspaceRoot) {
 }
 
 /**
- * Studio always uses :8080 (or ``LENSES_PORT``). Reuse Lenses when workspace matches;
- * otherwise kill whatever holds the port and spawn fresh.
+ * Studio uses a fixed loopback port per shell (8080 Forge Studio, 8096 Virtual Camera Studio).
+ * Reuse Lenses when the workspace matches; otherwise kill whatever holds the port and spawn fresh.
  * @param {string} workspaceRoot
  * @returns {Promise<{ attach: boolean; port: number }>}
  */
@@ -674,7 +725,9 @@ async function startLensesAndShowWindow() {
   await whenSplashDomReady();
   await setSplashPhase(
     "Preparing connection…",
-    `Studio uses 127.0.0.1:${studioLensesPort()} only. Reuse Lenses when the workspace matches; otherwise the process on that port is stopped and Python is started. Search FTS indexing runs in the background after a new server starts.`
+    virtualCameraStudioFromEnv()
+      ? `Virtual Camera Studio uses 127.0.0.1:${studioLensesPort()} only (not Forge Studio on :8080).`
+      : `Studio uses 127.0.0.1:${studioLensesPort()} only. Reuse Lenses when the workspace matches; otherwise the process on that port is stopped and Python is started. Search FTS indexing runs in the background after a new server starts.`,
   );
 
   const { attach, port } = await resolvePortAndAttachMode(workspaceRoot);
@@ -694,24 +747,40 @@ async function startLensesAndShowWindow() {
     );
 
     const stickerboardPublicBase = resolveStickerboardPublicBase(workspaceRoot);
+    const vcOnly = virtualCameraStudioFromEnv();
     const env = {
       ...process.env,
       PYTHONPATH: REPO_ROOT,
       LENSES_WORKSPACE_ROOT: workspaceRoot,
       LENSES_PORT: String(port),
-      LENSES_SEARCH_REINDEX_ON_START: "1",
+      LENSES_SEARCH_REINDEX_ON_START: vcOnly
+        ? "0"
+        : process.env.LENSES_SEARCH_REINDEX_ON_START ?? "1",
       LENSES_STICKERBOARD_PUBLIC_BASE: stickerboardPublicBase,
-      LENSES_STICKERBOARD_PORT: process.env.LENSES_STICKERBOARD_PORT ?? "9999",
+      LENSES_STICKERBOARD_PORT: vcOnly
+        ? "0"
+        : process.env.LENSES_STICKERBOARD_PORT ?? "9999",
       LENSES_STICKERBOARD_LOOPBACK_DEV_AUTH:
         process.env.LENSES_STICKERBOARD_LOOPBACK_DEV_AUTH ?? "1",
       // Blueprints Wizard session APIs + interpret/refine (same LLM stack as Chat). Opt out with LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=0 on the shell before launch.
-      LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD:
-        process.env.LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD ?? "1",
-      LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH:
-        process.env.LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH ?? "1",
-      LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3:
-        process.env.LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3 ?? "1",
-      LENSES_EXPERIMENTAL_FOUNDRY: process.env.LENSES_EXPERIMENTAL_FOUNDRY ?? "1",
+      LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD: vcOnly
+        ? "0"
+        : process.env.LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD ?? "1",
+      LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH: vcOnly
+        ? "0"
+        : process.env.LENSES_EXPERIMENTAL_ORCHESTRATION_GRAPH ?? "1",
+      LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3: vcOnly
+        ? "0"
+        : process.env.LENSES_EXPERIMENTAL_AGENTIC_BRIDGE_B3 ?? "1",
+      LENSES_EXPERIMENTAL_FOUNDRY: vcOnly
+        ? "0"
+        : process.env.LENSES_EXPERIMENTAL_FOUNDRY ?? "1",
+      LENSES_EXPERIMENTAL_VIRTUAL_CAMERA:
+        process.env.LENSES_EXPERIMENTAL_VIRTUAL_CAMERA ?? "1",
+      LENSES_WORKSPACE_SCAN_TIMEOUT_SEC:
+        process.env.LENSES_WORKSPACE_SCAN_TIMEOUT_SEC ?? "180",
+      LENSES_SCAN_CACHE_SEC: process.env.LENSES_SCAN_CACHE_SEC ?? "120",
+      LENSES_OVERVIEW_CACHE_SEC: process.env.LENSES_OVERVIEW_CACHE_SEC ?? "300",
     };
     const oidcFile = readDotEnvFile(
       path.join(workspaceRoot, ".lenses-local", "lenses-oidc.env"),
@@ -806,14 +875,15 @@ async function startLensesAndShowWindow() {
   await setSplashPhase("Server is up — loading the app…", `Opening the dashboard in the main window.`);
 
   const useStudio = studioUiFromEnv();
+  const vcOnly = virtualCameraStudioFromEnv();
   const dashboardUrl = useStudio
-    ? `http://127.0.0.1:${port}/studio/`
+    ? studioDashboardUrl(port)
     : `http://127.0.0.1:${port}/`;
 
   const preloadPath = path.join(__dirname, "preload.js");
   const winOpts = {
-    width: 1280,
-    height: 840,
+    width: vcOnly ? 1100 : 1280,
+    height: vcOnly ? 720 : 840,
     show: false,
     icon: appIconPath(),
     backgroundColor: "#0a0e17",
@@ -859,7 +929,7 @@ async function startLensesAndShowWindow() {
       showMain();
       return;
     }
-    const wait = Math.max(0, SPLASH_MIN_VISIBLE_MS - (Date.now() - start));
+    const wait = Math.max(0, splashMinVisibleMs() - (Date.now() - start));
     if (wait === 0) {
       showMain();
     } else {
@@ -879,6 +949,13 @@ async function startLensesAndShowWindow() {
 }
 
 app.whenReady().then(() => {
+  if (virtualCameraStudioFromEnv()) {
+    app.setName("Virtual Camera Studio");
+  } else if (studioUiFromEnv()) {
+    app.setName("Forge Studio");
+  } else {
+    app.setName("Forge Lenses");
+  }
   // Hide the default File/Edit/… menu bar (Linux/Windows).
   Menu.setApplicationMenu(null);
   startLensesAndShowWindow().catch((err) => {

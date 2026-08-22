@@ -786,6 +786,9 @@ export function LensesCopilotRail() {
     return null
   }
 
+  /** defaultOpen: sources panel expanded on Ask */
+  const sourcesExpanded = true
+
   return (
     <aside className="le-copilot-rail" aria-label="Lenses Copilot">
       <div className="le-copilot-rail__header">
@@ -1061,8 +1064,8 @@ export function LensesCopilotRail() {
                   </p>
                 ) : null}
                 {m.role === 'assistant' && m.citations && m.citations.length > 0 ? (
-                  <details className="le-copilot-rail__citations">
-                    <summary>Context ({m.citations.length})</summary>
+                  <details className="le-copilot-rail__citations" open={sourcesExpanded}>
+                    <summary>Sources ({m.citations.length})</summary>
                     <ol>
                       {m.citations.map((c) => (
                         <li key={c.id ?? `${c.ref}-${c.title}`}>

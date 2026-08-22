@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useWorkspace } from '../../context/WorkspaceContext'
 import { useResilientJsonBlock } from '../../hooks/useResilientJsonBlock'
 import { StatePanel } from '../page/StatePanel'
+import { isScanOnlyProvider } from '../../lib/apiInternalFields'
 import { recordPageFailure } from '../../telemetry/studioTelemetry'
 
 type WhatLiveRow = {
@@ -165,7 +166,7 @@ export function DeliveryControlTowerCard() {
       />
     )
   } else {
-    const scanOnly = data.provider_kind === 'scan_only'
+    const scanOnly = isScanOnlyProvider(data)
     const live = data.what_is_live ?? []
     const blocked = data.blocked_promotions ?? []
     const freezes = (data.freeze_windows ?? []).filter((f) => f.active)

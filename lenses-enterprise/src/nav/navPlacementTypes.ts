@@ -20,6 +20,7 @@ export type SideNavEntry = {
     | 'knowledge_learn'
     | 'knowledge_evidence'
     | 'knowledge_govern'
+    | 'knowledge_labs'
     | 'knowledge_build'
     | 'publish_sites'
     | 'publish_stories'

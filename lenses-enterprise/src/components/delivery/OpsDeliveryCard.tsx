@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import { useWorkspace } from '../../context/WorkspaceContext'
 import { useResilientJsonBlock } from '../../hooks/useResilientJsonBlock'
 import { StatePanel } from '../page/StatePanel'
+import { isScanOnlyProvider } from '../../lib/apiInternalFields'
 import { recordPageFailure } from '../../telemetry/studioTelemetry'
 
 type DoraPayload = {
@@ -92,7 +93,7 @@ export function OpsDeliveryCard() {
         description="Set LENSES_EXPERIMENTAL_OPS_DELIVERY=1 (default on) to enable this card."
       />
     )
-  } else if (data.provider_kind === 'scan_only') {
+  } else if (isScanOnlyProvider(data)) {
     inner = (
       <StatePanel
         variant="empty"

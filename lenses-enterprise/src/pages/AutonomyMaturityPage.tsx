@@ -50,6 +50,14 @@ export function AutonomyMaturityPage() {
   return (
     <>
       <PageHeader title="Autonomy maturity" subtitle={ROUTE_SUBTITLE.autonomyMaturity} />
+      <section className="le-card le-readiness-story" aria-label="readinessStory">
+        <h2 className="le-cc-section__title">Ready to delegate?</h2>
+        <p className="forge-support plainReadiness">
+          This is a plain readiness narrative — not a grade to optimize. Each project shows what the workspace scan
+          actually observed (gates, run evidence, repeatability) and the next safe step before you delegate more work to
+          agents.
+        </p>
+      </section>
       {loading ? (
         <StatePanel
           variant="loading"

@@ -30,6 +30,9 @@ export type TopNavItem = {
 
 const DOCS = STUDIO_DOCS_HOME
 
+/** Labs section label — Foundry and experimental surfaces live here (FLS-007). */
+export const LABS_SECTION_LABEL = 'Labs'
+
 /** Browse URL: first workspace site when known, else all-sites list. */
 export function browsePathForSite(siteName?: string | null): string {
   const n = siteName?.trim()
@@ -78,11 +81,6 @@ function sideNavForSection(
         { label: lbl(SR.timeline, mode, 'work'), to: '/timeline' },
         { label: lbl(SR.planStory, mode, 'work'), to: '/plan?tab=story' },
         { label: lbl(SR.planSource, mode, 'work'), to: '/plan?tab=source' },
-        { label: lbl(SR.methodologyReadiness, mode, 'work'), to: '/knowledge/methodology/readiness' },
-        {
-          label: lbl(SR.foundry, mode, 'work'),
-          to: '/foundry',
-        },
         { label: lbl(SR.planMatrix, mode, 'work'), to: '/plan/matrix', sidebarGroup: 'work_advanced' },
         { label: lbl(SR.wbsIndex, mode, 'work'), to: '/wbs', sidebarGroup: 'work_advanced' },
         { label: lbl(SR.wbsView, mode, 'work'), to: '/wbs/view', sidebarGroup: 'work_advanced' },
@@ -135,6 +133,16 @@ function sideNavForSection(
           label: lbl(SR.agenticBridge, mode, 'knowledge'),
           to: '/knowledge/agentic-bridge',
           sidebarGroup: 'knowledge_govern' as const,
+        },
+        {
+          label: lbl(SR.methodologyReadiness, mode, 'knowledge'),
+          to: '/knowledge/methodology/readiness',
+          sidebarGroup: 'knowledge_govern' as const,
+        },
+        {
+          label: lbl(SR.foundry, mode, 'knowledge'),
+          to: '/foundry',
+          sidebarGroup: 'knowledge_labs' as const,
         },
         ...(autonomyMaturityFeatureEnabled()
           ? [
@@ -209,21 +217,25 @@ export function withPlanningScopeOnSideNavEntries(
 /** Settings (gear) — grouped for Sprint UX7 (preferences vs admin vs inspect). */
 export type SettingsGearSection = { heading: string; entries: SideNavEntry[] }
 
-const gearWorkspaceAdmin: SideNavEntry[] = [
-  { label: 'Workspace settings', href: DOCS, external: true },
-  { label: 'Access & roles', href: DOCS, external: true },
+const gearSetup: SideNavEntry[] = [
+  { label: V.llmPreferences, to: '/settings/llm' },
+  { label: V.fleetPreferences, to: '/settings/fleet' },
 ]
 
-const gearInspectAdvanced: SideNavEntry[] = [
+const gearGovernance: SideNavEntry[] = [
+  { label: 'Workspace settings', href: DOCS, external: true },
+  { label: 'Access & roles', href: DOCS, external: true },
   { label: 'Connector health', to: '/governance/connectors' },
   { label: 'Audit log', to: '/governance/audit' },
   { label: V.advancedReporting, to: '/overview/charts' },
-  { label: 'Tools & automation', to: '/toolset' },
-  { label: 'UX diagnostics', to: '/settings/ux-insights' },
-  { label: V.agentRuntimeInspect, to: '/settings/agent-runtime' },
 ]
 
-const gearLabsProbes: SideNavEntry[] = [
+const gearLabs: SideNavEntry[] = [
+  { label: V.foundry, to: '/foundry' },
+  { label: 'Virtual Camera Studio', to: '/labs/virtual-camera' },
+  { label: V.uxInsights, to: '/settings/ux-insights' },
+  { label: V.agentRuntimeInspect, to: '/settings/agent-runtime' },
+  { label: V.toolset, to: '/toolset' },
   { label: `${V.featureShowcase} (lab)`, to: '/feature-showcase' },
   { label: 'Site preview (empty lab)', to: '/view/local-site/' },
   {
@@ -242,9 +254,8 @@ const gearLabsProbes: SideNavEntry[] = [
 
 /** @deprecated Prefer {@link getSettingsGearMenuSections}. */
 export const adminSideNavEntries: SideNavEntry[] = [
-  ...gearWorkspaceAdmin,
-  ...gearInspectAdvanced,
-  ...gearLabsProbes,
+  ...gearGovernance,
+  ...gearLabs,
 ]
 
 export const adminSideNavArtifacts: SideNavEntry[] = adminSideNavEntries
@@ -256,8 +267,8 @@ export function getAdminSideNav(_mode: NavMode): SideNavEntry[] {
 export function getSettingsGearMenuSections(_mode: NavMode): SettingsGearSection[] {
   void _mode
   return [
-    { heading: ADMIN_INSPECT_COPY.settingsSectionAdmin, entries: gearWorkspaceAdmin },
-    { heading: ADMIN_INSPECT_COPY.settingsSectionInspect, entries: gearInspectAdvanced },
-    { heading: ADMIN_INSPECT_COPY.settingsSectionLabs, entries: gearLabsProbes },
+    { heading: ADMIN_INSPECT_COPY.settingsSectionSetup, entries: gearSetup },
+    { heading: ADMIN_INSPECT_COPY.settingsSectionGovernance, entries: gearGovernance },
+    { heading: LABS_SECTION_LABEL, entries: gearLabs },
   ]
 }

@@ -6,6 +6,7 @@ export type NavSectionRowGroup =
   | 'knowledge_learn'
   | 'knowledge_evidence'
   | 'knowledge_govern'
+  | 'knowledge_labs'
   | 'knowledge_build'
   | 'publish_sites'
   | 'publish_stories'
@@ -15,6 +16,7 @@ export function isNavSectionRowGroup(g: SideNavEntry['sidebarGroup']): g is NavS
     g === 'knowledge_learn' ||
     g === 'knowledge_evidence' ||
     g === 'knowledge_govern' ||
+    g === 'knowledge_labs' ||
     g === 'knowledge_build' ||
     g === 'publish_sites' ||
     g === 'publish_stories'
@@ -29,6 +31,8 @@ export function navSectionHeadingHint(group: NavSectionRowGroup): { heading: str
       return { heading: KNOWLEDGE_SECTION_NAV.evidenceHeading, hint: KNOWLEDGE_SECTION_NAV.evidenceHint }
     case 'knowledge_govern':
       return { heading: KNOWLEDGE_SECTION_NAV.governHeading, hint: KNOWLEDGE_SECTION_NAV.governHint }
+    case 'knowledge_labs':
+      return { heading: KNOWLEDGE_SECTION_NAV.labsHeading, hint: KNOWLEDGE_SECTION_NAV.labsHint }
     case 'knowledge_build':
       return { heading: KNOWLEDGE_SECTION_NAV.buildHeading, hint: KNOWLEDGE_SECTION_NAV.buildHint }
     case 'publish_sites':

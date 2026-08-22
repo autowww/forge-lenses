@@ -350,11 +350,11 @@ export function buildContextualRailModel(input: BuildContextualRailInput): Conte
   } else if (pathname.match(/^\/view\/local-site\/?$/)) {
     model = {
       title: 'Site preview',
-      lead: 'Add a folder path after /view/local-site/ or open Websites to pick a built site.',
+      lead: 'Legacy /view/local-site URLs redirect to Websites browse. Pick a site from the list.',
       status: scan,
       recovery: {
         title: 'No path in the URL',
-        body: 'Static preview needs the site segment (for example /view/local-site/my-site/). Use Websites to copy a working preview link.',
+        body: 'Open Websites and choose a published site—the preview opens under /websites/browse/:site.',
         actions: [
           { label: 'Open Websites', to: '/websites', variant: 'primary' },
           { label: 'Tutorials', to: '/tutorials' },
@@ -368,11 +368,11 @@ export function buildContextualRailModel(input: BuildContextualRailInput): Conte
     const browseTo = folder ? `/websites/browse/${encodeURIComponent(folder)}` : '/websites'
     model = {
       title: 'Static preview',
-      lead: 'Built files only—use Websites for the full legacy Sites chrome when you need it.',
+      lead: 'Redirecting to the unified Sites browse preview.',
       status: scan,
       actions: [
-        { label: 'All sites', to: '/websites', variant: 'primary' },
-        { label: 'Open in Sites browse', to: browseTo },
+        { label: 'Open preview', to: browseTo, variant: 'primary' },
+        { label: 'All sites', to: '/websites' },
         { label: 'Tutorials', to: '/tutorials' },
       ],
       related: [{ label: 'Lenses reference', to: DOCS }],
@@ -409,17 +409,17 @@ export function buildContextualRailModel(input: BuildContextualRailInput): Conte
     model = {
       title: 'Sites browse',
       lead: site
-        ? `Embedded legacy preview for “${site}”.`
+        ? `Static preview for “${site}” via /local-site/.`
         : 'Pick a site from the list so the URL includes its folder name.',
       status: scan,
       recovery: unknown,
       actions: site
         ? [
             { label: 'Scanned sites list', to: '/websites', variant: 'primary' },
-            { label: 'Static Studio preview', to: `/view/local-site/${encodeURIComponent(site)}/` },
+            { label: V.today, to: '/plan?tab=today' },
           ]
         : [{ label: 'Websites', to: '/websites', variant: 'primary' }],
-      related: [{ label: 'Tutorials', to: '/tutorials' }],
+      related: [{ label: V.tutorials, to: '/tutorials' }],
     }
   } else if (pathname.startsWith('/websites')) {
     model = {
@@ -431,7 +431,7 @@ export function buildContextualRailModel(input: BuildContextualRailInput): Conte
         tone: 'muted',
       }),
       actions: [
-        { label: 'Static preview shell', to: '/view/local-site/', variant: 'primary' },
+        { label: 'Browse a site', to: '/websites', variant: 'primary' },
         { label: 'Lenses reference', to: DOCS },
       ],
       related: [{ label: 'Tutorials', to: '/tutorials' }],
@@ -550,6 +550,16 @@ export function buildContextualRailModel(input: BuildContextualRailInput): Conte
         { label: V.workBreakdown, to: '/wbs' },
       ],
       related: [{ label: 'Lenses reference', to: DOCS }],
+    }
+  } else if (pathname === '/labs/virtual-camera') {
+    model = {
+      title: 'Virtual Camera Studio',
+      lead: 'Map physical webcams to v4l2loopback virtual devices for VDI and conferencing apps.',
+      status: scan,
+      actions: [
+        { label: 'Refresh cameras', to: '/labs/virtual-camera', variant: 'primary' },
+      ],
+      related: [],
     }
   } else if (pathname === '/feature-showcase') {
     model = {

@@ -9,13 +9,17 @@ import {
   StatePanel,
   TechnicalDetails,
 } from '../components/page'
+import {
+  dataSourcesIncludeLocalFixture,
+  isLocalFixtureProvider,
+  isScanOnlyProvider,
+} from '../lib/apiInternalFields'
 import { chargeMdCandidates } from '../lib/copilotPageEvidence'
 import { PROJECT_COPILOT_DEFAULT, PROJECT_OBJECT_HOME, ROUTE_SUBTITLE, STUDIO_VOCAB } from '../nav/studioVisibleCopy'
 import { DocsHealthProjectCard } from '../components/docs-health/DocsHealthProjectCard'
 import { useLensesCopilotPage } from '../hooks/useLensesCopilotPage'
-import { TraceabilityLaunchButton } from '../components/traceability'
 import { HandoffLoopPanel, OutcomeLoopPanel } from '../components/plan'
-import { DEMO_ORCHESTRATION_STORY_ID, demoRepoEntityId } from '../constants/demoOrchestration'
+import { DEMO_ORCHESTRATION_STORY_ID } from '../constants/demoOrchestration'
 
 type ProjectStats = {
   commits_total?: number | null
@@ -221,11 +225,26 @@ export function ProjectDetailPage() {
           'Review indexed charge logs and journals in read-only — session and write access are under Inspect on this page.',
         to: evidenceHref,
       }
-    } else if (failedGates > 0 || blockedPrs > 0 || stalePrs >= 3) {
+    } else if (failedGates > 0) {
       next = {
-        title: `Open ${STUDIO_VOCAB.repositoryCharts}`,
-        description: 'Inspect PR health, review debt, and quality blocks with the same repository scope.',
-        to: `/projects/${enc}/charts`,
+        title: 'Review quality gates',
+        description: `${failedGates} gate(s) failing — resolve before promoting work or opening a release checklist.`,
+        to: `/plan?repo=${encodeURIComponent(decoded)}&tab=today#le-quality-gates-h`,
+      }
+    } else if (blockedPrs > 0 || stalePrs >= 3) {
+      next = {
+        title: 'Unblock pull requests',
+        description:
+          blockedPrs > 0
+            ? `${blockedPrs} PR(s) blocked on merge — review branch protection and review debt.`
+            : `${stalePrs} stale PR(s) — triage reviews before they become release risk.`,
+        to: `/plan?repo=${encodeURIComponent(decoded)}&tab=today`,
+      }
+    } else if (lines.length > 0) {
+      next = {
+        title: 'Address risks',
+        description: lines[0] ?? 'Review the risk list on this dashboard.',
+        to: evidenceHref,
       }
     } else {
       next = {
@@ -236,6 +255,8 @@ export function ProjectDetailPage() {
     }
     return { riskLines: lines, nextAction: next }
   }, [decoded, readonlyRisk, rw.data, pq.data, ds.data, evidenceHref, enc])
+
+  const suggestedNextStep = nextAction
 
   if (!decoded) {
     return (
@@ -262,11 +283,12 @@ export function ProjectDetailPage() {
           </Link>
         }
         primaryAction={
-          <Link className="le-btn le-btn--primary" to={`/projects/${enc}/charts`}>
-            {STUDIO_VOCAB.repositoryCharts}
+          <Link className="le-btn le-btn--primary" to={suggestedNextStep.to}>
+            {suggestedNextStep.title}
           </Link>
         }
         secondaryMenuItems={[
+          { key: 'charts', label: STUDIO_VOCAB.repositoryCharts, to: `/projects/${enc}/charts` },
           { key: 'strategy', label: STUDIO_VOCAB.architectureStrategy, to: `/projects/${enc}/strategy` },
           { key: 'docs', label: STUDIO_VOCAB.docsHealth, to: `/projects/${enc}/docs-health` },
           { key: 'evidence', label: STUDIO_VOCAB.projectEvidenceBrowse, to: evidenceHref },
@@ -304,14 +326,9 @@ export function ProjectDetailPage() {
           snapshotAgeLabel={null}
           onRetry={retryBoth}
           extraActions={
-            <>
-              <Link className="le-btn le-btn--small" to="/projects">
-                All projects
-              </Link>
-              <a className="le-btn le-btn--small" href={`/projects/${enc}`}>
-                Classic UI
-              </a>
-            </>
+            <Link className="le-btn le-btn--small" to="/projects">
+              All projects
+            </Link>
           }
         />
       ) : null}
@@ -320,11 +337,7 @@ export function ProjectDetailPage() {
         <TechnicalDetails summary="Session, access & identity (inspect)" defaultOpen={false}>
           {readonlyRisk ? (
             <p className="forge-support" style={{ marginTop: 0 }}>
-              {PROJECT_OBJECT_HOME.accessRiskReadonly} Use{' '}
-              <a className="le-btn le-btn--small" href={`/projects/${enc}`}>
-                legacy full project page
-              </a>{' '}
-              only if you need controls that are not in Studio yet.
+              {PROJECT_OBJECT_HOME.accessRiskReadonly}
             </p>
           ) : null}
           <ObjectMetaBar
@@ -418,14 +431,9 @@ export function ProjectDetailPage() {
             snapshotAgeLabel={null}
             onRetry={stats.retry}
             extraActions={
-              <>
-                <Link className="le-btn le-btn--small" to="/projects">
-                  All projects
-                </Link>
-                <a className="le-btn le-btn--small" href={`/projects/${enc}`}>
-                  Classic UI
-                </a>
-              </>
+              <Link className="le-btn le-btn--small" to="/projects">
+                All projects
+              </Link>
             }
           />
         ) : null}
@@ -446,7 +454,7 @@ export function ProjectDetailPage() {
             <p className="forge-support" style={{ marginTop: 0 }}>
               {PROJECT_OBJECT_HOME.healthSectionLead}
             </p>
-            {rw.data?.feature_enabled && rw.data.repo?.workflow && rw.data.repo.data_sources?.includes('local_fixture') ? (
+            {rw.data?.feature_enabled && rw.data.repo?.workflow && dataSourcesIncludeLocalFixture(rw.data.repo.data_sources) ? (
               <div style={{ marginBottom: '1rem' }}>
                 <h3 className="le-panel__title" style={{ fontSize: '1rem', marginBottom: '0.35rem' }}>
                   Pull requests &amp; merge health
@@ -574,7 +582,7 @@ export function ProjectDetailPage() {
               <p className="forge-support" style={{ marginTop: '0.75rem' }}>
                 Quality gates API disabled on server.
               </p>
-            ) : pq.data?.provider_kind === 'local_fixture' && pq.data?.quality_summary ? (
+            ) : isLocalFixtureProvider(pq.data) && pq.data?.quality_summary ? (
               <div style={{ marginTop: '1rem' }}>
                 <h3 className="le-panel__title" style={{ fontSize: '1rem', marginBottom: '0.35rem' }}>
                   Quality &amp; tests (next to pipeline signals)
@@ -633,7 +641,7 @@ export function ProjectDetailPage() {
               <p className="forge-support" style={{ marginTop: '0.75rem' }}>
                 Loading quality summary…
               </p>
-            ) : pq.data?.provider_kind === 'scan_only' ? (
+            ) : isScanOnlyProvider(pq.data) ? (
               <p className="forge-support" style={{ marginTop: '0.75rem' }}>
                 No test-quality fixture — set <code className="le-mono">LENSES_TEST_QUALITY_SEED_DEMO=1</code> or add{' '}
                 <code className="le-mono">test-quality.json</code>.
@@ -644,7 +652,7 @@ export function ProjectDetailPage() {
               <p className="forge-support" style={{ marginTop: '0.75rem' }}>
                 DevSecOps API disabled on server.
               </p>
-            ) : ds.data?.provider_kind === 'local_fixture' && ds.data?.security_summary ? (
+            ) : isLocalFixtureProvider(ds.data) && ds.data?.security_summary ? (
               <div style={{ marginTop: '1rem' }}>
                 <h3 className="le-panel__title" style={{ fontSize: '1rem', marginBottom: '0.35rem' }}>
                   Security &amp; compliance (computed risk)
@@ -695,7 +703,7 @@ export function ProjectDetailPage() {
               <p className="forge-support" style={{ marginTop: '0.75rem' }}>
                 Loading security summary…
               </p>
-            ) : ds.data?.provider_kind === 'scan_only' ? (
+            ) : isScanOnlyProvider(ds.data) ? (
               <p className="forge-support" style={{ marginTop: '0.75rem' }}>
                 No devsecops fixture — set <code className="le-mono">LENSES_DEVSECOPS_COMPLIANCE_SEED_DEMO=1</code>.
               </p>
@@ -769,21 +777,6 @@ export function ProjectDetailPage() {
           )}
         </>
       ) : null}
-
-      <TechnicalDetails summary="Traceability (demo, inspect)" defaultOpen={false}>
-        <div className="forge-support" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-          <TraceabilityLaunchButton
-            rootId={demoRepoEntityId(decoded)}
-            label="Trace repo (demo)"
-            title="If this child matches the seeded demo repo id, opens graph from repo node; otherwise use Trace sample story from Home or Plan"
-          />
-          <TraceabilityLaunchButton
-            rootId={DEMO_ORCHESTRATION_STORY_ID}
-            label="Trace sample story"
-            title="End-to-end demo: story S-1842 through PR, build, release, evidence"
-          />
-        </div>
-      </TechnicalDetails>
 
       <TechnicalDetails summary="Sample orchestration trace (demo, inspect)" defaultOpen={false}>
         <HandoffLoopPanel workItemId={DEMO_ORCHESTRATION_STORY_ID} traceQueryStoryId={DEMO_ORCHESTRATION_STORY_ID} />

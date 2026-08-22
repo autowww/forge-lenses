@@ -1,14 +1,19 @@
 @import 'tailwindcss';
 @import './enterprise-shell.css';
 
-/* Full-bleed shell + dark scrollbars (avoids a light “strip” at the viewport edge in Electron). */
+/* Full-bleed shell + scrollbars aligned to active color scheme. */
 html {
-  color-scheme: dark;
+  color-scheme: light;
   background: var(--le-bg);
-  scrollbar-color: rgba(51, 65, 85, 0.95) var(--le-bg);
+  scrollbar-color: rgba(100, 116, 139, 0.55) var(--le-bg);
   height: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+html[data-bs-theme="dark"] {
+  color-scheme: dark;
+  scrollbar-color: rgba(51, 65, 85, 0.95) var(--le-bg);
 }
 
 *,
@@ -48,13 +53,23 @@ body::-webkit-scrollbar-track {
 
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.95);
+  background: rgba(148, 163, 184, 0.65);
   border-radius: 6px;
   border: 3px solid var(--le-bg);
 }
 
+html[data-bs-theme="dark"]::-webkit-scrollbar-thumb,
+html[data-bs-theme="dark"] body::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.95);
+}
+
 html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.85);
+}
+
+html[data-bs-theme="dark"]::-webkit-scrollbar-thumb:hover,
+html[data-bs-theme="dark"] body::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.98);
 }
 
@@ -1858,9 +1873,27 @@ body::-webkit-scrollbar-thumb:hover {
   font-weight: 500;
 }
 
-.le-breadcrumb__current {
-  color: var(--le-text);
-  font-weight: 600;
+.le-root--minimal-studio .le-header--minimal-studio {
+  border-bottom: 1px solid var(--le-border);
+}
+
+.le-header-chrome-panel--minimal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 0.25rem;
+}
+
+.le-root--minimal-studio .le-shell__main-column {
+  padding-top: 0;
+}
+
+.le-main-column--minimal-studio {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 .le-shell {

@@ -1,9 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lenses Studio</title>
+    <script>
+      (function () {
+        try {
+          var m = document.cookie.match(/(?:^|;)\s*forge_color_scheme=([^;]*)/);
+          var v = m ? decodeURIComponent(m[1].trim()) : '';
+          var mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+          var t = 'light';
+          if (v === 'light') t = 'light';
+          else if (v === 'dark') t = 'dark';
+          else if (v === 'auto' && mq) t = mq.matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-bs-theme', t);
+        } catch (e) {
+          document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="/__ks/css/forge-theme.css" />
     <link rel="stylesheet" href="/__ks/css/forgesdlc-theme.css" />
     <link rel="stylesheet" href="/__ks/css/forge-data-charts.css" />
@@ -13,6 +29,7 @@
     <link rel="stylesheet" href="/__ks/css/wizard-flow.css" />
     <link rel="stylesheet" href="/__ks/css/fs-sticker-board.css" />
     <script src="/__ks/js/forge-data-charts.js" defer></script>
+    <script src="/__ks/js/forge-theme.js" defer></script>
   </head>
   <body>
     <div id="root"></div>

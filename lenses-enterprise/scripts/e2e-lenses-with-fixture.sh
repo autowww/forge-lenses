@@ -6,6 +6,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PORT="${E2E_LENSES_PORT:-17555}"
 WS="$(mktemp -d)"
 export E2E_WORKSPACE_TMP="$WS"
+export LENSES_STICKERBOARD_PORT="${LENSES_STICKERBOARD_PORT:-0}"
 
 cleanup() {
   rm -rf "$WS"
@@ -45,6 +46,20 @@ cp "$ROOT/../forge-df-test-project/fixtures/multiply_fix.json" "$WS/forge-df-tes
   git add -A
   git commit -m "init"
 )
+
+# Multi-repo UX crawl fixture (alpha + beta) — FLS3-004
+for repo in alpha beta; do
+  mkdir -p "$WS/$repo"
+  cp -a "$ROOT/tests/fixtures/e2e_multi_repo/$repo/." "$WS/$repo/"
+  (
+    cd "$WS/$repo"
+    git init
+    git config user.email "e2e@example.invalid"
+    git config user.name "e2e"
+    git add -A
+    git commit -m "init"
+  )
+done
 
 if [ "${E2E_BUILD_STUDIO:-1}" = "1" ]; then
   (cd "$ROOT/lenses-enterprise" && npm run build)
