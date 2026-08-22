@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/audit-notification.schema.json",
+  "title": "Security / ops audit notification stub",
+  "x-lenses-stability": "stable",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["severity", "source", "detail"],
+  "properties": {
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "critical"]
+    },
+    "source": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "detail": {
+      "type": "string",
+      "maxLength": 600
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp when reviewers captured the observation."
+    }
+  }
+}

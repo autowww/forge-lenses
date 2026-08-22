@@ -12,7 +12,7 @@ from lenses.forge_spine import (
     sessions_for_id,
     wbs_model_to_plan_tree,
 )
-from lenses.safe_forge_paths import safe_forge_workspace_file
+from lenses.safe_forge_paths import iter_workspace_md_index, safe_forge_workspace_file
 from lenses.wbs_model import parse_wbs_markdown
 
 WBS_FIXTURE = """## 2. Themes
@@ -87,6 +87,30 @@ class ForgePlanLensTests(unittest.TestCase):
             bad = root / "proj" / "forge" / "other.md"
             bad.write_text("# y", encoding="utf-8")
             self.assertIsNone(safe_forge_workspace_file(root, "proj/forge/other.md"))
+
+    def test_iter_workspace_md_index_nested_repo(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            charge = root / "proj" / "forge" / "charge.md"
+            charge.parent.mkdir(parents=True)
+            charge.write_text("# charge", encoding="utf-8")
+            journal = root / "proj" / "forge" / "journal" / "adr-1.md"
+            journal.parent.mkdir(parents=True)
+            journal.write_text("# adr", encoding="utf-8")
+            ember = root / "proj" / "ember-logs" / "e.md"
+            ember.parent.mkdir(parents=True)
+            ember.write_text("# e", encoding="utf-8")
+            fl = root / "proj" / "forge-logs" / "versona" / "x.md"
+            fl.parent.mkdir(parents=True)
+            fl.write_text("# v", encoding="utf-8")
+
+            files, truncated = iter_workspace_md_index(root, max_files=100)
+            self.assertFalse(truncated)
+            rels = {e["rel_path"]: e["category"] for e in files}
+            self.assertEqual(rels["proj/forge/charge.md"], "charge")
+            self.assertEqual(rels["proj/forge/journal/adr-1.md"], "journal")
+            self.assertEqual(rels["proj/ember-logs/e.md"], "ember")
+            self.assertEqual(rels["proj/forge-logs/versona/x.md"], "forge_logs")
 
     def test_versona_index(self) -> None:
         with tempfile.TemporaryDirectory() as td:

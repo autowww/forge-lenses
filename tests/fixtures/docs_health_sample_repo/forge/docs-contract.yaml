@@ -1,0 +1,14 @@
+# Sample documentation contract for Docs Health tests and demos.
+version: 1
+ownership:
+  team: Sample team
+  primary_contact: docs@example.com
+readme_required_sections:
+  - Overview
+  - Getting started
+require_adr: true
+require_release_note: false
+require_architecture_diagram: false
+doc_roots:
+  - "."
+  - "docs"

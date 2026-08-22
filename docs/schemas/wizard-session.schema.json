@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/wizard-session.schema.json",
+  "title": "Blueprints Wizard persisted session envelope",
+  "type": "object",
+  "required": ["version", "updated_at", "step_index", "payload"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "step_index": { "type": "integer", "minimum": 0 },
+    "payload": {
+      "type": "object",
+      "required": ["title", "purpose", "state", "mode", "scope"],
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string", "maxLength": 500 },
+        "purpose": { "type": "string", "maxLength": 4000 },
+        "state": { "enum": ["draft", "ready", "archived"] },
+        "mode": { "enum": ["new_product", "existing_workspace"] },
+        "wizard_domain": {
+          "$ref": "wizard-domain.schema.json"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

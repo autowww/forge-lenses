@@ -1,81 +1,188 @@
-# forge-lenses — reference handbook (internal)
+---
+nav_title: Home
+audience: public
+section: product
+learning_level: overview
+product_area: lenses
+tier: product
+handbook_area: product
+status: shipped
+public_publish: true
+description: Install Forge Lenses locally, navigate Classic Lenses, Forge Studio, and the Blueprints Wizard,
+  and integrate with schemas and APIs—without sending code to a SaaS reviewer.
+page_type: landing
+content_id: forge.docs.lenses.home
+canonical_owner: forge-lenses
+primary_persona: practitioner
+reader_stage: discover
+maturity: demonstrated
+evidence_level: canonical_doc
+refresh_policy: on_claim_change
+last_reviewed: '2026-07-03'
+page_contract_profile: landing
+landing_blocks:
+  layer_rail:
+    items:
+      - layer: Classic
+        product: Workspace dashboard
+        role: Projects and Forge plan lenses at /
+        href: handbook-public/01-lenses-overview.md
+      - layer: Studio
+        product: Forge Studio
+        role: React UX at /studio/ on shared API
+        href: handbook-public/05-studio-101.md
+      - layer: Wizard
+        product: Blueprints Wizard
+        role: Guided workshop inside Studio
+        href: handbook-public/09-wizard-101.md
+      - layer: Docs Health
+        product: Documentation quality
+        role: Analysis overlays before remediation
+        href: handbook-public/15-docs-health.md
+      - layer: Enterprise
+        product: Security posture
+        role: Binding, backups, OIDC, allowlists
+        href: handbook-public/enterprise-index.md
+      - layer: Builders
+        product: HTTP API
+        role: Route families and JSON examples
+        href: handbook-public/builders-api-overview.md
+---
 
-**This is the internal maintainer handbook** for the `lenses` package: architecture, APIs, ADRs, wizard internals, and repository workflow. It is built into **`lenses-docs/`** and served at **`/docs/`** when you run Lenses locally.
+# Forge Lenses — see your Forge workspace locally
 
-## Public user guides (canonical URLs)
+Forge Lenses is a **local Python server and browser dashboard** for Forge SDLC–aligned repos: inspect plans, sibling projects, documentation health, and workshop flows entirely on machines you control.
 
-**End-user documentation** (how to run Lenses, use Forge Studio, and work with the Blueprints Wizard) is published only on **blueprints.forgesdlc.com**, not as a mirror of this `index.html` tree:
+This site (**[lenses.forgesdlc.com](https://lenses.forgesdlc.com)**) is the **canonical product documentation home** for Lenses—install guides, tutorials, enterprise posture, and builder-facing API/schema notes. **[Forge SDLC](https://forgesdlc.com/)** carries adoption and methodology narrative; **[Blueprints](https://blueprints.forgesdlc.com/)** holds methodology guides and Wizard background; **[Kitchen Sink](https://ks.forgesdlc.com/)** documents the diagram and layout primitives used here.
 
-- **Hub:** [blueprints.forgesdlc.com/lenses/](https://blueprints.forgesdlc.com/lenses/)
-- **Chapters** (same Markdown as `docs/handbook-public/` in this repo):  
-  [01 Lenses overview](https://blueprints.forgesdlc.com/lenses/guides/01-lenses-overview.html) · [02 Install and run](https://blueprints.forgesdlc.com/lenses/guides/02-install-and-run.html) · [03 Workspace setup](https://blueprints.forgesdlc.com/lenses/guides/03-workspace-setup.html) · [04–07 Studio](https://blueprints.forgesdlc.com/lenses/guides/04-studio-overview.html) · [08–11 Wizard](https://blueprints.forgesdlc.com/lenses/guides/08-wizard-overview.html) · [12 Troubleshooting](https://blueprints.forgesdlc.com/lenses/guides/12-troubleshooting.html)
+```blueprint-diagram
+key: linear
+alt: Hero path from install through workspace root selection to Classic or Studio
+title: First-session hero path
+summary: Install Lenses, point it at your workspace root, then open Classic or Forge Studio on loopback.
+node: Install
+detail: Bring up the local Lenses Python server on your machine.
+more: Follow Install and run to clone, create a venv, and start the server at 127.0.0.1 without widening network exposure.
+node: Workspace root selection
+detail: Set LENSES_WORKSPACE_ROOT to the Forge repos your team agreed to scan.
+more: Workspace setup guides root choice and scan-host layout so Projects and lenses reflect the right siblings.
+node: Classic or Studio
+detail: Open Classic at `/` or Forge Studio at `/studio/` for your first session.
+more: Classic serves the workspace dashboard; Studio carries newer flows including the Blueprints Wizard at `/studio/blueprints/wizard/`.
+caption: Typical first-session path through documentation
+```
 
-Do not link the public site to **`/lenses/handbook/`** — that path is a legacy redirect to the hub. Maintainer-only pages below are for **local `lenses-docs/`** or raw files on GitHub.
+## Start here — primary actions
 
-## Local lenses-docs build (maintainers)
+| Goal | Start |
+|------|--------|
+| **Install and run** | [Install and run](handbook-public/02-install-and-run.md) |
+| **First Studio session** | [Studio 101](handbook-public/05-studio-101.md) |
+| **First Wizard session** (experimental) | [Wizard 101](handbook-public/09-wizard-101.md) |
+| **Enterprise / security posture** | [Security and local-first](handbook-public/17-security-and-local-first.md) → [Enterprise hub](handbook-public/enterprise-index.md) |
+| **HTTP API, schemas, examples** | [Builders overview](handbook-public/builders-api-overview.md) → [Schemas and API (builders)](handbook-public/16-schemas-and-api-for-builders.md) |
 
-The full doc set (internal + `docs/handbook-public/` + `lenses/website/`) is generated for local preview:
+## Choose your role
+
+Pick a path curated for **how you evaluate or operate** Lenses.
+
+| Role | Start | Typical next steps |
+|------|-------|---------------------|
+| **Evaluator** | [Lenses overview](handbook-public/01-lenses-overview.md) | [Install and run](handbook-public/02-install-and-run.md), [Security and local-first](handbook-public/17-security-and-local-first.md) |
+| **Solo developer** | [Workspace setup](handbook-public/03-workspace-setup.md) | [Studio 101](handbook-public/05-studio-101.md), [Docs Health](handbook-public/15-docs-health.md) |
+| **Team lead** | [Tutorials — 201](handbook-public/tutorials-201.md) | [Wizard 201](handbook-public/10-wizard-201.md), [Examples hub](handbook-public/19-examples-hub.md) |
+| **Platform operator** | [Enterprise hub](handbook-public/enterprise-index.md) | [Network binding](handbook-public/enterprise-network-binding.md), [Backup and upgrades](handbook-public/enterprise-backup-upgrades.md), [Configuration reference](reference/config-env.md) |
+| **Security reviewer** | [Security and local-first](handbook-public/17-security-and-local-first.md) | [OIDC sessions](handbook-public/enterprise-oidc-sessions.md), [Action allowlists](handbook-public/enterprise-actions-allowlists.md), [LLM boundaries](handbook-public/enterprise-llm-boundaries.md) |
+| **Builder / integrator** | [Builders overview](handbook-public/builders-api-overview.md) | [Route families](handbook-public/builders-route-families.md), [HTTP API route catalog](generated/api-routes.md), [JSON examples](handbook-public/19-examples-hub.md) |
+
+Detailed journey tables live on **[Pick your path](handbook-public/role-based-paths.md)**—including topics *not* to start from on day one.
+
+## Time horizons
+
+| Horizon | Goal |
+|---------|------|
+| **First 10 minutes** | Understand products and trust posture → install → choose a workspace root. |
+| **First hour** | Complete a **[Studio 101](handbook-public/05-studio-101.md)** or **[Wizard 101](handbook-public/09-wizard-101.md)** exercise; optional **[Docs Health](handbook-public/15-docs-health.md)** scan. |
+| **First day** | Establish day-two flows (**[Studio 201](handbook-public/06-studio-201.md)**, **[Wizard 201](handbook-public/10-wizard-201.md)**), optional LLM/offline stance (**[LLM and AI setup](handbook-public/13-llm-and-ai-setup.md)**). |
+| **First week** | Enterprise rollout inputs (binding, backups, Fleet if used), **[Tutorials — 301](handbook-public/tutorials-301.md)**, **[Builders](handbook-public/builders-api-overview.md)** integration sketches. |
+
+## Product map — what sits on one server
+
+<!-- ks-landing:layer_rail -->
+
+| Area | Plain language |
+|------|----------------|
+| **Classic Lenses** | Server-rendered workspace dashboard at **`/`** — projects, Forge plan lenses, rooted in your clones. |
+| **Forge Studio** | React UX at **`/studio/`** — newer flows and dashboards on the **same `/api`** surface as Classic. |
+| **Blueprints Wizard** | Experimental guided workshop/session flow **inside Studio** (`/studio/blueprints/wizard/`): exports and facilitation; **no automatic Blueprints submodule commits**. |
+| **Docs Health** | Analysis/reporting surfaces for handbook and doc quality (**[Docs Health](handbook-public/15-docs-health.md)**). |
+| **Fleet / LLM settings** | **Optional**: remote Fleet hooks and model usage when you deliberately enable them in settings or environment. |
+
+```blueprint-diagram
+key: tree
+alt: One server hosting Classic dashboard, Forge Studio, shared API, Docs Health signals
+title: One server product map
+summary: Classic, Studio, shared API, and Docs Health signals run on one local Python process you control.
+node: One server
+detail: A single local Python process hosts every Lenses surface.
+more: Bind loopback by default; Classic and Studio consume the same `/api` without a separate deployment.
+node: Classic dashboard
+detail: Server-rendered workspace dashboard at the site root path.
+more: Projects, Forge plan lenses, and overview views live at `/` for daily inspection of your clones.
+node: Forge Studio
+detail: React UX at `/studio/` for newer flows and dashboards.
+more: Blueprints Wizard sessions run inside Studio; exports stay local unless you configure outbound integrations.
+node: Shared API
+detail: One `/api` surface serves Classic and Studio clients alike.
+more: Builders integrate against the same route families documented in the HTTP API catalog.
+node: Docs Health signals
+detail: Analysis and reporting for handbook and documentation quality.
+more: Read-only overlays help operators spot drift before opening remediation tooling.
+caption: Forge Lenses — one server, Classic and Studio/Wizard surfaces
+```
+
+## Enterprise trust posture (summary)
+
+| Property | Meaning |
+|---------|---------|
+| **Local-first** | Repos and Wizard session data stay **on volumes you manage** unless you integrate outbound services. |
+| **Loopback by default** | Bind to **`127.0.0.1`** until you knowingly expose the server for LAN/testing. |
+| **Optional outbound** | Fleet and LLMs are **opt-in configurations** — read enterprise pages before enabling. |
+| **Explicit write scope** | High-impact actions honor **operator allowlists** and settings; failures should be surfaced in UI/API. |
+
+For the full reviewer-oriented narrative, **[Security and local-first](handbook-public/17-security-and-local-first.md)** and the **[Enterprise hub](handbook-public/enterprise-index.md)**.
+
+## Ecosystem map — where each site helps
+
+| Site | Responsibility |
+|------|----------------|
+| **[forgesdlc.com](https://forgesdlc.com/)** | Forge SDLC methodology, adoption narratives, encyclopedia pointers. |
+| **[blueprints.forgesdlc.com](https://blueprints.forgesdlc.com/)** | Blueprints practice library; methodology depth that **supports** Wizard and planning work. |
+| **[lenses.forgesdlc.com](https://lenses.forgesdlc.com/)** (**this handbook**) | **Product usage**, installation, tutorials, ops, schemas, APIs. |
+| **[ks.forgesdlc.com](https://ks.forgesdlc.com/)** | Kitchen Sink design system — components, diagrams, generator patterns mirrored in handbook builds. |
+
+See **[Cross-site map](handbook-public/cross-site-map.md)** for deeper linking.
+
+## Next steps and support
+
+| Need | Doc |
+|------|-----|
+| **Troubleshooting** | [Troubleshooting](handbook-public/12-troubleshooting.md) |
+| **Release notes / versions** | [Release notes](handbook-public/24-release-notes.md), [Docs versioning](handbook-public/25-docs-versioning.md) |
+| **Terms** | [Glossary](handbook-public/21-glossary.md), [Support](handbook-public/20-support.md) |
+
+## Maintainer & contributor handbook
+
+Publishing workflow, deeper ADRs, and raw route inventories remain in **`docs/maintainer/`** in the **[forge-lenses repo on GitHub](https://github.com/autowww/forge-lenses/tree/main/docs/maintainer)**. They intentionally **omit** from the lean public handbook build—you will not navigate there from primary reader journeys on this site.
+
+## Local handbook build
+
+With **[Kitchen Sink](https://github.com/autowww/forgesdlc-kitchensink)** at `kitchensink/`:
 
 ```bash
 python3 generator/build-lenses-docs.py
+# Mirror production page set:
+# LENSES_DOCS_BUILD_PROFILE=public python3 generator/build-lenses-docs.py
 ```
 
-Output: **`lenses-docs/`**. See `_load_pages()` in the generator for ordering.
-
-**Optional — reference page preview PNGs** on this home: install [html2image](https://pypi.org/project/html2image/) and Chromium or Google Chrome, then:
-
-```bash
-python3 generator/build-lenses-docs.py --previews
-```
-
-or set **`LENSES_BUILD_DOC_PREVIEWS=1`**. PNGs are written under **`lenses-docs/previews/`**.
-
-**Tutorial pipeline** (setup, submodules, publishing, extensions, Studio reference architecture) lives in **`lenses/fa-tutorial-md/`**, built with **forge-autodoc** into **`lenses/tutorials/`** and synced to repo-root **`tutorial/`** for the dashboard **Tutorial** link:
-
-```bash
-pip install markdown PyYAML
-./build-fa-tutorials.sh
-```
-
-Open **`/local-site/<repo>/tutorial/index.html`** on the lenses server after building.
-
-## Forge Studio (Lenses Studio)
-
-React SPA at **`/studio/`** on the local Python server; shares **`/api/…`** with Classic Lenses. Build from **`lenses-enterprise/`**; architecture and Kitchen Sink reuse: see the [forge-lenses README](https://github.com/autowww/forge-lenses/blob/main/README.md#Lenses-Studio-experimental) (Lenses Studio section).
-
-- Contributor: former interface/dashboard pages — see **`docs/maintainer/website/`**
-- [Studio shell — API mapping and gaps](studio-shell-api-map.html) — shell areas to endpoints
-- [Studio flow shell — MVP scope](studio-flow-shell-mvp-scope.html)
-- [Studio shell — Classic parity](studio-shell-classic-parity.html)
-- [ADR 001 — Lenses Studio shell](adr-001-lenses-studio-shell.html)
-- [ADR 001 — Lenses Enterprise framework](adr-001-lenses-enterprise-framework.html)
-
-## Blueprints Wizard (experimental)
-
-Guided methodology-aligned flow in **Forge Studio** only (`/studio/blueprints/wizard/…`). Does **not** edit the **blueprints** git submodule.
-
-**Published end-user guides:** [Wizard overview](https://blueprints.forgesdlc.com/lenses/guides/08-wizard-overview.html) (source: **`docs/handbook-public/`**).
-
-**Maintainer / operator (local lenses-docs or GitHub):**
-
-- [Blueprints Wizard — usage](blueprints-wizard-usage.html) — feature flags, hub vs session, telemetry, LLM trust
-- [Blueprints Wizard — architecture](blueprints-wizard-architecture.html)
-- [Blueprints Wizard — domain model](blueprints-wizard-domain-model.html)
-- [Blueprints Wizard — file map](blueprints-wizard-file-map.html)
-- [Blueprints Wizard — extending](blueprints-wizard-extending.html)
-- [Blueprints Wizard — implementation plan](blueprints-wizard-implementation-plan.html)
-- [ADR 002 — Blueprints Wizard trust / GitHub](adr-002-blueprints-wizard-trust-github.html)
-
-## Reference (Python package)
-
-Internal pages from **`docs/`** and **`lenses/website/`** (see generator for full list):
-
-- [Roadmap — Project Management (governance)](roadmap-project-management.html) — planned PM governance capabilities (NOW / NEXT / LATER), aligned with blueprints PRODUCT-MANAGEMENT §2 / §10 / §11
-- [Package architecture](architecture.html)
-- [Forge plan UI map (roadmap → evidence)](ui-map-workflow.html)
-- [HTTP API and routes](http-api-and-routes.html)
-- [Workspace scan contract](workspace-scan-contract.html)
-- [Registry configuration](registry-configuration.html)
-- [Dashboard pages](dashboard-pages.html)
-- [Requirements — WBS](requirements-wbs.html) — work breakdown (repository maintainer reference)
-- [Git workflow (Forge Team tier)](git-workflow.html) — source: `docs/GIT-WORKFLOW.md`
+Output: **`lenses-docs/`**. The Firebase-hosted shell consumes the same subtree via **`forge-lenses-website`**.

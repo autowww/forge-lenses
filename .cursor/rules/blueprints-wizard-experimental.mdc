@@ -1,0 +1,49 @@
+---
+description: Experimental Blueprints Wizard in Lenses Studio — flags, boundaries, LLM, tests
+globs: lenses/blueprints_wizard/**/*.py,lenses-enterprise/src/blueprints-wizard/**,lenses-enterprise/src/**/blueprints*/*,lenses-enterprise/src/pages/BlueprintsWizard*.tsx,lenses-enterprise/src/api/blueprintsWizard.ts,lenses-enterprise/src/api/http.ts,lenses-enterprise/src/api/staticMuseum.ts,lenses-enterprise/src/util/experimentalFlags.ts,lenses/serve.py,docs/blueprints/**/*.md,docs/adr-002-blueprints-wizard-trust-github.md,tests/test_blueprints_wizard*.py,tests/test_interpretation*.py,tests/test_artifact_generation*.py,tests/test_artifact_pack_sync.py,tests/test_artifact_generation_recheck.py,tests/test_execution_artifact_*.py,tests/test_artifact_export_markdown.py,tests/test_artifact_generation_bundle_resolve.py
+---
+
+# Blueprints Wizard (experimental)
+
+## Scope
+
+Work on the **Blueprints Wizard** lives **only** when the experimental flags are understood and respected. Do not expose unfinished server behavior without the server gate.
+
+## Feature flags
+
+- **Server:** `LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD` — must be set (e.g. `1`) for wizard JSON APIs beyond the read-only **enabled** probe, and for any LLM or mutating handler.
+- **Client:** `VITE_EXPERIMENTAL_BLUEPRINTS_WIZARD` — must be `true` for the `/blueprints/wizard` route, sidebar entry, and lazy-loaded wizard UI.
+
+## Module boundaries
+
+- **Python:** New logic under `lenses/blueprints_wizard/` — small composable modules (`schemas`, `session_store`, `refine`, `interpretation_normalize`, `interpretation_service`, `interpreter_llm`, `interpreter_mock`, `artifact_generation_*`, `api`). Wire **only** thin branches in `lenses/serve.py`.
+- **Studio:** Wizard UI under `lenses-enterprise/src/pages/BlueprintsWizardLayout.tsx`, `BlueprintsWizardSessionPage.tsx`, `BlueprintsWizardLocalMode.tsx`, and `lenses-enterprise/src/blueprints-wizard/`. API wrappers in `lenses-enterprise/src/api/blueprintsWizard.ts`.
+- **LLM:** Reuse `lenses.llm_chat` / existing transports — **no** LangChain or new provider SDKs unless the repo already adopts them broadly.
+
+## Persistence
+
+- Use **`.lenses-local/`** JSON files (or a single directory of session files), consistent with `llm_settings_store` / sticker boards. Typed shapes via **dataclasses** on the server.
+
+## Security and trust
+
+- Any endpoint that calls an LLM, **GitHub REST API**, or writes files must follow the same **loopback / `LENSES_ALLOW_ACTIONS`** patterns as other privileged APIs (see `/api/llm/chat`).
+- **GitHub tokens:** read **`GITHUB_TOKEN`** or **`LENSES_GITHUB_TOKEN`** from the environment only — **never** store PATs in session JSON. See [docs/adr-002-blueprints-wizard-trust-github.md](../../docs/adr-002-blueprints-wizard-trust-github.md).
+- **Session drafts** may hold intended repo metadata; **repository creation** is a separate explicit `POST …/create-repo` after confirmation in the UI.
+
+## Static museum
+
+- When adding wizard API paths, update `lenses-enterprise/src/api/staticMuseum.ts` and add or reuse fixtures under `lenses/static/studio/museum-data/` as needed.
+
+## Testing
+
+- **pytest** for Python flag logic, session store, and JSON handlers (mock LLM).
+- **`LENSES_ARTIFACT_GENERATION_MOCK=1`** — deterministic planning-artifact bundle (no live LLM), analogous to `LENSES_INTERPRETATION_MOCK`.
+- **Vitest** for client helpers and wizard UI behavior that does not require the Python server.
+
+## Classic Lenses parity
+
+- Per `lenses-studio-classic-parity.mdc`, Classic parity is **not** required while this feature is **experimental**. When promoting out of experimental, add a Classic surface or record an explicit ADR exception.
+
+## Documentation
+
+- Keep [docs/blueprints/wizard-implementation-plan.md](docs/blueprints/wizard-implementation-plan.md) and [docs/blueprints/wizard-file-map.md](docs/blueprints/wizard-file-map.md) updated when routes or APIs change materially.

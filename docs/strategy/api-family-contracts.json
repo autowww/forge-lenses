@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "family": "/api/docs-health",
+      "stability": "stable",
+      "must_substrings": ["/api/docs-health", "docs-health", "summary", "work-items"]
+    },
+    {
+      "family": "/api/blueprints",
+      "stability": "beta",
+      "must_substrings": ["/api/blueprints", "wizard", "session"]
+    },
+    {
+      "family": "/api/repo",
+      "stability": "beta",
+      "must_substrings": ["/api/repo"]
+    },
+    {
+      "family": "/api/llm",
+      "stability": "beta",
+      "must_substrings": ["/api/llm", "Studio"]
+    },
+    {
+      "family": "/api/fleet",
+      "stability": "beta",
+      "must_substrings": ["/api/fleet", "Forge Fleet"]
+    },
+    {
+      "family": "/api/auth",
+      "stability": "stable",
+      "must_substrings": ["/api/auth"]
+    }
+  ]
+}

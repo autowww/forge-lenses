@@ -10,6 +10,9 @@ if [[ -z "${LENSES_WORKSPACE_ROOT:-}" ]]; then
   export LENSES_WORKSPACE_ROOT="$(cd "$ROOT/.." && pwd)"
 fi
 
+# Experimental Blueprints Wizard (/studio/blueprints/wizard). Override with LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=0 to disable.
+export LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD="${LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD:-1}"
+
 if python3 -c "import markdown" 2>/dev/null; then
   python3 generator/build-lenses-docs.py
 else

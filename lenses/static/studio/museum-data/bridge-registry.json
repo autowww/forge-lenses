@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "validation_issues": [],
+  "registry": {
+    "schema_version": "1.0.0",
+    "registry_version": "2026.04.11",
+    "lifecycle_rows": [
+      {
+        "neutral": "discover",
+        "pdlc": "Inspire",
+        "sdlc": "exploration",
+        "forge": "Ore"
+      },
+      {
+        "neutral": "shape",
+        "pdlc": "Focus",
+        "sdlc": "analysis",
+        "forge": "Ingot"
+      },
+      {
+        "neutral": "commit",
+        "pdlc": "Commit",
+        "sdlc": "sprint_commitment",
+        "forge": "Charge"
+      },
+      {
+        "neutral": "build",
+        "pdlc": "Prove",
+        "sdlc": "implementation",
+        "forge": "Forge Spark"
+      },
+      {
+        "neutral": "release",
+        "pdlc": "Launch",
+        "sdlc": "release",
+        "forge": "Release / Launch Record"
+      },
+      {
+        "neutral": "learn",
+        "pdlc": "Learn",
+        "sdlc": "operations_feedback",
+        "forge": "Ember Log"
+      }
+    ],
+    "ceremony_intents": {
+      "C1": {
+        "neutral_label": "Intent and framing",
+        "forge_rituals": [
+          "Foundation Brief",
+          "Ore refinement"
+        ],
+        "sdlc_rituals": [
+          "discovery workshop",
+          "backlog inception"
+        ],
+        "pdlc_rituals": [
+          "problem framing",
+          "outcome hypothesis"
+        ]
+      },
+      "C2": {
+        "neutral_label": "Scope and commitment",
+        "forge_rituals": [
+          "Product Spark Plan",
+          "Charge"
+        ],
+        "sdlc_rituals": [
+          "sprint planning",
+          "PI planning"
+        ],
+        "pdlc_rituals": [
+          "commitment",
+          "portfolio slice"
+        ]
+      },
+      "C3": {
+        "neutral_label": "Design and decision",
+        "forge_rituals": [
+          "ADR",
+          "Directive",
+          "Review Pack"
+        ],
+        "sdlc_rituals": [
+          "design review",
+          "architecture sync"
+        ],
+        "pdlc_rituals": [
+          "solution fit",
+          "assay prep"
+        ]
+      },
+      "C4": {
+        "neutral_label": "Build and evidence",
+        "forge_rituals": [
+          "Forge Spark",
+          "Assay Packet"
+        ],
+        "sdlc_rituals": [
+          "implementation",
+          "CI evidence"
+        ],
+        "pdlc_rituals": [
+          "delivery evidence",
+          "value instrumentation"
+        ]
+      },
+      "C5": {
+        "neutral_label": "Release and gate",
+        "forge_rituals": [
+          "Release gate",
+          "Launch Record"
+        ],
+        "sdlc_rituals": [
+          "release approval",
+          "change advisory"
+        ],
+        "pdlc_rituals": [
+          "go-to-market gate",
+          "launch readiness"
+        ]
+      },
+      "C6": {
+        "neutral_label": "Reflect and improve",
+        "forge_rituals": [
+          "Ember Log",
+          "postmortem"
+        ],
+        "sdlc_rituals": [
+          "retrospective",
+          "incident review"
+        ],
+        "pdlc_rituals": [
+          "outcome review",
+          "learning loop"
+        ]
+      }
+    },
+    "term_collisions": [
+      {
+        "id": "forge_spark_vs_product_spark_plan",
+        "terms": [
+          "Forge Spark",
+          "Product Spark Plan"
+        ],
+        "resolution": "Map both to work_unit; set projection.forge_subtype to spark_execution vs product_plan_line."
+      },
+      {
+        "id": "ember_vs_adr_vs_directive",
+        "terms": [
+          "Ember Log",
+          "ADR",
+          "Directive"
+        ],
+        "resolution": "Ember Log maps to event or artifact_ref (narrative); ADR and Directive map to decision_ref with subtype."
+      },
+      {
+        "id": "assay_gate_vs_release_gate",
+        "terms": [
+          "Assay gate",
+          "release gate"
+        ],
+        "resolution": "Both gate_ref; distinguish gate_class assay_evidence vs promotion_control in payload."
+      },
+      {
+        "id": "versona_vs_meeting",
+        "terms": [
+          "Versona session",
+          "meeting"
+        ],
+        "resolution": "Versona session maps to meeting_ref with modality agentic; ordinary meetings use modality human."
+      }
+    ]
+  }
+}

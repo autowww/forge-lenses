@@ -1,4 +1,5 @@
 ---
+
 nav_title: Install and run
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: lenses
 tier: overview
 handbook_area: lenses
 learning_level: '101'
+section: get-started
+status: shipped
+description: Install and run — Forge Lenses handbook entry (start).
+page_type: how-to
 ---
 
 # Install and run
@@ -14,9 +19,47 @@ learning_level: '101'
 
 Getting the Lenses **Python server** running so you can open the dashboard and Forge Studio in a browser.
 
+```blueprint-diagram
+key: linear
+alt: Clone, venv, pip install, start server, open browser tabs for dashboard and Studio
+title: Install and run Lenses
+summary: Bring the Lenses Python server up on loopback so the dashboard and Studio load in your browser.
+node: What it is
+detail: The local Python server that serves dashboard and Forge Studio.
+more: Lenses is a local-first control plane for inspecting and guiding Forge workspaces; this page covers first boot only.
+node: Start
+detail: Clone forge-lenses and create a dedicated Python virtual environment.
+more: Choose standalone clone beside product repos or add as a submodule in a parent workspace; both paths run setup.sh before pip install.
+node: Core steps (see walkthrough below)
+detail: Install requirements, launch the server, and open loopback URLs.
+more: pip install -r requirements.txt, then ./scripts/run-lenses.sh; confirm Classic UI, workspace-state API, and /studio/ per the health checks below.
+node: Outcome
+detail: Dashboard and Studio sessions load at 127.0.0.1 without widening network exposure.
+more: Default port is 8080; override with LENSES_PORT if the port is already in use.
+caption: Install to first-loopback session without widening network exposure
+fallback_ascii: |
+  What it is
+
+  Start
+      |
+      v
+  Core steps (see walkthrough below)
+      |
+      v
+  Outcome
+```
+
 ## When to use it
 
 First time you clone forge-lenses, or after updating dependencies.
+
+## Time and verification
+
+| | |
+|-|--|
+| **Time** | About **10–15 minutes** on a fast network (clone + venv + first run). |
+| **Verify** | Open `http://127.0.0.1:8080/` (or your chosen port) — dashboard HTML loads; `http://127.0.0.1:8080/studio/` loads the Studio shell when enabled. |
+| **Recover** | Port in use: change **`LENSES_PORT`** or stop the conflicting process. Broken dependencies: recreate the venv and `pip install -r requirements.txt` again. |
 
 ## Prerequisites
 
@@ -24,6 +67,10 @@ First time you clone forge-lenses, or after updating dependencies.
 |-------------|--------|
 | **Git**, **Python 3**, **pip** | Use a venv below — do not rely on system Python on macOS/Linux if your distro is strict |
 | Network | Needed once for `pip install` |
+
+## Configuration reference
+
+See [environment variables & Studio flags](../reference/config-env.md) when you tune ports, LLM gateways, Wizard/Vite toggles, or OIDC knobs (`reference-config-env.html` after `build-lenses-docs`).
 
 ## Standalone vs submodule
 

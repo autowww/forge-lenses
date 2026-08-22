@@ -1,0 +1,285 @@
+{
+  "schema_version": "1.0.0",
+  "registry_version": "2026.04.11",
+  "lifecycle_rows": [
+    {
+      "neutral": "discover",
+      "pdlc": "Inspire",
+      "sdlc": "exploration",
+      "forge": "Ore"
+    },
+    {
+      "neutral": "shape",
+      "pdlc": "Focus",
+      "sdlc": "analysis",
+      "forge": "Ingot"
+    },
+    {
+      "neutral": "commit",
+      "pdlc": "Commit",
+      "sdlc": "sprint_commitment",
+      "forge": "Charge"
+    },
+    {
+      "neutral": "build",
+      "pdlc": "Prove",
+      "sdlc": "implementation",
+      "forge": "Forge Spark"
+    },
+    {
+      "neutral": "release",
+      "pdlc": "Launch",
+      "sdlc": "release",
+      "forge": "Release / Launch Record"
+    },
+    {
+      "neutral": "learn",
+      "pdlc": "Learn",
+      "sdlc": "operations_feedback",
+      "forge": "Ember Log"
+    }
+  ],
+  "ceremony_intents": {
+    "C1": {
+      "neutral_label": "Intent and framing",
+      "forge_rituals": ["Foundation Brief", "Ore refinement"],
+      "sdlc_rituals": ["discovery workshop", "backlog inception"],
+      "pdlc_rituals": ["problem framing", "outcome hypothesis"]
+    },
+    "C2": {
+      "neutral_label": "Scope and commitment",
+      "forge_rituals": ["Product Spark Plan", "Charge"],
+      "sdlc_rituals": ["sprint planning", "PI planning"],
+      "pdlc_rituals": ["commitment", "portfolio slice"]
+    },
+    "C3": {
+      "neutral_label": "Design and decision",
+      "forge_rituals": ["ADR", "Directive", "Review Pack"],
+      "sdlc_rituals": ["design review", "architecture sync"],
+      "pdlc_rituals": ["solution fit", "assay prep"]
+    },
+    "C4": {
+      "neutral_label": "Build and evidence",
+      "forge_rituals": ["Forge Spark", "Assay Packet"],
+      "sdlc_rituals": ["implementation", "CI evidence"],
+      "pdlc_rituals": ["delivery evidence", "value instrumentation"]
+    },
+    "C5": {
+      "neutral_label": "Release and gate",
+      "forge_rituals": ["Release gate", "Launch Record"],
+      "sdlc_rituals": ["release approval", "change advisory"],
+      "pdlc_rituals": ["go-to-market gate", "launch readiness"]
+    },
+    "C6": {
+      "neutral_label": "Reflect and improve",
+      "forge_rituals": ["Ember Log", "postmortem"],
+      "sdlc_rituals": ["retrospective", "incident review"],
+      "pdlc_rituals": ["outcome review", "learning loop"]
+    }
+  },
+  "terminology": [
+    {
+      "neutral": "demand_signal",
+      "forge_labels": ["Ore", "upstream demand"],
+      "sdlc_labels": ["feature request", "intake"],
+      "pdlc_labels": ["market signal", "outcome pressure"],
+      "conflict_notes": "Ore is Forge-specific demand intake; neutral demand_signal covers product and engineering intake."
+    },
+    {
+      "neutral": "scoped_commitment",
+      "forge_labels": ["Ingot", "approved scope item"],
+      "sdlc_labels": ["committed backlog item", "scoped epic"],
+      "pdlc_labels": ["committed initiative slice"],
+      "conflict_notes": "Ingot is time-boxed approved scope in Forge; maps to scoped_commitment, not every epic."
+    },
+    {
+      "neutral": "work_unit",
+      "forge_labels": ["Forge Spark", "Product Spark Plan line", "task under Charge"],
+      "sdlc_labels": ["story", "task", "bug", "change request"],
+      "pdlc_labels": ["delivery slice", "hypothesis experiment"],
+      "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+    },
+    {
+      "neutral": "decision_ref",
+      "forge_labels": ["ADR", "Directive"],
+      "sdlc_labels": ["architecture decision", "RFC"],
+      "pdlc_labels": ["steering decision", "policy choice"],
+      "conflict_notes": "ADR records decision state; Directive is binding governance text—both map to decision_ref with subtype."
+    },
+    {
+      "neutral": "meeting_ref",
+      "forge_labels": ["Versona session", "Review Pack review"],
+      "sdlc_labels": ["ceremony", "stand-up", "sprint review"],
+      "pdlc_labels": ["outcome review", "stakeholder sync"],
+      "conflict_notes": "Versona session is agent-assisted discipline ritual; treat as meeting_ref with modality agentic."
+    },
+    {
+      "neutral": "artifact_ref",
+      "forge_labels": ["Review Pack", "Assay Packet", "WBS row"],
+      "sdlc_labels": ["spec", "test plan", "build artifact"],
+      "pdlc_labels": ["evidence pack", "readout"],
+      "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist—both artifact_ref; gate type differs."
+    },
+    {
+      "neutral": "gate_ref",
+      "forge_labels": ["Assay gate", "release gate"],
+      "sdlc_labels": ["quality gate", "CAB"],
+      "pdlc_labels": ["launch gate", "outcome checkpoint"],
+      "conflict_notes": "Assay gate is evidence-heavy pre-release; release gate is promotion control—both gate_ref."
+    },
+    {
+      "neutral": "contributor",
+      "forge_labels": ["discipline owner", "Charge owner"],
+      "sdlc_labels": ["developer", "engineer"],
+      "pdlc_labels": ["product partner", "sponsor"],
+      "conflict_notes": null
+    },
+    {
+      "neutral": "event",
+      "forge_labels": ["Ember Log entry", "journal event"],
+      "sdlc_labels": ["deployment event", "CI run"],
+      "pdlc_labels": ["outcome signal event"],
+      "conflict_notes": "Ember Log is human narrative; ADR is decision record—do not merge."
+    },
+    {
+      "neutral": "repo_ref",
+      "forge_labels": ["repository"],
+      "sdlc_labels": ["repository", "VCS root"],
+      "pdlc_labels": ["code asset"],
+      "conflict_notes": null
+    },
+    {
+      "neutral": "build_ref",
+      "forge_labels": ["CI build"],
+      "sdlc_labels": ["pipeline run", "build"],
+      "pdlc_labels": ["build evidence"],
+      "conflict_notes": null
+    },
+    {
+      "neutral": "release_ref",
+      "forge_labels": ["Release", "Launch Record"],
+      "sdlc_labels": ["release", "deployment train"],
+      "pdlc_labels": ["launch", "outcome release"],
+      "conflict_notes": null
+    },
+    {
+      "neutral": "environment_ref",
+      "forge_labels": ["environment", "cell"],
+      "sdlc_labels": ["environment", "stage"],
+      "pdlc_labels": ["touchpoint environment"],
+      "conflict_notes": null
+    },
+    {
+      "neutral": "outcome_ref",
+      "forge_labels": ["objective", "initiative outcome"],
+      "sdlc_labels": ["product goal"],
+      "pdlc_labels": ["outcome", "OKR"],
+      "conflict_notes": null
+    }
+  ],
+  "term_collisions": [
+    {
+      "id": "forge_spark_vs_product_spark_plan",
+      "terms": ["Forge Spark", "Product Spark Plan"],
+      "resolution": "Map both to work_unit; set projection.forge_subtype to spark_execution vs product_plan_line."
+    },
+    {
+      "id": "ember_vs_adr_vs_directive",
+      "terms": ["Ember Log", "ADR", "Directive"],
+      "resolution": "Ember Log maps to event or artifact_ref (narrative); ADR and Directive map to decision_ref with subtype."
+    },
+    {
+      "id": "assay_gate_vs_release_gate",
+      "terms": ["Assay gate", "release gate"],
+      "resolution": "Both gate_ref; distinguish gate_class assay_evidence vs promotion_control in payload."
+    },
+    {
+      "id": "versona_vs_meeting",
+      "terms": ["Versona session", "meeting"],
+      "resolution": "Versona session maps to meeting_ref with modality agentic; ordinary meetings use modality human."
+    }
+  ],
+  "artifact_type_mappings": [
+    {
+      "neutral": "markdown_doc",
+      "forge": ["Review Pack", "Assay Packet", "ADR"],
+      "sdlc": ["README", "spec.md"],
+      "pdlc": ["brief", "readout"]
+    },
+    {
+      "neutral": "binary_evidence",
+      "forge": ["test evidence attachment"],
+      "sdlc": ["JUnit XML", "coverage report"],
+      "pdlc": ["instrumentation export"]
+    }
+  ],
+  "status_mappings": [
+    {
+      "neutral": "open",
+      "forge": ["active Charge", "open Spark"],
+      "sdlc": ["To Do", "In Progress"],
+      "pdlc": ["in_flight"]
+    },
+    {
+      "neutral": "done",
+      "forge": ["banked", "completed Spark"],
+      "sdlc": ["Done", "Released"],
+      "pdlc": ["achieved", "launched"]
+    }
+  ],
+  "ogs_kind_to_canonical": {
+    "objective": "outcome_ref",
+    "initiative": "outcome_ref",
+    "epic": "work_unit",
+    "story": "work_unit",
+    "task": "work_unit",
+    "repo": "repo_ref",
+    "branch": "work_unit",
+    "change_request": "work_unit",
+    "commit": "artifact_ref",
+    "build": "build_ref",
+    "artifact": "artifact_ref",
+    "release": "release_ref",
+    "environment": "environment_ref",
+    "test_run": "event",
+    "test_plan": "artifact_ref",
+    "test_suite": "artifact_ref",
+    "test_case": "artifact_ref",
+    "defect": "work_unit",
+    "security_finding": "artifact_ref",
+    "compliance_exception": "decision_ref",
+    "control": "artifact_ref",
+    "vulnerability": "artifact_ref",
+    "incident": "event",
+    "service": "environment_ref",
+    "postmortem": "artifact_ref",
+    "evidence": "artifact_ref",
+    "scenario": "outcome_ref",
+    "workstream": "contributor",
+    "demand_signal": "demand_signal",
+    "scoped_commitment": "scoped_commitment",
+    "contributor": "contributor",
+    "gate": "gate_ref"
+  },
+  "canonical_trace_rules": {
+    "work_unit": {
+      "recommended_in": ["implements", "contains", "tests", "validates"],
+      "recommended_out": ["documented_by", "evidenced_by", "targets", "blocked_by"]
+    },
+    "release_ref": {
+      "recommended_in": ["contains", "deploys"],
+      "recommended_out": ["deploys", "gated_by", "affects"]
+    },
+    "demand_signal": {
+      "recommended_in": [],
+      "recommended_out": ["decomposes_to", "originates_from"]
+    }
+  },
+  "route_labels": {
+    "plan": "Plans",
+    "projects": "Projects",
+    "delivery": "Delivery",
+    "knowledge": "Knowledge",
+    "bridge_panel": "Bridge traceability"
+  }
+}

@@ -1,11 +1,16 @@
 ---
-nav_title: "Wizard 301: Refine"
+
+nav_title: 'Wizard 301: Refine'
 public_publish: true
 audience: public
 product_area: wizard
 tier: '301'
 handbook_area: wizard
 learning_level: '301'
+section: tutorials-301
+status: experimental
+description: 'Wizard 301: Refine — Forge Lenses handbook entry (tutorials-301).'
+page_type: tutorial
 ---
 
 # Wizard 301 — Refine
@@ -19,6 +24,28 @@ Steps like **Understanding** may offer **Refine**: LLM-assisted iteration while 
 ## How to use it
 
 Read output, edit notes, refine again. Paste **constraints** and **non-goals** explicitly.
+
+**Tie-in:** In the **worked example session** on [Wizard 301 — Advanced usage](11-wizard-301.md), Refine almost drops an **SLO** until the team edits notes and runs Refine again — same pattern you should use when the model smooths away facts you need.
+
+## Step-by-step usage (typical)
+
+1. When **Understanding** (or a similar step) offers **Refine**, run it on a **short** paragraph you already agree is directionally right — not on empty text.
+2. Read the model output; **edit the notes field** with facts the team insists on (dates, names, boundaries).
+3. Refine again only when the delta is worth the cycle; otherwise move forward and fix detail in **Review & generate**.
+4. If Refine errors appear, see [Troubleshooting](12-troubleshooting.md) — often policy or local API loopback.
+
+### UI affordances (plain language)
+
+- **Refine** is **assistive**: you remain the editor of record; nothing ships without your **Review** step.
+- **Constraints** and **non-goals** belong in your notes so Refine does not “invent” organization policy.
+
+## Verify
+
+After **Refine**, the updated text still reflects **facts the team named** (dates, owners, boundaries). If the model dropped a constraint you need, put it back in notes and run **Refine** again or fix it in **Review & generate**.
+
+## Recheck loop
+
+After Refine-heavy steps, expect **Recheck / repair** to matter more — see [Review and recheck](11-wizard-301_03-review-recheck.md).
 
 ## What to do next
 

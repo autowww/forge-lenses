@@ -1,0 +1,1200 @@
+{
+  "version": 1,
+  "route_count": 161,
+  "families": {
+    "/api/access": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/actions": {
+      "POST": 1
+    },
+    "/api/agent-runtime": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/agents": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/artifacts": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/assay-packets": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/auth": {
+      "GET": 5,
+      "POST": 3
+    },
+    "/api/autonomy-maturity": {
+      "GET": 2
+    },
+    "/api/blueprints": {
+      "GET": 3,
+      "POST": 13,
+      "PUT": 1
+    },
+    "/api/bridge": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/ceremonies": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/chart-data": {
+      "GET": 1
+    },
+    "/api/cicd": {
+      "GET": 2
+    },
+    "/api/connectors": {
+      "GET": 1
+    },
+    "/api/cross-team-release": {
+      "GET": 2
+    },
+    "/api/decisions": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/delivery": {
+      "GET": 2
+    },
+    "/api/devsecops": {
+      "GET": 2
+    },
+    "/api/doc-hydration": {
+      "GET": 2
+    },
+    "/api/doc-management": {
+      "GET": 4,
+      "POST": 1
+    },
+    "/api/docs-health": {
+      "GET": 3
+    },
+    "/api/epic-hub": {
+      "GET": 1
+    },
+    "/api/epic-spec-board": {
+      "GET": 1,
+      "POST": 2
+    },
+    "/api/evidence": {
+      "GET": 1
+    },
+    "/api/execution-sessions": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/fleet": {
+      "GET": 1,
+      "POST": 6
+    },
+    "/api/forge-work-model": {
+      "GET": 1
+    },
+    "/api/forgesdlc-blog": {
+      "GET": 2,
+      "POST": 1
+    },
+    "/api/foundry": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/governance": {
+      "GET": 2
+    },
+    "/api/handoffs": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/jobs": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/launches": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/llm": {
+      "GET": 7,
+      "POST": 5
+    },
+    "/api/methodology": {
+      "GET": 1
+    },
+    "/api/nested-roadmap-config": {
+      "GET": 1
+    },
+    "/api/ops-delivery": {
+      "GET": 2
+    },
+    "/api/orchestration": {
+      "GET": 5,
+      "POST": 1
+    },
+    "/api/outcomes": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/pdlc": {
+      "GET": 1
+    },
+    "/api/plan-spine": {
+      "GET": 1
+    },
+    "/api/quality": {
+      "GET": 2
+    },
+    "/api/repo-workflow": {
+      "GET": 2
+    },
+    "/api/review-packs": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/roadmap-outline": {
+      "GET": 1
+    },
+    "/api/roadmap-section": {
+      "GET": 1
+    },
+    "/api/roadmaps-matrix": {
+      "GET": 1
+    },
+    "/api/sdlc-copilot": {
+      "GET": 2,
+      "POST": 4
+    },
+    "/api/search": {
+      "GET": 2,
+      "POST": 2
+    },
+    "/api/sticker-board": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/sticker-board-registry": {
+      "GET": 1,
+      "POST": 1
+    },
+    "/api/sticker-board-share": {
+      "GET": 2,
+      "POST": 2
+    },
+    "/api/story-hub": {
+      "GET": 1
+    },
+    "/api/timeline-context": {
+      "GET": 1
+    },
+    "/api/today-charge": {
+      "GET": 1
+    },
+    "/api/toolset": {
+      "POST": 1
+    },
+    "/api/tutorials-index": {
+      "GET": 1
+    },
+    "/api/virtual-camera": {
+      "GET": 2,
+      "POST": 1,
+      "PUT": 1
+    },
+    "/api/wbs": {
+      "POST": 1
+    },
+    "/api/wbs-file": {
+      "GET": 1
+    },
+    "/api/wbs-management": {
+      "GET": 1
+    },
+    "/api/workflow-context": {
+      "GET": 1
+    },
+    "/api/workspace-md-file": {
+      "GET": 1
+    },
+    "/api/workspace-md-index": {
+      "GET": 1
+    },
+    "/api/workspace-state": {
+      "GET": 1
+    }
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "signature": "/api/access/policy",
+      "family": "/api/access",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/auth/loopback-dev-login",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/auth/oidc/callback",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/auth/oidc/login",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/auth/oidc/status",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/auth/status",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/autonomy-maturity/enabled",
+      "family": "/api/autonomy-maturity",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/autonomy-maturity/overview",
+      "family": "/api/autonomy-maturity",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/blueprints/wizard/enabled",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/blueprints/wizard/sessions",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/chart-data/overview",
+      "family": "/api/chart-data",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/cicd/control-tower",
+      "family": "/api/cicd",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/cicd/enabled",
+      "family": "/api/cicd",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/connectors/health",
+      "family": "/api/connectors",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/cross-team-release/enabled",
+      "family": "/api/cross-team-release",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/cross-team-release/overview",
+      "family": "/api/cross-team-release",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/delivery/enabled",
+      "family": "/api/delivery",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/delivery/overview",
+      "family": "/api/delivery",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/devsecops/enabled",
+      "family": "/api/devsecops",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/devsecops/overview",
+      "family": "/api/devsecops",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-hydration/review-packs",
+      "family": "/api/doc-hydration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-management/catalog",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-management/session-events",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/doc-management/sessions",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/docs-health/live-sessions",
+      "family": "/api/docs-health",
+      "audience": "docs-health"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/docs-health/summary",
+      "family": "/api/docs-health",
+      "audience": "docs-health"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/docs-health/work-items",
+      "family": "/api/docs-health",
+      "audience": "docs-health"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/epic-hub",
+      "family": "/api/epic-hub",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/epic-spec-board",
+      "family": "/api/epic-spec-board",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/fleet/settings",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/forge-work-model",
+      "family": "/api/forge-work-model",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/forgesdlc-blog",
+      "family": "/api/forgesdlc-blog",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/forgesdlc-blog/content",
+      "family": "/api/forgesdlc-blog",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/governance/audit",
+      "family": "/api/governance",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/governance/scopes",
+      "family": "/api/governance",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/diagnostics",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/model-catalog-notifications",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/ollama-status",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/providers",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/routing-preview",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/settings",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/llm/usage",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/nested-roadmap-config",
+      "family": "/api/nested-roadmap-config",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/ops-delivery/enabled",
+      "family": "/api/ops-delivery",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/ops-delivery/overview",
+      "family": "/api/ops-delivery",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/orchestration/enabled",
+      "family": "/api/orchestration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/orchestration/entity",
+      "family": "/api/orchestration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/orchestration/portfolio-context",
+      "family": "/api/orchestration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/orchestration/status",
+      "family": "/api/orchestration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/orchestration/trace",
+      "family": "/api/orchestration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/plan-spine",
+      "family": "/api/plan-spine",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/quality/enabled",
+      "family": "/api/quality",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/quality/overview",
+      "family": "/api/quality",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/repo-workflow/enabled",
+      "family": "/api/repo-workflow",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/repo-workflow/overview",
+      "family": "/api/repo-workflow",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/roadmap-outline",
+      "family": "/api/roadmap-outline",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/roadmap-section",
+      "family": "/api/roadmap-section",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/roadmaps-matrix",
+      "family": "/api/roadmaps-matrix",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sdlc-copilot/chat-stream",
+      "family": "/api/sdlc-copilot",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sdlc-copilot/enabled",
+      "family": "/api/sdlc-copilot",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/search",
+      "family": "/api/search",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/search/reindex",
+      "family": "/api/search",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sticker-board",
+      "family": "/api/sticker-board",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sticker-board-registry",
+      "family": "/api/sticker-board-registry",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sticker-board-share",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/sticker-board-share/config",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/story-hub",
+      "family": "/api/story-hub",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/timeline-context",
+      "family": "/api/timeline-context",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/today-charge",
+      "family": "/api/today-charge",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/tutorials-index",
+      "family": "/api/tutorials-index",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/wbs-file",
+      "family": "/api/wbs-file",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/wbs-management",
+      "family": "/api/wbs-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/workflow-context",
+      "family": "/api/workflow-context",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/workspace-md-file",
+      "family": "/api/workspace-md-file",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/workspace-md-index",
+      "family": "/api/workspace-md-index",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "/api/workspace-state",
+      "family": "/api/workspace-state",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/agent-runtime",
+      "family": "/api/agent-runtime",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/agents",
+      "family": "/api/agents",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/artifacts",
+      "family": "/api/artifacts",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/assay-packets",
+      "family": "/api/assay-packets",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/blueprints/wizard/session",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/bridge",
+      "family": "/api/bridge",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/ceremonies",
+      "family": "/api/ceremonies",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/decisions",
+      "family": "/api/decisions",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/doc-hydration/review-packs",
+      "family": "/api/doc-hydration",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/doc-management/session",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/evidence",
+      "family": "/api/evidence",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/execution-sessions",
+      "family": "/api/execution-sessions",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/foundry",
+      "family": "/api/foundry",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/handoffs",
+      "family": "/api/handoffs",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/jobs/overview",
+      "family": "/api/jobs",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/launches",
+      "family": "/api/launches",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/methodology",
+      "family": "/api/methodology",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/outcomes",
+      "family": "/api/outcomes",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/pdlc/bridge",
+      "family": "/api/pdlc",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/review-packs",
+      "family": "/api/review-packs",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/virtual-camera",
+      "family": "/api/virtual-camera",
+      "audience": "general"
+    },
+    {
+      "method": "GET",
+      "signature": "PREFIX:/api/virtual-camera/preview",
+      "family": "/api/virtual-camera",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/access/set-member",
+      "family": "/api/access",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/actions/run",
+      "family": "/api/actions",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/assay-packets",
+      "family": "/api/assay-packets",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/auth/github",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/auth/logout",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/auth/loopback-dev-login",
+      "family": "/api/auth",
+      "audience": "auth"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/artifact-export",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/artifact-recheck",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/artifact-review",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/clarify-suggest",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/create-repo",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/cursor-launch-pack/export",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/cursor-launch-pack/preview",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/generate-artifacts",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/interpret",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/session/<id>/refine",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/blueprints/wizard/telemetry",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/bridge/links",
+      "family": "/api/bridge",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/doc-management",
+      "family": "/api/doc-management",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/epic-spec-board/dual-wiki-refresh",
+      "family": "/api/epic-spec-board",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/epic-spec-board/transition",
+      "family": "/api/epic-spec-board",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/fleet/connect-forge-llm",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/fleet/discover",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/fleet/node-detail",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/fleet/probe",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/fleet/settings",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/fleet/test-fleet",
+      "family": "/api/fleet",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/forgesdlc-blog/sync",
+      "family": "/api/forgesdlc-blog",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/jobs/overview",
+      "family": "/api/jobs",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/llm/chat",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/llm/ollama-action",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/llm/provider-probe",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/llm/routing-preview-draft",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/llm/settings",
+      "family": "/api/llm",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/orchestration/seed-demo",
+      "family": "/api/orchestration",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/review-packs",
+      "family": "/api/review-packs",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sdlc-copilot/chat",
+      "family": "/api/sdlc-copilot",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sdlc-copilot/chat-async",
+      "family": "/api/sdlc-copilot",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sdlc-copilot/commit-proposal",
+      "family": "/api/sdlc-copilot",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sdlc-copilot/topic-archive",
+      "family": "/api/sdlc-copilot",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/search/ingest",
+      "family": "/api/search",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/search/reindex",
+      "family": "/api/search",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sticker-board",
+      "family": "/api/sticker-board",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sticker-board-registry",
+      "family": "/api/sticker-board-registry",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sticker-board-share",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/sticker-board-share/join",
+      "family": "/api/sticker-board-share",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/toolset/run",
+      "family": "/api/toolset",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "/api/wbs/create",
+      "family": "/api/wbs",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/agent-runtime",
+      "family": "/api/agent-runtime",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/agents",
+      "family": "/api/agents",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/artifacts",
+      "family": "/api/artifacts",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/blueprints/wizard/session",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/ceremonies",
+      "family": "/api/ceremonies",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/decisions",
+      "family": "/api/decisions",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/execution-sessions",
+      "family": "/api/execution-sessions",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/foundry",
+      "family": "/api/foundry",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/handoffs",
+      "family": "/api/handoffs",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/launches",
+      "family": "/api/launches",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/outcomes",
+      "family": "/api/outcomes",
+      "audience": "general"
+    },
+    {
+      "method": "POST",
+      "signature": "PREFIX:/api/virtual-camera",
+      "family": "/api/virtual-camera",
+      "audience": "general"
+    },
+    {
+      "method": "PUT",
+      "signature": "PREFIX:/api/blueprints/wizard/session",
+      "family": "/api/blueprints",
+      "audience": "wizard"
+    },
+    {
+      "method": "PUT",
+      "signature": "PREFIX:/api/virtual-camera/profiles",
+      "family": "/api/virtual-camera",
+      "audience": "general"
+    }
+  ]
+}

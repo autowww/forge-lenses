@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/webhook-envelope-meta.schema.json",
+  "title": "Outbound webhook envelope metadata",
+  "x-lenses-stability": "experimental",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["provider", "intent"],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "maxLength": 80,
+      "description": "Owning integration (Fleet, alerting, ticketing, …)."
+    },
+    "intent": {
+      "type": "string",
+      "enum": ["docs_health.completed", "wizard.stage_completed", "custom"]
+    },
+    "dedupe_key": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "Ensures webhook consumers can suppress duplicates."
+    }
+  }
+}

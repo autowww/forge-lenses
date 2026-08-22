@@ -30,7 +30,7 @@ cd forge-lenses && ./scripts/setup.sh
 
 After **`lenses-startup.sh`** (from the host tree or from inside `forge-lenses/`; submodule checkouts are redirected to the superproject):
 
-- **`.lenses-local/`** — gitignored; local-only (sessions cache, **Stickerboardefo** registry **`sticker-board-registry.json`**, per-board files under **`sticker-boards/<id>.*`** (and legacy **`sticker-board.json`** until migrated), etc.).
+- **`.lenses-local/`** — gitignored; local-only (sessions cache, **Forge Stickerboards** registry **`sticker-board-registry.json`**, per-board files under **`sticker-boards/<id>.*`** (and legacy **`sticker-board.json`** until migrated), etc.).
 - **`.lenses-repo/<github-login>/`** — committed (starts with `.gitkeep`; optional `README.txt` added only if missing). This is the commit-friendly “shared with the repo” area (some people think of it as a lenses-shared slot; the directory name is **`.lenses-repo/`**). GitHub login from **`gh api user`**, else **`git remote get-url origin`** on the **resolved git repo** (`github.com/owner/...`).
 
 ### Multi-repo workspace parent (sibling repos)

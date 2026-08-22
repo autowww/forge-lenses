@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/workspace-scan-result.schema.json",
+  "title": "Forge Lenses workspace scan rollup",
+  "description": "Shape of `_scan`/workspace-scan responses after `scan_workspace`; extra keys appear when standards enrichment hooks run.",
+  "x-lenses-stability": "stable",
+  "type": "object",
+  "required": ["workspace_root", "resolved_at", "children"],
+  "properties": {
+    "workspace_root": { "type": "string" },
+    "lenses_repo_root": { "type": "string" },
+    "resolved_at": { "type": "string", "format": "date-time" },
+    "children": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "path", "is_git"],
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string" },
+          "path": { "type": "string" },
+          "is_git": { "type": "boolean" },
+          "git": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "websites": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+    "wbs": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+    "toolset": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true
+}

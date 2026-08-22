@@ -1,0 +1,10 @@
+schema: forge-sdlc
+
+# Project context — shown to AI when creating OpenSpec artifacts.
+context: |
+  Project: forge-lenses — local-first Forge workspace control plane (Python FastAPI backend,
+  React Enterprise UI, Electron desktop shell).
+  Delivery profile: under the Epic execution profile — Charge lists Epics (M*E*), not Forge Sparks;
+  one OpenSpec change per ready Epic; Lite observable SHALLs + scenarios; tasks.md is non-binding scratch.
+  WBS: docs/requirements/WBS.md · Charge: forge/charge.md · Profile canon: blueprints EPIC-EXECUTION-PROFILE.md.
+  Telemetry: set OPENSPEC_TELEMETRY=0 (see docs/maintainer/openspec-adoption.md).

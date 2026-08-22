@@ -1,0 +1,383 @@
+{
+  "capturedAt": "2026-07-24T09:07:30.868Z",
+  "base": "http://127.0.0.1:8080/studio",
+  "splashCleared": true,
+  "routeCount": 16,
+  "jargonRoutes": [],
+  "splashRoutes": [],
+  "results": [
+    {
+      "route": "/",
+      "url": "http://127.0.0.1:8080/studio/",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 206,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nLoading workspace data…\n\nPulling the latest scan results from Lenses.\n\nStep 4 of 5: Loading workspace data…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/projects",
+      "url": "http://127.0.0.1:8080/studio/projects",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/plan",
+      "url": "http://127.0.0.1:8080/studio/plan",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 101,
+        "onSplash": false,
+        "bodyPreview": "Loading this area\nOpening charts, plan, boards, or wizard — your place in the workspace is preserved."
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/plan/matrix",
+      "url": "http://127.0.0.1:8080/studio/plan/matrix",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/timeline",
+      "url": "http://127.0.0.1:8080/studio/timeline",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 101,
+        "onSplash": false,
+        "bodyPreview": "Loading this area\nOpening charts, plan, boards, or wizard — your place in the workspace is preserved."
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/board",
+      "url": "http://127.0.0.1:8080/studio/board",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/search",
+      "url": "http://127.0.0.1:8080/studio/search",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/chat",
+      "url": "http://127.0.0.1:8080/studio/chat",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/settings/llm",
+      "url": "http://127.0.0.1:8080/studio/settings/llm",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/settings/fleet",
+      "url": "http://127.0.0.1:8080/studio/settings/fleet",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/knowledge/methodology/evidence",
+      "url": "http://127.0.0.1:8080/studio/knowledge/methodology/evidence",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/knowledge/agentic-bridge",
+      "url": "http://127.0.0.1:8080/studio/knowledge/agentic-bridge",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/tutorials",
+      "url": "http://127.0.0.1:8080/studio/tutorials",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/websites",
+      "url": "http://127.0.0.1:8080/studio/websites",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [
+          "Studio"
+        ],
+        "buttons": [],
+        "bodyLen": 166,
+        "onSplash": false,
+        "bodyPreview": "FORGE LENSES\n\nStudio\nAlmost ready…\n\nBuilding your dashboard.\n\nStep 5 of 5: Almost ready…\n\nRuns on this machine with the Lenses workspace app.\n\nBuild details (inspect)"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "sparse"
+        ]
+      },
+      "error": null
+    },
+    {
+      "route": "/doc-management",
+      "url": "http://127.0.0.1:8080/studio/doc-management",
+      "ok": true,
+      "data": {
+        "title": "Publish › Doc management · Forge Studio",
+        "h1": [
+          "Doc management"
+        ],
+        "buttons": [
+          "Find",
+          "Ask",
+          "Do",
+          "Find…\n⌘K",
+          "Copilot",
+          "Go",
+          "2",
+          "←\nBack",
+          "→",
+          "▾",
+          "New session",
+          "Hide"
+        ],
+        "bodyLen": 936,
+        "onSplash": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nHome\nWork\nProjects\nKnowledge\nPublish9+\n←\nBack\n→\n▾\nforge-lenses / Publish / Doc management\nPUBLISH\n\nSites and blog from your workspace—preview what ships, then share links.\n\nSITES & PREVIEWS\n\nBuilt HTML your workspace already knows about—preview before sharing links.\n\nAll sites\nBrowse and preview\nSTORIES & UPDATES\n\nRelease notes and narrative posts; draft in Copilot from Plan or evidence, then refresh the feed.\n\nAll posts\nDoc management\nBlog home (live)\n↗\nEXTERNAL\nExternal site\nDoc management\nNew session\n\nGoverned hydration sessions — intake seeds, run agents, approve, and promote to sites.\n\nLoading sessions…\n\nTarget surfaces\n\nBrowse blog posts to start hydration from cached forgesdlc.com content.\n\nTHIS AREA\nHide\nLAST SCAN\nJul 24, 2026, 12:07 PM\n\nContext for publish — use the left nav for the full map.\n\nNEXT STEPS\nOverview\nMORE LINKS\nLENSES COPILOT\n\nChecking availability…"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": []
+      },
+      "error": null
+    },
+    {
+      "route": "/autonomy-maturity",
+      "url": "http://127.0.0.1:8080/studio/autonomy-maturity",
+      "ok": true,
+      "data": {
+        "title": "Lenses Studio",
+        "h1": [],
+        "buttons": [
+          "Find",
+          "Ask",
+          "Do",
+          "Find…\n⌘K",
+          "Copilot",
+          "Go",
+          "2",
+          "←\nBack",
+          "→",
+          "▾",
+          "Hide"
+        ],
+        "bodyLen": 1135,
+        "onSplash": false,
+        "bodyPreview": "F\nForge Studio\nFind\n/\nAsk\n/\nDo\nFind…\n⌘K\nCopilot\nGo\n2\nHome\nWork\nProjects\nKnowledge\nPublish9+\n←\nBack\n→\n▾\nforge-lenses / Knowledge / Autonomy maturity\nKNOWLEDGE\n\nLearn, evidence, governance, and optional Blueprints Wizard—links stay in this area.\n\nLEARN\n\nOnboarding and product reference—curated or embedded read-only.\n\nTutorials\nLenses reference docs\nEVIDENCE\n\nMarkdown in your repo plus methodology-linked proof when the workspace exposes it.\n\nWorkspace notes (evidence)\nEvidence registry (graph)\nGOVERN\n\nSigned decisions and how agents attach to your workspace—review before high-risk automation.\n\nDecisions (graph)\nAI agents\nRelease readiness (gaps)\nSHORTCUT\nOpens in Work\nLABS\n\nExperimental automation and bounded draft runs—optional surfaces for operators.\n\nFoundry (Dark Factory)\nSHORTCUT\nOpens in Work\nBUILD & BOOTSTRAP\n\nGuided Blueprints sessions for early framing; export outcomes into normal Plan and project work.\n\nBlueprints Wizard (experimental)\nTHIS AREA\nHide\nLAST SCAN\nJul 24, 2026, 12:07 PM\n\nContext for knowledge — use the left nav for the full map.\n\nNEXT STEPS\nOverview\nMORE LINKS\nLENSES COPILOT\n\nChecking availability…"
+      },
+      "analysis": {
+        "techHits": [],
+        "issues": [
+          "missing_h1"
+        ]
+      },
+      "error": null
+    }
+  ]
+}

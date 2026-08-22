@@ -75,15 +75,16 @@ Optional display labels come from `registry["website_labels"]` (keyed by child n
 Recursive search under `workspace_root` for:
 
 - `**/docs/requirements/WBS.md`
-- `**/docs/requirements/WBS.csv`
 
-Each entry: `repo_hint` (first path segment under workspace), `rel_path` (posix relative path from workspace root), `kind` (`md` or `csv`). Sorted by `rel_path`.
+Each entry: `repo_hint` (first path segment under workspace), `rel_path` (posix relative path from workspace root), `kind` (always `md`). Sorted by `rel_path`.
 
 ## `roadmaps[]` entries
 
 Recursive search under `workspace_root` for:
 
 - `**/ROADMAP.md` where every matching path includes a `docs` path segment (e.g. `forgesdlc/docs/product/ROADMAP.md`, `blueprints/docs/ROADMAP.md`).
+
+Walks each **top-level child** repo (and optional workspace `docs/` when present) with the usual heavy-directory skip list (`node_modules`, `.git`, `build`, …). Paths that sit **inside a registered git submodule** of that repo (entries in the child’s `.gitmodules`) are **excluded**, so another repository’s roadmap is **not** merged into the parent repo’s plan index.
 
 Each entry: `repo_hint` (first path segment under workspace), `rel_path` (posix relative path from workspace root), `kind` (always `md`). Sorted by `rel_path`.
 

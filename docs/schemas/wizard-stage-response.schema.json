@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/wizard-stage-response.schema.json",
+  "title": "Blueprints Wizard HTTP stage acknowledgment",
+  "description": "Typical acknowledgement envelope returned by Wizard HTTP helpers under `/api/blueprints/wizard/*`.",
+  "x-lenses-stability": "beta",
+  "type": "object",
+  "required": ["ok", "stage"],
+  "properties": {
+    "ok": { "type": "boolean", "const": true },
+    "stage": {
+      "type": "string",
+      "examples": ["assess", "refine", "bundle", "review"]
+    },
+    "message": { "type": "string" },
+    "hint": { "type": "string" },
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

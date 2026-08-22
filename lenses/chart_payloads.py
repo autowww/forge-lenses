@@ -2,14 +2,30 @@
 
 from __future__ import annotations
 
-from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
+ProgressCallback = Callable[[dict[str, Any]], None]
+
+from lenses.kpi_history import load_kpi_snapshots, median_from_prior_six, snapshot_period_totals
+from lenses.kpi_trends import (
+    cumulative_daily_from_commit_series,
+    median_prior_six,
+    merge_day_maps,
+    period_start_end,
+    period_totals_seven_oldest_first,
+    trend_tier,
+    utc_today,
+)
 from lenses.project_stats import (
     collect_project_stats,
     commits_by_day_dict,
+    commits_by_day_dict_range,
+    git_numstat_between,
+    git_numstat_since,
     overview_repo_row_metrics,
     workspace_commits_daily_series,
 )
@@ -74,17 +90,121 @@ def build_project_chart_payload(
     return out
 
 
-def build_overview_chart_payload(state: dict[str, Any]) -> dict[str, Any]:
+def horizon_query_days(horizon: str | None) -> int:
+    """Map `horizon` query param (day|week|month|quarter) to a rolling day window for git."""
+    h = (horizon or "").strip().lower()
+    if h == "day":
+        return 1
+    if h == "month":
+        return 30
+    if h == "quarter":
+        return 90
+    return 7
+
+
+def normalized_horizon_id(horizon: str | None) -> str:
+    h = (horizon or "").strip().lower()
+    if h in ("day", "month", "quarter", "week"):
+        return h
+    return "week"
+
+
+def _avg_compliance(sorted_children: list[dict[str, Any]]) -> int | None:
+    scores: list[int] = []
+    for c in sorted_children:
+        sc = c.get("standards_compliance")
+        if isinstance(sc, dict) and isinstance(sc.get("score"), (int, float)):
+            scores.append(int(sc.get("score") or 0))
+    if not scores:
+        return None
+    return int(round(sum(scores) / len(scores)))
+
+
+def _emit_progress(
+    cb: ProgressCallback | None,
+    *,
+    done: int,
+    total: int,
+    phase: str,
+    detail: str = "",
+) -> None:
+    if cb is None:
+        return
+    cb({"done": done, "total": total, "phase": phase, "detail": detail})
+
+
+def build_overview_chart_payload(
+    state: dict[str, Any],
+    *,
+    days: int = 7,
+    horizon_id: str = "week",
+    on_progress: ProgressCallback | None = None,
+) -> dict[str, Any]:
     """Workspace-level chart bundle for `GET /api/chart-data/overview`."""
+    days = max(1, min(int(days), 366))
+    hid = normalized_horizon_id(horizon_id)
+    today = utc_today()
+    span_days = min(7 * days, 630)
+    oldest = today - timedelta(days=span_days - 1)
+
     children: list[dict[str, Any]] = [
         c for c in (state.get("children") or []) if isinstance(c, dict)
     ]
     sorted_children = sorted(children, key=lambda ch: str(ch.get("name", "")).lower())
     max_workers = min(12, max(1, len(sorted_children)))
+    repo_total = max(1, len(sorted_children))
+
+    _emit_progress(on_progress, done=0, total=repo_total, phase="commits", detail="commit history")
+
+    range_maps: dict[str, dict[str, int]] = {}
+    done_commits = 0
+    for c in sorted_children:
+        if not c.get("is_git"):
+            done_commits += 1
+            _emit_progress(
+                on_progress,
+                done=done_commits,
+                total=repo_total,
+                phase="commits",
+                detail=str(c.get("name", "")),
+            )
+            continue
+        name = str(c.get("name", ""))
+        path = Path(str(c.get("path", "")))
+        range_maps[name] = commits_by_day_dict_range(path, oldest, today)
+        done_commits += 1
+        _emit_progress(
+            on_progress,
+            done=done_commits,
+            total=repo_total,
+            phase="commits",
+            detail=name,
+        )
+
     rows_data: list[Any] = []
     if sorted_children:
+
+        def row_for_child(ch: dict[str, Any]) -> Any:
+            nm = str(ch.get("name", ""))
+            dm = range_maps.get(nm)
+            return overview_repo_row_metrics(ch, days=days, day_dict=dm)
+
+        row_by_name: dict[str, Any] = {}
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            rows_data = list(pool.map(overview_repo_row_metrics, sorted_children))
+            futures = {pool.submit(row_for_child, ch): ch for ch in sorted_children}
+            done_loc = 0
+            for fut in as_completed(futures):
+                ch = futures[fut]
+                row_by_name[str(ch.get("name", ""))] = fut.result()
+                done_loc += 1
+                _emit_progress(
+                    on_progress,
+                    done=done_loc,
+                    total=repo_total,
+                    phase="loc",
+                    detail=str(ch.get("name", "")),
+                )
+        rows_data = [row_by_name[str(ch.get("name", ""))] for ch in sorted_children]
 
     loc_chart_rows: list[tuple[str, int]] = []
     loc_total_rows: list[tuple[str, int]] = []
@@ -108,8 +228,185 @@ def build_overview_chart_payload(state: dict[str, Any]) -> dict[str, Any]:
     loc_chart_rows = loc_chart_rows[:40]
     loc_total_sorted = sorted(loc_total_rows, key=lambda x: -x[1])[:40]
 
-    daily_series = workspace_commits_daily_series(day_maps, days=7)
+    daily_series = workspace_commits_daily_series(day_maps, days=days)
     daily = [{"day": d, "count": int(c)} for d, c in daily_series]
+
+    merged_commits = merge_day_maps(list(range_maps.values()))
+    commit_period_totals = period_totals_seven_oldest_first(merged_commits, today, days)
+    commit_median = median_prior_six(commit_period_totals)
+    commit_current = commit_period_totals[-1] if commit_period_totals else 0
+    commit_prev = commit_period_totals[-2] if len(commit_period_totals) >= 2 else 0
+    cumulative_daily = cumulative_daily_from_commit_series(daily)
+
+    git_children = [c for c in sorted_children if c.get("is_git")]
+    per_repo_periods: dict[str, list[int]] = defaultdict(list)
+    lines_period_totals: list[int] = []
+    _emit_progress(on_progress, done=0, total=repo_total, phase="numstat", detail="lines by period")
+    for k in range(6, -1, -1):
+        sk, ek = period_start_end(today, days, k)
+
+        def lines_pair(ch: dict[str, Any]) -> tuple[str, int]:
+            p = Path(str(ch.get("path", "")))
+            nm = str(ch.get("name", "")).strip()
+            a, _b = git_numstat_between(p, sk, ek)
+            return nm, int(a)
+
+        if git_children:
+            pairs_by_name: dict[str, tuple[str, int]] = {}
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                futures = {pool.submit(lines_pair, ch): ch for ch in git_children}
+                done_ns = 0
+                for fut in as_completed(futures):
+                    ch = futures[fut]
+                    nm, add = fut.result()
+                    pairs_by_name[nm] = (nm, add)
+                    done_ns += 1
+                    _emit_progress(
+                        on_progress,
+                        done=done_ns,
+                        total=len(git_children),
+                        phase="numstat",
+                        detail=f"period {7 - k}: {nm}",
+                    )
+            period_sum = 0
+            for ch in git_children:
+                nm = str(ch.get("name", "")).strip()
+                _nm, add = pairs_by_name.get(nm, (nm, 0))
+                per_repo_periods[nm].append(add)
+                period_sum += add
+            lines_period_totals.append(period_sum)
+        else:
+            lines_period_totals.append(0)
+
+    # 1-day horizon: current period = rolling last 24h (git --since=1 days ago), same as loc chart rows.
+    # Calendar single-day windows often show 0 when activity was "today local" but not UTC date.
+    if days == 1 and git_children:
+
+        def lines_since_24h(ch: dict[str, Any]) -> tuple[str, int]:
+            p = Path(str(ch.get("path", "")))
+            nm = str(ch.get("name", "")).strip()
+            a, _b = git_numstat_since(p, 1)
+            return nm, int(a)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            since_pairs = list(pool.map(lines_since_24h, git_children))
+        roll_sum = sum(a for _nm, a in since_pairs)
+        if lines_period_totals:
+            lines_period_totals[-1] = roll_sum
+        for nm, a in since_pairs:
+            pts = per_repo_periods.get(nm)
+            if pts is not None and len(pts) == 7:
+                pts[-1] = a
+
+    per_repo_lines: dict[str, Any] = {}
+    for nm, pts in per_repo_periods.items():
+        if len(pts) != 7:
+            continue
+        pmed = median_prior_six(pts)
+        pcur = int(pts[-1])
+        per_repo_lines[nm] = {
+            "period_totals": [int(x) for x in pts],
+            "median_prior_6": pmed,
+            "tier": trend_tier(pcur, pmed),
+        }
+
+    lines_median = median_prior_six(lines_period_totals)
+    lines_current = lines_period_totals[-1] if lines_period_totals else 0
+    lines_prev = lines_period_totals[-2] if len(lines_period_totals) >= 2 else 0
+
+    lines_prev_by_repo: dict[str, int] = {}
+    if git_children:
+        s1, e1 = period_start_end(today, days, 1)
+
+        def prev_lines(ch: dict[str, Any]) -> tuple[str, int]:
+            p = Path(str(ch.get("path", "")))
+            nm = str(ch.get("name", "")).strip()
+            a, _b = git_numstat_between(p, s1, e1)
+            return nm, int(a)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            for nm, v in pool.map(prev_lines, git_children):
+                lines_prev_by_repo[nm] = v
+
+    wr = Path(str(state.get("workspace_root") or ".")).resolve()
+    hist = load_kpi_snapshots(wr)
+    git_n = sum(1 for c in sorted_children if c.get("is_git"))
+    sites_n = len(state.get("websites") or []) if isinstance(state.get("websites"), list) else 0
+    wbs_n = len(state.get("wbs") or []) if isinstance(state.get("wbs"), list) else 0
+    rm_n = len(state.get("roadmaps") or []) if isinstance(state.get("roadmaps"), list) else 0
+    plan_n = wbs_n + rm_n
+    compliance_avg = _avg_compliance(sorted_children)
+
+    snap_git = snapshot_period_totals(hist, today, days, "git_n", git_n)
+    snap_sites = snapshot_period_totals(hist, today, days, "sites_n", sites_n)
+    snap_plan = snapshot_period_totals(hist, today, days, "plan_n", plan_n)
+
+    stand_live = int(compliance_avg) if compliance_avg is not None else 0
+    snap_stand = snapshot_period_totals(
+        hist, today, days, "compliance_avg", stand_live
+    )
+    med_git = median_from_prior_six(snap_git)
+    med_sites = median_from_prior_six(snap_sites)
+    med_plan = median_from_prior_six(snap_plan)
+    med_stand = median_from_prior_six([int(x) for x in snap_stand]) if snap_stand else None
+
+    kpi_trends: dict[str, Any] = {
+        "commits": {
+            "current_total": int(commit_current),
+            "previous_total": int(commit_prev),
+            "period_totals": [int(x) for x in commit_period_totals],
+            "median_prior_6": commit_median,
+            "tier": trend_tier(int(commit_current), commit_median),
+            "cumulative_daily": cumulative_daily,
+        },
+        "lines_added": {
+            "current_total": int(lines_current),
+            "previous_total": int(lines_prev),
+            "period_totals": [int(x) for x in lines_period_totals],
+            "median_prior_6": lines_median,
+            "tier": trend_tier(int(lines_current), lines_median),
+            "prev_by_repo": lines_prev_by_repo,
+            "per_repo_lines": per_repo_lines,
+        },
+        "snapshots": {
+            "git_repos": {
+                "current": int(git_n),
+                "previous_total": int(snap_git[-2]) if len(snap_git) >= 2 else 0,
+                "period_totals": [int(x) for x in snap_git],
+                "median_prior_6": med_git,
+                "tier": trend_tier(int(git_n), med_git),
+                "history_entries": len(hist),
+            },
+            "sites": {
+                "current": int(sites_n),
+                "previous_total": int(snap_sites[-2]) if len(snap_sites) >= 2 else 0,
+                "period_totals": [int(x) for x in snap_sites],
+                "median_prior_6": med_sites,
+                "tier": trend_tier(int(sites_n), med_sites),
+                "history_entries": len(hist),
+            },
+            "plan_artifacts": {
+                "current": int(plan_n),
+                "previous_total": int(snap_plan[-2]) if len(snap_plan) >= 2 else 0,
+                "period_totals": [int(x) for x in snap_plan],
+                "median_prior_6": med_plan,
+                "tier": trend_tier(int(plan_n), med_plan),
+                "history_entries": len(hist),
+            },
+            "standards_avg": {
+                "current": compliance_avg,
+                "previous_total": float(snap_stand[-2]) if len(snap_stand) >= 2 else None,
+                "period_totals": [float(x) for x in snap_stand],
+                "median_prior_6": med_stand,
+                "tier": (
+                    trend_tier(stand_live, med_stand)
+                    if compliance_avg is not None
+                    else "unknown"
+                ),
+                "history_entries": len(hist),
+            },
+        },
+    }
 
     ext_top = sorted(agg_ext.items(), key=lambda x: -x[1])[:15]
     ext_denom = workspace_tracked_files if workspace_tracked_files > 0 else max(1, sum(agg_ext.values()))
@@ -121,9 +418,14 @@ def build_overview_chart_payload(state: dict[str, Any]) -> dict[str, Any]:
             score_rows.append([str(c.get("name", "")), int(sc.get("score") or 0)])
     score_rows.sort(key=lambda x: -x[1])
 
+    _emit_progress(on_progress, done=repo_total, total=repo_total, phase="finalize", detail="complete")
+
     return {
-        "version": 1,
+        "version": 2,
         "scope": "overview",
+        "horizon": hid,
+        "window_days": days,
+        "kpi_trends": kpi_trends,
         "charts": {
             "commit_daily": {"series": daily},
             "loc_added_horizontal": {

@@ -11,6 +11,10 @@ This repository uses **Forge SDLC Team** tier (5–12): protected `main`, short-
 - `feature/<short-topic>` — `lenses/` package, server, or docs.
 - `fix/<short-topic>` — bugfixes.
 
+### Optional Forge-native lanes
+
+Some Forge SDLC product repositories adopt **`product/*`**, **`iter/*`**, **`spark/*`**, **`spike/*`**, **`release/*`**, and **`hotfix/*`** per the blueprint [branching charge pack](https://github.com/autowww/blueprints/blob/main/sdlc/methodologies/forge/setup/charge-plans/branching/README.md), with **`forge/charge.md`** as a daily view (never `charge/*` branches). **This repository** uses `feature/*` and `fix/*` unless the team documents a different policy under `docs/process/` or `forge/`.
+
 ## Pull requests
 
 - Target **`main`**.

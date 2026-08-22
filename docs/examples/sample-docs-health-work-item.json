@@ -1,0 +1,6 @@
+{
+  "id": "DH-042",
+  "severity": "warning",
+  "summary": "Stale relative link pointing at ../../maintainer/private.md",
+  "doc_path_hint": "docs/handbook-public/tutorial.md"
+}

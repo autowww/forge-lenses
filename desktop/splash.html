@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loading…</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+      background: #0b0e14;
+      color: #e1e4e8;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      cursor: default;
+    }
+    .wrap {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 24px;
+      border: 1px solid #21262d;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    #subtitle {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #c9d1d9;
+      text-align: center;
+      line-height: 1.45;
+      max-width: 22rem;
+    }
+    #detail {
+      margin: 8px 0 0;
+      font-size: 11px;
+      font-weight: 500;
+      color: #6e7681;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 22rem;
+      font-family: ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+    }
+    #detail[hidden] {
+      display: none !important;
+    }
+    #build {
+      margin: 14px 0 0;
+      font-size: 10px;
+      font-weight: 500;
+      color: #6e7681;
+      text-align: center;
+      line-height: 1.35;
+      font-family: ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      word-break: break-all;
+      max-width: 100%;
+    }
+    #build[hidden] {
+      display: none !important;
+    }
+    .pulse {
+      margin-top: 16px;
+      width: 36px;
+      height: 3px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #21262d, #58a6ff, #21262d);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 id="title">Forge Lenses</h1>
+    <p id="subtitle">Preparing…</p>
+    <p id="detail" hidden></p>
+    <div class="pulse" aria-hidden="true"></div>
+    <p id="build" hidden></p>
+  </div>
+  <script>
+    (function () {
+      var q = new URLSearchParams(window.location.search);
+      var variant = q.get("variant");
+      var title = document.getElementById("title");
+      if (title && variant === "studio") {
+        title.textContent = "Forge Studio";
+      } else if (title && variant === "virtual-camera") {
+        title.textContent = "Virtual Camera Studio";
+      }
+      var buildEl = document.getElementById("build");
+      var v = q.get("v");
+      var c = q.get("c");
+      var t = q.get("t");
+      if (buildEl && (v || c || t)) {
+        var ver = v ? "v" + v : "v0.0.0";
+        var commitPart = c && c !== "unknown" ? c : "no-git";
+        var timePart = t || "—";
+        buildEl.textContent = ver + " · " + commitPart + " · " + timePart;
+        buildEl.hidden = false;
+        buildEl.title =
+          "Studio bundle: semver from package.json (or studio-build-meta.json), commit, UTC build time.";
+      }
+      window.__splashSet = function (main, detail) {
+        var s = document.getElementById("subtitle");
+        var d = document.getElementById("detail");
+        if (s) s.textContent = main || "";
+        if (d) {
+          d.textContent = detail || "";
+          d.hidden = !detail;
+        }
+      };
+    })();
+  </script>
+</body>
+</html>

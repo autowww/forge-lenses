@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/oauth-oidc-endpoint.schema.json",
+  "title": "OAuth / OIDC issuer hint",
+  "x-lenses-stability": "stable",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issuer"],
+  "properties": {
+    "issuer": {
+      "type": "string",
+      "minLength": 8,
+      "description": "HTTPS issuer URI advertised to browsers and proxies."
+    },
+    "authorization_endpoint": {
+      "type": "string",
+      "minLength": 8,
+      "description": "Optional override when discovery documents are suppressed."
+    },
+    "jwks_uri": {
+      "type": "string",
+      "minLength": 8,
+      "description": "Signing keys location for bearer validation."
+    }
+  }
+}

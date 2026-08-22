@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/cursor-launch-pack-manifest.schema.json",
+  "title": "Cursor Launch Pack manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "created_at",
+    "session_id",
+    "session_title",
+    "base_artifact_keys",
+    "expanded_artifact_keys",
+    "allowed_write_scope",
+    "guardrails"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "kind": { "type": "string", "const": "cursor_launch_pack" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "session_id": { "type": "string", "maxLength": 200 },
+    "session_title": { "type": "string", "maxLength": 500 },
+    "base_artifact_keys": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expanded_artifact_keys": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_write_scope": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "guardrails": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "closure_options_applied": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "closure_trace": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": true }
+    },
+    "prompt_recipe": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "approval_summary": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
+

@@ -1,0 +1,37 @@
+# Forge Lenses Studio UX3 remediation — phase order
+
+phases:
+  U00:
+    title: PDCA scaffold and gate harness
+    depends_on: []
+  U01:
+    title: Multi-repo E2E fixture + crawl v4 CI gate
+    backlog: [FLS3-004]
+    depends_on: [U00]
+  U02:
+    title: Classic UI strip from Studio chrome
+    backlog: [FLS3-001]
+    depends_on: [U01]
+  U03:
+    title: Classic server handler removal
+    backlog: [FLS3-001]
+    depends_on: [U02]
+  U04:
+    title: Roadmap section React preview
+    backlog: [FLS3-002]
+    depends_on: [U03]
+  U05:
+    title: Timeline editor + metrics React host
+    backlog: [FLS3-003]
+    depends_on: [U04]
+  U06:
+    title: Matrix KPI sparklines + health-tier CSS
+    backlog: [FLS3-005]
+    depends_on: [U05]
+  U07:
+    title: Publish health drill-down popover
+    backlog: [FLS3-006]
+    depends_on: [U06]
+  U08:
+    title: Playwright crawl v4 + backlog v4 + closeout
+    depends_on: [U07]

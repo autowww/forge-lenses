@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "updated_at": "2026-05-16T12:34:56Z",
+  "step_index": 3,
+  "payload": {
+    "title": "Sample session",
+    "purpose": "Document schema smoke example",
+    "state": "draft",
+    "mode": "new_product",
+    "scope": {},
+    "wizard_domain": {
+      "mission": "Ship documentation automation",
+      "contribution": "new_product",
+      "target_stage": "charter",
+      "autonomy": "co_pilot",
+      "mutation_policy": "no_repo_writes",
+      "reviews": []
+    }
+  }
+}
+
