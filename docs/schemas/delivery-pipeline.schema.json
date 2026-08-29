@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/delivery-pipeline.schema.json",
+  "title": "Forge delivery pipeline descriptor (pipeline-as-code)",
+  "x-lenses-stability": "experimental",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "app", "artifact", "environments", "gates"],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pipeline_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,31}$"
+    },
+    "app": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repository", "tag_strategy"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["docker_image"]
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag_strategy": {
+          "type": "string",
+          "enum": ["git_sha", "semver"]
+        }
+      }
+    },
+    "environments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rank", "gateway_slug", "container_service_id", "compose_root", "host_port"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,31}$" },
+          "rank": { "type": "integer", "minimum": 0 },
+          "gateway_slug": { "type": "string", "minLength": 1 },
+          "container_service_id": { "type": "string", "minLength": 1 },
+          "compose_root": { "type": "string", "minLength": 1 },
+          "host_port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+          "health_profile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "required_checks": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 },
+                "minItems": 1
+              }
+            }
+          },
+          "auto_deploy": { "type": "boolean" },
+          "promotes_to": { "type": "string" },
+          "requires_approval": { "type": "boolean" },
+          "freeze_windows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["days", "from", "to", "tz"],
+              "properties": {
+                "days": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+                  },
+                  "minItems": 1
+                },
+                "from": { "type": "string", "pattern": "^[0-9]{2}:[0-9]{2}$" },
+                "to": { "type": "string", "pattern": "^[0-9]{2}:[0-9]{2}$" },
+                "tz": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "environment", "required"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "http_probe",
+              "schema_head_match",
+              "digest_match",
+              "rehearsal",
+              "fleet_job",
+              "manual"
+            ]
+          },
+          "environment": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean" },
+          "path": { "type": "string" },
+          "expect": { "type": "object" },
+          "argv": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "prompt": { "type": "string" }
+        }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runner": { "type": "string" },
+        "backup": { "type": "string" },
+        "restore": { "type": "string" },
+        "rehearsal_database": { "type": "string" }
+      }
+    }
+  }
+}
