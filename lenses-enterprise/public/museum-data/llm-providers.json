@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "providers": {
+    "anthropic": false,
+    "openai": false,
+    "gemini": false,
+    "ollama": true,
+    "openai_compatible": true
+  }
+}

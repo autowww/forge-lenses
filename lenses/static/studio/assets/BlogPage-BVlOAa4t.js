@@ -1,0 +1,1 @@
+import{ot as e}from"./pages-OM5Hqwb-.js";export{e as BlogPage};

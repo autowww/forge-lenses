@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "schema_count": 14,
+  "schemas": [
+    {
+      "file": "api-error.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/api-error.schema.json",
+      "title": "Forge Lenses HTTP error envelope",
+      "x_lenses_stability": null,
+      "additionalProperties": false
+    },
+    {
+      "file": "audit-notification.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/audit-notification.schema.json",
+      "title": "Security / ops audit notification stub",
+      "x_lenses_stability": "stable",
+      "additionalProperties": false
+    },
+    {
+      "file": "cursor-launch-pack-manifest.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/cursor-launch-pack-manifest.schema.json",
+      "title": "Cursor Launch Pack manifest",
+      "x_lenses_stability": null,
+      "additionalProperties": true
+    },
+    {
+      "file": "docs-health-work-item.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/docs-health-work-item.schema.json",
+      "title": "Docs Health UI work item outline",
+      "x_lenses_stability": "stable",
+      "additionalProperties": false
+    },
+    {
+      "file": "fleet-job-descriptor.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/fleet-job-descriptor.schema.json",
+      "title": "Forge Fleet job descriptor (handbook contract)",
+      "x_lenses_stability": "experimental",
+      "additionalProperties": false
+    },
+    {
+      "file": "oauth-oidc-endpoint.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/oauth-oidc-endpoint.schema.json",
+      "title": "OAuth / OIDC issuer hint",
+      "x_lenses_stability": "stable",
+      "additionalProperties": false
+    },
+    {
+      "file": "rbac-scope-set.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/rbac-scope-set.schema.json",
+      "title": "RBAC scope token collection",
+      "x_lenses_stability": "experimental",
+      "additionalProperties": false
+    },
+    {
+      "file": "studio-project-summary.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/studio-project-summary.schema.json",
+      "title": "Studio project hub row outline",
+      "x_lenses_stability": "experimental",
+      "additionalProperties": false
+    },
+    {
+      "file": "webhook-envelope-meta.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/webhook-envelope-meta.schema.json",
+      "title": "Outbound webhook envelope metadata",
+      "x_lenses_stability": "experimental",
+      "additionalProperties": false
+    },
+    {
+      "file": "wizard-domain.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/wizard-domain.schema.json",
+      "title": "Blueprints Wizard domain model",
+      "x_lenses_stability": null,
+      "additionalProperties": true
+    },
+    {
+      "file": "wizard-session.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/wizard-session.schema.json",
+      "title": "Blueprints Wizard persisted session envelope",
+      "x_lenses_stability": null,
+      "additionalProperties": false
+    },
+    {
+      "file": "wizard-stage-response.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/wizard-stage-response.schema.json",
+      "title": "Blueprints Wizard HTTP stage acknowledgment",
+      "x_lenses_stability": "beta",
+      "additionalProperties": false
+    },
+    {
+      "file": "workspace-mount-descriptor.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/workspace-mount-descriptor.schema.json",
+      "title": "Workspace root mount descriptor",
+      "x_lenses_stability": "stable",
+      "additionalProperties": false
+    },
+    {
+      "file": "workspace-scan-result.schema.json",
+      "id": "https://lenses.forgesdlc.com/schemas/workspace-scan-result.schema.json",
+      "title": "Forge Lenses workspace scan rollup",
+      "x_lenses_stability": "stable",
+      "additionalProperties": true
+    }
+  ]
+}

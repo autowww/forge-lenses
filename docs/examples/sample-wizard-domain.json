@@ -1,0 +1,8 @@
+{
+  "mission": "Assess the current backlog and tighten acceptance criteria.",
+  "contribution": "existing_workspace_evolution",
+  "target_stage": "assess",
+  "autonomy": "co_pilot",
+  "mutation_policy": "bounded_writes",
+  "reviews": []
+}

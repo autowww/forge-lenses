@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "settings": {
+    "version": 1,
+    "provider": "openai_compatible",
+    "advanced_ui": false,
+    "auto_model": false,
+    "adaptive_autoselection": false,
+    "tier": "MED",
+    "refine_cheaper_steps": 2,
+    "keys": {
+      "anthropic": { "set": false, "preview": "" },
+      "openai": { "set": false, "preview": "" },
+      "gemini": { "set": false, "preview": "" },
+      "openai_compatible": { "set": false, "preview": "" }
+    },
+    "main_models": {
+      "openai_compatible": "ibm/granite4:tiny-h"
+    },
+    "pools": {},
+    "classifier_models": {
+      "openai": "",
+      "gemini": ""
+    },
+    "openai_compatible_endpoint": {
+      "set": false,
+      "from_file": false,
+      "from_env": false,
+      "preview": ""
+    },
+    "custom_provider": {
+      "display_name": "",
+      "transport": "openai_compatible",
+      "auth": "bearer"
+    }
+  }
+}

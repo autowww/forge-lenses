@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from lenses.repo_strategy import parse_gitmodules
 from lenses.site_index import build_html_page_index
 
 
@@ -75,9 +76,57 @@ _RGLOB_SKIP_DIR_NAMES = frozenset(
 )
 
 
-def _walk_roadmap_files(base: Path) -> list[Path]:
-    """Find ROADMAP.md under *base* without descending into heavy directories."""
+def _git_toplevel(path: Path) -> Path | None:
+    """Git work-tree root for *path*, or None if not inside a repository."""
+    tl = _run_git(path, "rev-parse", "--show-toplevel")
+    if not tl:
+        return None
+    return Path(tl).resolve()
+
+
+def _submodule_rel_paths(repo_root: Path) -> frozenset[str]:
+    """Posix paths from repo root to registered git submodule mounts (from `.gitmodules`)."""
+    if not (repo_root / ".gitmodules").is_file():
+        return frozenset()
+    out: list[str] = []
+    for ent in parse_gitmodules(repo_root):
+        p = (ent.get("path") or "").strip().replace("\\", "/").strip("/")
+        if p:
+            out.append(p)
+    return frozenset(out)
+
+
+def _path_is_inside_submodule_tree(
+    path: Path,
+    *,
+    repo_root: Path,
+    submodule_paths: frozenset[str],
+) -> bool:
+    """True if *path* is the submodule mount or any directory/file under it."""
+    try:
+        rel = path.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return False
+    rel_s = rel.as_posix()
+    for sp in submodule_paths:
+        if rel_s == sp or rel_s.startswith(sp + "/"):
+            return True
+    return False
+
+
+def _walk_roadmap_files(
+    base: Path,
+    *,
+    repo_root: Path | None = None,
+    submodule_paths: frozenset[str] | None = None,
+) -> list[Path]:
+    """Find ROADMAP.md under *base* without descending into heavy directories.
+
+    When *repo_root* and *submodule_paths* are set, do not descend into git submodule
+    mount trees (so another repo's roadmap is not listed under the parent's plan index).
+    """
     out: list[Path] = []
+    sub_paths = submodule_paths or frozenset()
     stack = [base]
     while stack:
         d = stack.pop()
@@ -86,8 +135,28 @@ def _walk_roadmap_files(base: Path) -> list[Path]:
                 if ch.is_dir():
                     if ch.name in _RGLOB_SKIP_DIR_NAMES or ch.name.startswith("."):
                         continue
+                    if (
+                        repo_root is not None
+                        and sub_paths
+                        and _path_is_inside_submodule_tree(
+                            ch,
+                            repo_root=repo_root,
+                            submodule_paths=sub_paths,
+                        )
+                    ):
+                        continue
                     stack.append(ch)
                 elif ch.is_file() and ch.name == "ROADMAP.md":
+                    if (
+                        repo_root is not None
+                        and sub_paths
+                        and _path_is_inside_submodule_tree(
+                            ch,
+                            repo_root=repo_root,
+                            submodule_paths=sub_paths,
+                        )
+                    ):
+                        continue
                     out.append(ch)
         except OSError:
             continue
@@ -100,18 +169,17 @@ def _append_wbs_from_base(
     wbs_list: list[WbsEntry],
 ) -> None:
     req = base / "docs" / "requirements"
-    for fname, kind in (("WBS.md", "md"), ("WBS.csv", "csv")):
-        p = req / fname
-        if not p.is_file():
-            continue
-        try:
-            rel = p.relative_to(workspace_root)
-        except ValueError:
-            continue
-        hint = rel.parts[0] if rel.parts else ""
-        wbs_list.append(
-            WbsEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind=kind)
-        )
+    p = req / "WBS.md"
+    if not p.is_file():
+        return
+    try:
+        rel = p.relative_to(workspace_root)
+    except ValueError:
+        return
+    hint = rel.parts[0] if rel.parts else ""
+    wbs_list.append(
+        WbsEntry(repo_hint=hint, rel_path=str(rel).replace("\\", "/"), kind="md")
+    )
 
 
 def _forge_hint_for_base(base: Path, workspace_root: Path) -> ForgeHint | None:
@@ -142,7 +210,9 @@ def _append_roadmaps_from_base(
     workspace_root: Path,
     roadmap_list: list[RoadmapEntry],
 ) -> None:
-    for rm in _walk_roadmap_files(base):
+    gr = _git_toplevel(base)
+    sub_paths = _submodule_rel_paths(gr) if gr is not None else frozenset()
+    for rm in _walk_roadmap_files(base, repo_root=gr, submodule_paths=sub_paths):
         try:
             rm.relative_to(workspace_root)
         except ValueError:
@@ -229,6 +299,44 @@ def parse_firebase_hosting(fb_path: Path) -> tuple[str, str]:
     return pub, site
 
 
+def resolve_static_site_root(child: Path) -> Path | None:
+    """
+    Root directory of built static HTML for a workspace repo (sibling folder).
+
+    If ``firebase.json`` exists, use ``hosting.public`` when that directory is
+    present; if the configured path is missing, fall back to local dirs.
+
+    Without Firebase config, use the first existing directory among
+    ``website/``, ``public/``, ``dist/`` (typical static output layouts).
+
+    All returned paths stay under ``child``; no Firebase CLI or network use.
+    """
+    cr = child.resolve()
+    if not cr.is_dir():
+        return None
+    fb = cr / "firebase.json"
+    if fb.is_file():
+        pub, _ = parse_firebase_hosting(fb)
+        base = (cr / pub).resolve()
+        try:
+            base.relative_to(cr)
+        except ValueError:
+            pass
+        else:
+            if base.is_dir():
+                return base
+    for name in ("website", "public", "dist"):
+        base = (cr / name).resolve()
+        if not base.is_dir():
+            continue
+        try:
+            base.relative_to(cr)
+        except ValueError:
+            continue
+        return base
+    return None
+
+
 def shell_script_leading_comment_lines(path: Path) -> list[str]:
     """Lines from the leading # block after an optional shebang (no # prefix)."""
     try:
@@ -285,6 +393,31 @@ def _suggested_commands(name: str, child_path: Path) -> dict[str, str]:
         )
     out["deploy"] = f"cd {name} && firebase deploy --only hosting"
     return out
+
+
+def _read_cursor_bridge_signals_tail(
+    workspace_root: Path, *, max_lines: int = 50
+) -> tuple[str, list[dict[str, Any]]]:
+    """Tail-parse `.lenses-local/cursor-bridge/signals.jsonl` for workspace API."""
+    p = workspace_root / ".lenses-local" / "cursor-bridge" / "signals.jsonl"
+    path_s = str(p)
+    if not p.is_file():
+        return path_s, []
+    try:
+        raw = p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return path_s, []
+    lines = [ln for ln in raw.splitlines() if ln.strip()]
+    tail = lines[-max_lines:]
+    out: list[dict[str, Any]] = []
+    for ln in tail:
+        try:
+            obj = json.loads(ln)
+            if isinstance(obj, dict):
+                out.append(obj)
+        except json.JSONDecodeError:
+            continue
+    return path_s, out
 
 
 def resolve_workspace_child_dir(
@@ -399,6 +532,8 @@ def scan_workspace(
         if fh is not None:
             forge_hints.append(fh)
 
+    signals_path, signals_tail = _read_cursor_bridge_signals_tail(root)
+
     return {
         "workspace_root": str(root),
         "lenses_repo_root": str(lenses_repo_root.resolve()),
@@ -413,7 +548,28 @@ def scan_workspace(
         "wbs": [asdict(w) for w in wbs_list],
         "roadmaps": [asdict(r) for r in roadmap_list],
         "forge_hints": [asdict(f) for f in forge_hints],
+        "cursor_bridge": {
+            "signals_path": signals_path,
+            "signals_tail": signals_tail,
+        },
     }
+
+
+def attach_fleet_test_attention(workspace_root: Path, state: dict[str, Any]) -> None:
+    """Merge Forge Fleet admin ``Test Fleet`` results when written under ``.lenses-local/``."""
+    state.pop("fleet_test_attention", None)
+    root = workspace_root.resolve()
+    p = root / ".lenses-local" / "fleet-test-attention.json"
+    if not p.is_file():
+        return
+    try:
+        raw = p.read_text(encoding="utf-8")
+        o = json.loads(raw)
+    except (OSError, json.JSONDecodeError, UnicodeError):
+        return
+    if not isinstance(o, dict) or not o.get("ok"):
+        return
+    state["fleet_test_attention"] = o
 
 
 def workspace_state_json(state: dict[str, Any]) -> str:

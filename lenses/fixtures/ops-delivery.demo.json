@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "comment": "Sprint 8 demo — services, SLO/SLI, incidents, postmortems, error budget, flags; DORA from CI/CD + this doc.",
+  "dora_window_days": 30,
+  "services": [
+    {
+      "service_id": "svc-forge-web",
+      "display_name": "forge-web",
+      "description": "Customer-facing Forge handbook and product HTML.",
+      "owner_team": "team-platform",
+      "project": "forgesdlc",
+      "environment_ids": ["staging", "production"],
+      "repository": "forgesdlc"
+    }
+  ],
+  "slis": [
+    {
+      "sli_id": "sli-auth-p99",
+      "service_id": "svc-forge-web",
+      "name": "Auth handler p99 latency",
+      "metric": "latency_p99_ms",
+      "source": "prometheus"
+    }
+  ],
+  "slos": [
+    {
+      "slo_id": "slo-auth-latency",
+      "service_id": "svc-forge-web",
+      "sli_id": "sli-auth-p99",
+      "target_percent": 99.9,
+      "window_days": 30,
+      "story_ids": ["S-1842"]
+    }
+  ],
+  "ingestions": [
+    {
+      "provider": "pagerduty",
+      "project": "forgesdlc",
+      "service_id": "svc-forge-web",
+      "payload": {
+        "id": "PD-7788",
+        "incident_id": "PD-7788",
+        "title": "Synthetic check: login 500 spike",
+        "severity": "high",
+        "status": "open",
+        "created_at": "2026-04-11T14:00:00Z",
+        "resolved_at": "",
+        "html_url": "https://pagerduty.example/incidents/PD-7788",
+        "custom_fields": {
+          "environment_id": "production",
+          "release_version": "1.4.0",
+          "story_ids": ["S-1842"]
+        }
+      }
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "INC-PROD-441",
+      "title": "Auth latency regression after 1.4.0",
+      "severity": "sev2",
+      "status": "resolved",
+      "classification": "change_related",
+      "started_at": "2026-04-08T11:05:00Z",
+      "resolved_at": "2026-04-08T13:40:00Z",
+      "service_id": "svc-forge-web",
+      "linked_release_version": "1.4.0",
+      "linked_environment_id": "production",
+      "linked_story_ids": ["S-1842"],
+      "linked_promotion_id": "promo-stg-prod-1",
+      "source": "pagerduty",
+      "html_url": "https://pagerduty.example/incidents/441"
+    },
+    {
+      "incident_id": "INC-OPEN-P1",
+      "title": "Production checkout errors — open",
+      "severity": "critical",
+      "status": "open",
+      "classification": "unknown",
+      "started_at": "2026-04-11T15:30:00Z",
+      "resolved_at": "",
+      "service_id": "svc-forge-web",
+      "linked_release_version": "1.4.0",
+      "linked_environment_id": "production",
+      "linked_story_ids": [],
+      "source": "generic"
+    }
+  ],
+  "postmortems": [
+    {
+      "postmortem_id": "PM-2026-04-auth",
+      "incident_id": "INC-PROD-441",
+      "template_id": "pm-tpl-change-correlated",
+      "status": "published",
+      "published_at": "2026-04-09T18:00:00Z",
+      "linked_story_ids": ["S-1842"],
+      "linked_release_versions": ["1.4.0"],
+      "evidence_urls": [
+        "https://grafana.example/d/auth-latency",
+        "https://wiki.example/postmortems/2026-04-auth"
+      ],
+      "summary": "Deploy 1.4.0 increased auth fan-out; rolled forward with connection pool tune."
+    }
+  ],
+  "error_budget_events": [
+    {
+      "event_id": "ebe-2026-04-08",
+      "service_id": "svc-forge-web",
+      "slo_id": "slo-auth-latency",
+      "at": "2026-04-08T11:10:00Z",
+      "burn_percent": 4.2,
+      "reason": "incident INC-PROD-441"
+    }
+  ],
+  "feature_flag_exposures": [
+    {
+      "flag_key": "auth_rate_limit_v2",
+      "service_id": "svc-forge-web",
+      "environment_id": "production",
+      "variant": "on",
+      "since": "2026-04-08T10:00:00Z",
+      "linked_story_ids": ["S-1842"]
+    }
+  ],
+  "health_degradations": [],
+  "postmortem_templates": []
+}

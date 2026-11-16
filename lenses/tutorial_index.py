@@ -14,6 +14,7 @@ URL prefixes ``/local-site/<repo>/tutorial/…`` and ``…/tutorials/…`` are i
 from __future__ import annotations
 
 import re
+import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -105,6 +106,37 @@ def list_child_handbooks(child: Path) -> list[HandbookRef]:
                 )
             )
     return out
+
+
+def build_tutorials_index_payload(state: dict[str, Any]) -> dict[str, Any]:
+    """Structured handbook rows for ``GET /api/tutorials-index`` (Enterprise UI)."""
+    rows: list[dict[str, str]] = []
+    for c in state.get("children") or []:
+        if not isinstance(c, dict):
+            continue
+        name = str(c.get("name", "")).strip()
+        raw_path = c.get("path")
+        if not name or not raw_path:
+            continue
+        try:
+            child_path = Path(str(raw_path)).resolve()
+        except OSError:
+            continue
+        if not child_path.is_dir():
+            continue
+        for b in list_child_handbooks(child_path):
+            rel = str(b.local_site_rel).replace("\\", "/")
+            q = urllib.parse.quote(name, safe="")
+            rows.append(
+                {
+                    "child_name": name,
+                    "kind": b.kind,
+                    "label": b.label_default,
+                    "local_site_rel": rel,
+                    "preview_url": f"/local-site/{q}/{rel}",
+                }
+            )
+    return {"ok": True, "rows": rows}
 
 
 def tutorial_url_tail_matches(rel: str) -> bool:

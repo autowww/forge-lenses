@@ -1,0 +1,114 @@
+{
+  "registry_version": "2026.04.12",
+  "schema_version": "1.0.0",
+  "tasklet_categories": ["cognition", "execution", "review", "packaging", "governance"],
+  "tasklets": {
+    "tasklet.cognition.summarize_context": {
+      "category": "cognition",
+      "display_name": "Summarize context",
+      "input_schema_hint": "workspace_scope, focus_entity_ids",
+      "output_schema_hint": "structured_summary_markdown",
+      "allowed_targets": ["read_only", "draft"],
+      "approval_required": false,
+      "evidence_expectation": "optional_methodology_artifact"
+    },
+    "tasklet.execution.apply_patch_draft": {
+      "category": "execution",
+      "display_name": "Apply patch (draft export)",
+      "input_schema_hint": "unified_diff_or_patch_text",
+      "output_schema_hint": "export_path_or_pr_url",
+      "allowed_targets": ["draft", "approval_gated", "write"],
+      "approval_required": true,
+      "evidence_expectation": "agent_output_linked_to_story"
+    },
+    "tasklet.review.checklist": {
+      "category": "review",
+      "display_name": "Review checklist",
+      "input_schema_hint": "artifact_ids, gate_id",
+      "output_schema_hint": "checklist_result_json",
+      "allowed_targets": ["read_only", "draft"],
+      "approval_required": false,
+      "evidence_expectation": "review_pack_reference"
+    },
+    "tasklet.packaging.launch_pack_stage": {
+      "category": "packaging",
+      "display_name": "Stage launch pack",
+      "input_schema_hint": "session_id, template_id",
+      "output_schema_hint": "staged_zip_token",
+      "allowed_targets": ["draft", "approval_gated"],
+      "approval_required": true,
+      "evidence_expectation": "launch_pack_entity"
+    },
+    "tasklet.governance.policy_eval": {
+      "category": "governance",
+      "display_name": "Evaluate policy rules",
+      "input_schema_hint": "run_id, policy_ids",
+      "output_schema_hint": "violations_and_waivers",
+      "allowed_targets": ["read_only"],
+      "approval_required": false,
+      "evidence_expectation": "drift_or_rules_manifest"
+    }
+  },
+  "recipes": {
+    "recipe.readonly.plan_assist": {
+      "display_name": "Read-only planning assist",
+      "tasklet_ids": ["tasklet.cognition.summarize_context", "tasklet.review.checklist"],
+      "default_execution_mode": "read_only",
+      "description": "Cognition + review without write paths."
+    },
+    "recipe.gated.cursor_export": {
+      "display_name": "Gated Cursor export",
+      "tasklet_ids": [
+        "tasklet.cognition.summarize_context",
+        "tasklet.execution.apply_patch_draft",
+        "tasklet.packaging.launch_pack_stage"
+      ],
+      "default_execution_mode": "approval_gated",
+      "description": "Draft outputs and packaging require human approval before write."
+    }
+  },
+  "policy_rules_default": [
+    {
+      "id": "pol.read_only_default",
+      "display_name": "Default read-only agent runs",
+      "scope": "agent_run",
+      "write_capable": false,
+      "binding_decisions": false,
+      "release_impacting": false,
+      "rule_changes": false
+    },
+    {
+      "id": "pol.write_requires_approval",
+      "display_name": "Write-capable runs require approval",
+      "scope": "agent_run",
+      "write_capable": true,
+      "binding_decisions": false,
+      "release_impacting": true,
+      "rule_changes": false
+    },
+    {
+      "id": "pol.binding_requires_approval",
+      "display_name": "Binding decisions require human sign-off",
+      "scope": "decision_record",
+      "write_capable": false,
+      "binding_decisions": true,
+      "release_impacting": false,
+      "rule_changes": false
+    }
+  ],
+  "expected_cursor_rules_by_discipline": {
+    "software_engineering": ["versona-se.mdc", "versona-architecture.mdc"],
+    "software_architecture": ["versona-architecture.mdc"],
+    "testing": ["versona-testing.mdc"],
+    "devops": ["versona-devops.mdc"],
+    "product_management": ["versona-product-management.mdc"],
+    "business_analysis": ["versona-ba.mdc"],
+    "ux_design": ["versona-ux.mdc"],
+    "marketing": ["versona-marketing.mdc"],
+    "customer_success": ["versona-cs.mdc"],
+    "security": ["versona-security.mdc"],
+    "compliance": ["versona-security.mdc"]
+  },
+  "recipe_scan_globs": ["agents/recipes/**/*.md", "agents/recipes/**/*.yaml", "agents/recipes/**/*.yml"],
+  "launch_pack_template_ids": ["default", "cursor_session_v1"]
+}

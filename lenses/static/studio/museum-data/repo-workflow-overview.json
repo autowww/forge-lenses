@@ -1,0 +1,132 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "feature_enabled": true,
+  "provider_kind": "local_fixture",
+  "resolved_at": "2026-04-11T12:00:00Z",
+  "workspace_summary": {
+    "child_count": 1,
+    "git_repo_count": 1
+  },
+  "repos": [
+    {
+      "project": "forgesdlc",
+      "is_git": true,
+      "git_head_short": "a1b2c3d",
+      "git_branch": "main",
+      "origin_url": "git@github.com:example/forgesdlc.git",
+      "provider": "github",
+      "workflow": {
+        "schema_version": 1,
+        "repository": {
+          "full_name": "example/forgesdlc",
+          "default_branch": "main",
+          "web_url": "https://github.com/example/forgesdlc",
+          "vcs_host_kind": "github"
+        },
+        "branches": [
+          {
+            "name": "main",
+            "head_sha": "dead0001dead0001dead0001dead0001dead0001",
+            "protected": true,
+            "url": "https://github.com/example/forgesdlc/tree/main"
+          },
+          {
+            "name": "feature/rate-limit-auth",
+            "head_sha": "a1b2c3d4e5f6789012345678901234567890abcd",
+            "protected": false,
+            "url": "https://github.com/example/forgesdlc/tree/feature/rate-limit-auth"
+          }
+        ],
+        "pull_requests": [
+          {
+            "id": "990201",
+            "number": 201,
+            "title": "chore: bump test deps",
+            "state": "open",
+            "is_draft": false,
+            "head_ref": "chore/bump-deps",
+            "base_ref": "main",
+            "head_sha": "beeff00dbeeff00dbeeff00dbeeff00dbeeff00d",
+            "mergeable": "mergeable",
+            "merge_blocked_reason": null,
+            "review_decision": null,
+            "review_debt_count": 2,
+            "stale_days": 9.0,
+            "url": "https://github.com/example/forgesdlc/pull/201",
+            "created_at": "2026-03-20T12:00:00Z",
+            "updated_at": "2026-04-08T09:00:00Z"
+          },
+          {
+            "id": "990202",
+            "number": 202,
+            "title": "fix: flaky integration test",
+            "state": "open",
+            "is_draft": false,
+            "head_ref": "fix/flaky-test",
+            "base_ref": "main",
+            "head_sha": "abc1111abc1111abc1111abc1111abc1111abc1111",
+            "mergeable": "conflicting",
+            "merge_blocked_reason": "This branch has conflicts that must be resolved",
+            "review_decision": null,
+            "review_debt_count": 0,
+            "stale_days": 3.0,
+            "url": "https://github.com/example/forgesdlc/pull/202",
+            "created_at": "2026-04-01T08:00:00Z",
+            "updated_at": "2026-04-05T11:00:00Z"
+          }
+        ],
+        "commits_recent": [
+          {
+            "sha": "a1b2c3d4e5f6789012345678901234567890abcd",
+            "short_sha": "a1b2c3d",
+            "message_first_line": "feat(auth): per-tenant rate limits on /auth/*",
+            "url": "https://github.com/example/forgesdlc/commit/a1b2c3d4e5f6789012345678901234567890abcd",
+            "author": "alice",
+            "committed_at": "2026-04-01T10:00:00Z"
+          }
+        ],
+        "branch_protection": [
+          {
+            "pattern": "main",
+            "required_reviews": 1,
+            "url": "https://github.com/example/forgesdlc/settings/branch_protection_rules/1"
+          }
+        ],
+        "code_owners": {
+          "present": true,
+          "path": ".github/CODEOWNERS",
+          "url": "https://github.com/example/forgesdlc/blob/main/.github/CODEOWNERS"
+        },
+        "reviews_summary": {
+          "approved_open_count": 0,
+          "changes_requested_open_count": 1
+        }
+      },
+      "health": {
+        "open_prs_count": 2,
+        "stale_open_prs_count": 1,
+        "blocked_merge_count": 1,
+        "review_debt_total": 2,
+        "approved_open_count": 0,
+        "changes_requested_open_count": 1,
+        "unlinked_work_items_count": 2
+      },
+      "work_item_links": [
+        {
+          "story_id": "S-1842",
+          "branch_name": "feature/rate-limit-auth",
+          "pull_request_number": 184,
+          "commit_short_sha": "a1b2c3d",
+          "pr_url": "https://github.com/example/forgesdlc/pull/184",
+          "branch_url": "https://github.com/example/forgesdlc/tree/feature/rate-limit-auth"
+        }
+      ],
+      "data_sources": [
+        "workspace_scan",
+        "local_fixture"
+      ]
+    }
+  ],
+  "hints": []
+}

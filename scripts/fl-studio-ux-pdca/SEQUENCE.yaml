@@ -1,0 +1,68 @@
+# Forge Lenses Studio UX remediation — phase order
+
+phases:
+  S00:
+    title: PDCA scaffold and gate harness
+    depends_on: []
+  S01:
+    title: Boot resilience — splash progress + workspace-state timeout
+    backlog: [FLS-031, FLS-032]
+    depends_on: [S00]
+  S02:
+    title: Human language layer + glossary + human errors
+    backlog: [FLS-001, FLS-002, FLS-003, FLS-004]
+    depends_on: [S01]
+  S03:
+    title: Inspect gate + Labs menu + remove demo traces
+    backlog: [FLS-023, FLS-025, FLS-029, FLS-030]
+    depends_on: [S02]
+  S04:
+    title: AI Setup trust banner + settings role labels
+    backlog: [FLS-037, FLS-005]
+    depends_on: [S03]
+  S05:
+    title: First-run wizard + friendly scope + release picker
+    backlog: [FLS-016, FLS-017, FLS-018]
+    depends_on: [S04]
+  S06:
+    title: Project maturity — health tiers + next step + narrative
+    backlog: [FLS-008, FLS-009, FLS-010]
+    depends_on: [S05]
+  S07:
+    title: Home attention strip + documentation review summary
+    backlog: [FLS-011, FLS-014]
+    depends_on: [S06]
+  S08:
+    title: Work depth — matrix titles, freshness, timeline scope
+    backlog: [FLS-012, FLS-013, FLS-022]
+    depends_on: [S07]
+  S09:
+    title: Guided journeys — tour, Monday checklist, agentic, empty Knowledge
+    backlog: [FLS-019, FLS-020, FLS-021, FLS-048]
+    depends_on: [S08]
+  S10:
+    title: Enterprise IA + shell polish
+    backlog:
+      - FLS-006
+      - FLS-007
+      - FLS-024
+      - FLS-026
+      - FLS-028
+      - FLS-033
+      - FLS-034
+      - FLS-036
+      - FLS-038
+      - FLS-039
+      - FLS-040
+      - FLS-041
+      - FLS-043
+      - FLS-044
+      - FLS-046
+    depends_on: [S09]
+  S11:
+    title: Narrative polish — autonomy, PageHeader, Publish, identity
+    backlog: [FLS-015, FLS-027, FLS-035, FLS-042, FLS-045, FLS-047]
+    depends_on: [S10]
+  S12:
+    title: Playwright rescan + backlog v2 + closeout
+    depends_on: [S11]

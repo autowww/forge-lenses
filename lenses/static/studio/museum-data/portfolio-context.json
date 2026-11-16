@@ -1,0 +1,130 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "rollups": {
+    "dependency_pressure_max": 1,
+    "open_vulnerabilities": 1,
+    "incidents_open_heuristic": 1,
+    "graph_completeness": {
+      "score": 55.0,
+      "story_count": 2,
+      "details": {
+        "stories_with_pr_edge": 1,
+        "stories_with_evidence": 1
+      }
+    },
+    "milestone_confidence_baseline": 0.78,
+    "critical_path": {
+      "ok": true,
+      "path": [
+        "ogs:demo:story:rate-limit-auth",
+        "ogs:demo:story:oauth-refresh-ui"
+      ],
+      "length": 3.0,
+      "tip_entity_id": "ogs:demo:story:oauth-refresh-ui"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "ogs:demo:scenario:baseline",
+      "display_name": "Baseline FY26",
+      "summary": "Current committed scope and staffing.",
+      "payload": {
+        "capacity_scale": 1.0,
+        "horizon_shift_days": 0,
+        "is_baseline": true,
+        "label": "Baseline",
+        "milestone_confidence": 0.78,
+        "risk_score": 35
+      }
+    },
+    {
+      "id": "ogs:demo:scenario:stretch",
+      "display_name": "Stretch \u2014 pull-forward",
+      "summary": "Earlier customer date with reduced slack and parallel work.",
+      "payload": {
+        "capacity_scale": 0.85,
+        "horizon_shift_days": -14,
+        "label": "Stretch",
+        "milestone_confidence": 0.58,
+        "risk_score": 52
+      }
+    }
+  ],
+  "scenario_compare": {
+    "ok": true,
+    "a": {
+      "id": "ogs:demo:scenario:baseline",
+      "display_name": "Baseline FY26",
+      "payload": {
+        "capacity_scale": 1.0,
+        "horizon_shift_days": 0,
+        "is_baseline": true,
+        "label": "Baseline",
+        "milestone_confidence": 0.78,
+        "risk_score": 35
+      }
+    },
+    "b": {
+      "id": "ogs:demo:scenario:stretch",
+      "display_name": "Stretch \u2014 pull-forward",
+      "payload": {
+        "capacity_scale": 0.85,
+        "horizon_shift_days": -14,
+        "label": "Stretch",
+        "milestone_confidence": 0.58,
+        "risk_score": 52
+      }
+    },
+    "delta_numeric": {
+      "horizon_shift_days": -14.0,
+      "capacity_scale": -0.15,
+      "risk_score": 17.0,
+      "milestone_confidence": -0.2
+    }
+  },
+  "slip_impact": {
+    "focus_entity_id": "ogs:demo:story:rate-limit-auth",
+    "transitive_blocked": []
+  },
+  "depends_on_edges": [
+    {
+      "from_id": "ogs:demo:story:oauth-refresh-ui",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "from_kind": "story",
+      "to_kind": "story"
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "ogs:demo:ws:platform",
+      "display_name": "Platform team",
+      "capacity_units": 6.0,
+      "allocated_stories": 1,
+      "utilization": 0.167,
+      "payload": {
+        "capacity_units": 6.0,
+        "team": "platform"
+      }
+    },
+    {
+      "id": "ogs:demo:ws:product",
+      "display_name": "Product team",
+      "capacity_units": 4.0,
+      "allocated_stories": 1,
+      "utilization": 0.25,
+      "payload": {
+        "capacity_units": 4.0,
+        "team": "product"
+      }
+    }
+  ],
+  "graph_completeness": {
+    "score": 55.0,
+    "story_count": 2,
+    "details": {
+      "stories_with_pr_edge": 1,
+      "stories_with_evidence": 1
+    }
+  }
+}

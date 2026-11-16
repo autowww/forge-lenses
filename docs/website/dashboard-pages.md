@@ -69,6 +69,8 @@ Each panel highlights **high-level** context (not branch/SHA/origin on this page
 
 Single page per workspace child: **How code is stored** (parse **`.gitmodules`**, show **`git submodule status`** with timeout/line cap, workspace sibling hints when a submodule folder name matches another top-level repo, optional **inline SVG** sketch plus a kitchensink **SVG template** thumbnail from **`/__ks/assets/svg/`** when submodules exist or **`ks_diagram_asset`** is set in **`project_strategy`**), **Branching** (current branch, clean/dirty, best-effort **`origin/HEAD`**, optional **`branching`** / **`branching_notes`** from the registry), and **Maintenance rules** (registry **`maintenance`** / **`maintenance_notes`** or defaults, plus optional repo-root **`LENSES-REPO-STRATEGY.md`** rendered as HTML when **`markdown`** is available). Breadcrumb: Overview · Projects · project · **Repo & strategy**.
 
+**Lenses Studio** adds a dedicated **Branching** view at **`/studio/projects/<name>/branching`**: resolved Branch Steward policy, merge guardrails, prefix table, live scan hints, and optional fixture-backed branch/PR/protection rows. Maintainer contract: [Branching Studio page](branching-studio-page.md).
+
 ## Project dashboard (`/projects/<name>`)
 
 Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_vertical_hero_styles` / `lenses-site-hero-section` in `lenses/render.py`):
@@ -91,7 +93,7 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 
 **Hub (`/board`)** — Single list of all boards (flat), each row shows **storage** badge, **label**, **project** pill, optional **PNG thumbnail**, and actions: **Open**, **Rename**, **Delete**, **Move to project** (any source project). Filter dropdown: all projects, **Unassigned** only, or one workspace child. **Create board** still picks project + local/shared up front. Optional **`?project=<name>`** pre-selects the filter (same as the link from each **project dashboard**). Script: **`/__lenses/js/sticker-board-hub.js`**.
 
-**Thumbnails** — After a successful **`POST /api/sticker-board`**, the server may (debounced) run **html2image** + Chromium against **`/board/<id>?thumb=1`** and write **`<workspace>/.lenses-local/sticker-board-previews/<id>.png`**. Disable with **`LENSES_BOARD_PREVIEWS=0`**. Hub loads images from **`GET /board-preview/<id>.png`**. Requires **`pip install html2image`** and a Chromium/Chrome the library can find (same idea as handbook reference previews).
+**Thumbnails** — After a successful **`POST /api/sticker-board`**, the server may (debounced) run **Playwright** against **`/board/<id>?thumb=1`** and write **`<workspace>/.lenses-local/sticker-board-previews/<id>.png`**. Disable with **`LENSES_BOARD_PREVIEWS=0`**. Hub loads images from **`GET /board-preview/<id>.png`**. Requires **`pip install playwright`** and **`playwright install chromium`** (same stack as handbook reference previews).
 
 **Editor (`/board/<board_id>`)** — **Kanban** (three columns, HTML5 drag-and-drop) or **freeform** (pointer drag on a canvas). Each sticker has **title** + **details**; the card shows a preview. **Hover** shows **edit** (pencil) and **delete** (×); double-click still opens the editor. Toolbar shows **Local only** vs **Shared board**, board label, and opaque **board id** (for sharing the URL or the tracked file). Query **`?thumb=1`** serves a minimal-chrome layout for automated screenshots only.
 
@@ -109,7 +111,7 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 
 ## WBS (`/wbs` and `/wbs/view`)
 
-- **`/wbs`** — Table (or list) of all `docs/requirements/WBS.md` and `WBS.csv` files found under the workspace.  
+- **`/wbs`** — Table (or list) of all `docs/requirements/WBS.md` files found under the workspace.  
 - **`/wbs/view?p=…`** — Read-only preview of a single file; path validated so only workspace-local requirement trees are accessible.
 
 ## Forge plan (`/plan`)
@@ -124,4 +126,4 @@ Stacked **vertical hero sections** (same chrome as **`/websites`**: `_lenses_ver
 
 ## Lenses docs link
 
-The sidebar **Lenses docs** target is **`/docs/`**, which serves pre-built HTML from **`lenses-docs/`** (build with `generator/build-lenses-docs.py`). Workspace forge-autodoc handbooks are **not** here; use **Tutorials** in the nav or per-repo links under **`/local-site/<name>/tutorial/…`** or **`/local-site/<name>/tutorials/…`**. When the handbook is built with **`--previews`** or **`LENSES_BUILD_DOC_PREVIEWS=1`** (and **html2image** + Chromium are available), **`docs/index.html`** can include a **Reference page previews** grid: PNG thumbnails for the top-level reference pages linked from **`docs/index.md`**, stored under **`lenses-docs/previews/`**.
+The sidebar **Lenses docs** target is **`/docs/`**, which serves pre-built HTML from **`lenses-docs/`** (build with `generator/build-lenses-docs.py`). Workspace forge-autodoc handbooks are **not** here; use **Tutorials** in the nav or per-repo links under **`/local-site/<name>/tutorial/…`** or **`/local-site/<name>/tutorials/…`**. When the handbook is built with **`--previews`** or **`LENSES_BUILD_DOC_PREVIEWS=1`** (and **Playwright** + Chromium install are available), **`docs/index.html`** can include a **Reference page previews** grid: PNG thumbnails for the top-level reference pages linked from **`docs/index.md`**, stored under **`lenses-docs/previews/`**.

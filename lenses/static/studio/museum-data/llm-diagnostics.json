@@ -1,0 +1,100 @@
+{
+  "ok": true,
+  "routing_mode": "single",
+  "connected_providers": 1,
+  "connected_provider_ids": ["openai"],
+  "providers": [
+    {
+      "id": "anthropic",
+      "connected": false,
+      "has_credential": false,
+      "last_ok_ts": null,
+      "last_probe": null,
+      "totals": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "requests": 0,
+        "attempts": 0,
+        "failures": 0
+      },
+      "recent_failures": []
+    },
+    {
+      "id": "openai",
+      "connected": true,
+      "has_credential": true,
+      "last_ok_ts": "2026-04-01T12:00:00+00:00",
+      "last_probe": {
+        "ts": "2026-04-01T11:55:00+00:00",
+        "action": "health",
+        "ok": true,
+        "detail": null
+      },
+      "totals": {
+        "prompt_tokens": 120,
+        "completion_tokens": 40,
+        "total_tokens": 160,
+        "requests": 2,
+        "attempts": 2,
+        "failures": 0
+      },
+      "recent_failures": []
+    },
+    {
+      "id": "gemini",
+      "connected": false,
+      "has_credential": false,
+      "last_ok_ts": null,
+      "last_probe": null,
+      "totals": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "requests": 0,
+        "attempts": 0,
+        "failures": 0
+      },
+      "recent_failures": []
+    },
+    {
+      "id": "ollama",
+      "connected": false,
+      "has_credential": false,
+      "last_ok_ts": null,
+      "last_probe": null,
+      "totals": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "requests": 0,
+        "attempts": 0,
+        "failures": 0
+      },
+      "recent_failures": []
+    },
+    {
+      "id": "openai_compatible",
+      "connected": false,
+      "has_credential": false,
+      "last_ok_ts": null,
+      "last_probe": null,
+      "totals": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "requests": 0,
+        "attempts": 0,
+        "failures": 0
+      },
+      "recent_failures": []
+    }
+  ],
+  "routing_events": [],
+  "usage_path_hint": ".lenses-local/llm-usage.json",
+  "settings_path_hint": ".lenses-local/llm-settings.json",
+  "first_run_recommended": false,
+  "first_run_wizard_dismissed": true,
+  "next_recommended_step": "Optional: add a second source to unlock smart routing and per-task overrides.",
+  "cost_note": "Dollar cost is not tracked locally; token counts come from provider responses when available."
+}

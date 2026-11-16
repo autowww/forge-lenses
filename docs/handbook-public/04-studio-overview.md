@@ -1,4 +1,5 @@
 ---
+
 nav_title: Studio overview
 public_publish: true
 audience: public
@@ -6,6 +7,10 @@ product_area: studio
 tier: overview
 handbook_area: studio
 learning_level: overview
+section: studio-wizard
+status: shipped
+description: Studio overview — Forge Lenses handbook entry (product-areas).
+page_type: concept
 ---
 
 # Forge Studio overview
@@ -13,6 +18,36 @@ learning_level: overview
 ## What it is
 
 **Forge Studio** (also called Lenses Studio) is the **React** UI served at **`/studio/`** on your local Lenses server. It is the default place for **new** product surfaces (with Classic HTML catching up over time). **Blueprints Wizard** is a Studio feature under **`/studio/blueprints/wizard/`**.
+
+```blueprint-diagram
+key: tree
+alt: Workspace root branching into Classic slash URL and Studio subtree with Wizard leaf
+title: Classic and Studio paths
+summary: Forge Studio, Classic Lenses, and Blueprints Wizard share one local server at distinct URL paths.
+node: What it is
+detail: Frames where Forge Studio sits among Lenses surfaces.
+more: Studio is the React shell at `/studio/`; Classic HTML remains at `/` on the same process.
+node: Root / intake
+detail: Your running local Lenses server that scans the workspace.
+more: One Python process serves both shells; operators pick a path without starting a second server.
+node: branch A
+detail: Classic Lenses at `/` for legacy reports and established routes.
+more: Start here when the job is a report or route you already use daily in Classic.
+node: branch B
+detail: Forge Studio at `/studio/` for newer navigation and Studio-only flows.
+more: Default surface for new product areas; sidebar links vary by plan and version.
+node: branch C
+detail: Blueprints Wizard inside Studio for guided workshop sessions.
+more: Lives at `/studio/blueprints/wizard/` as a Studio feature, not a separate deployment.
+caption: Operators choose Classic or Studio shells from the same local server process
+fallback_ascii: |
+  What it is
+
+  Root / intake
+      +-- branch A
+      +-- branch B
+      +-- branch C
+```
 
 ## When to use it
 

@@ -6,7 +6,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Any
 
-from lenses.render import _wrap_dashboard, esc, lenses_breadcrumb_html
+from lenses.render import _wrap_dashboard, esc, lenses_breadcrumb_html, workspace_project_names_sorted
 
 
 def _chart_mount(kind: str, title: str, api_url: str) -> str:
@@ -69,6 +69,8 @@ def page_overview_charts_api(
         handbook_url=handbook_url,
         forge_url=forge_url,
         dashboard_extra_css=head_extra,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=None,
     )
 
 
@@ -118,4 +120,6 @@ def page_project_charts_api(
         handbook_url=handbook_url,
         forge_url=forge_url,
         dashboard_extra_css=head_extra,
+        workspace_projects=workspace_project_names_sorted(state),
+        current_project=project_name,
     )

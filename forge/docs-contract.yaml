@@ -1,0 +1,13 @@
+# Forge Lenses — documentation expectations (Docs Health).
+# https://github.com/autowww/forge-lenses
+version: 1
+ownership:
+  team: Forge Lenses maintainers
+readme_required_sections:
+  - Overview
+require_adr: true
+require_release_note: true
+require_architecture_diagram: true
+doc_roots:
+  - "."
+  - "docs"

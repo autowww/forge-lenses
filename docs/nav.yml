@@ -1,0 +1,142 @@
+# Canonical navigation for Forge Lenses product documentation (lenses.forgesdlc.com).
+# Paths are POSIX-relative to the forge-lenses repo root.
+version: 1
+enforce_public_frontmatter: true
+sections:
+  - id: product
+    title: Product
+    entries:
+      - path: docs/index.md
+        nav_title: Home
+      - path: docs/handbook-public/role-based-paths.md
+        nav_title: Pick your path
+      - path: docs/handbook-public/01-lenses-overview.md
+
+  - id: get-started
+    title: Get started
+    entries:
+      - path: docs/handbook-public/02-install-and-run.md
+      - path: docs/handbook-public/03-workspace-setup.md
+      - path: docs/handbook-public/03-workspace-setup_01-layouts.md
+      - path: docs/handbook-public/03-workspace-setup_02-root-choice.md
+      - path: docs/handbook-public/03-workspace-setup_03-scan-host.md
+
+  - id: tutorials-101
+    title: Tutorials — 101
+    entries:
+      - path: docs/handbook-public/tutorials-101.md
+        nav_title: "101: Overview"
+      - path: docs/handbook-public/05-studio-101.md
+      - path: docs/handbook-public/05-studio-101_01-first-classic-dashboard.md
+      - path: docs/handbook-public/05-studio-101_02-first-docs-health-scan.md
+      - path: docs/handbook-public/09-wizard-101.md
+
+  - id: tutorials-201
+    title: Tutorials — 201
+    entries:
+      - path: docs/handbook-public/tutorials-201.md
+        nav_title: "201: Overview"
+      - path: docs/handbook-public/06-studio-201.md
+      - path: docs/handbook-public/10-wizard-201.md
+      - path: docs/handbook-public/10-wizard-201_01-start-from-idea.md
+      - path: docs/handbook-public/10-wizard-201_02-assess-current-project.md
+      - path: docs/handbook-public/10-wizard-201_03-resume-and-advance.md
+      - path: docs/handbook-public/10-wizard-201_04-repair-stage.md
+      - path: docs/handbook-public/13-llm-and-ai-setup.md
+      - path: docs/handbook-public/11-wizard-301_04-cursor-launch-pack.md
+        nav_title: Cursor Launch Pack
+
+  - id: tutorials-301
+    title: Tutorials — 301
+    entries:
+      - path: docs/handbook-public/tutorials-301.md
+        nav_title: "301: Overview"
+      - path: docs/handbook-public/07-studio-301.md
+      - path: docs/handbook-public/11-wizard-301.md
+      - path: docs/handbook-public/11-wizard-301_01-artifact-bundles.md
+      - path: docs/handbook-public/11-wizard-301_02-refine.md
+      - path: docs/handbook-public/11-wizard-301_03-review-recheck.md
+
+  - id: studio-wizard
+    title: Studio & Wizard
+    entries:
+      - path: docs/handbook-public/04-studio-overview.md
+      - path: docs/handbook-public/08-wizard-overview.md
+      - path: docs/handbook-public/wizard-operator-trust-boundaries.md
+      - path: docs/handbook-public/wizard-builder-session-api.md
+      - path: docs/handbook-public/14-studio-route-map.md
+      - path: docs/handbook-public/studio-navigation-and-shell.md
+      - path: docs/handbook-public/studio-workspace-and-projects.md
+      - path: docs/handbook-public/studio-docs-health-ui.md
+      - path: docs/handbook-public/studio-autonomy-maturity.md
+      - path: docs/handbook-public/studio-settings-llm-fleet.md
+      - path: docs/handbook-public/studio-troubleshooting.md
+      - path: docs/handbook-public/15-docs-health.md
+
+  - id: enterprise
+    title: Enterprise
+    entries:
+      - path: docs/handbook-public/enterprise-index.md
+        nav_title: Enterprise hub
+      - path: docs/handbook-public/17-security-and-local-first.md
+      - path: docs/handbook-public/enterprise-network-binding.md
+      - path: docs/handbook-public/enterprise-oidc-sessions.md
+      - path: docs/handbook-public/16-stickerboard-sharing.md
+        nav_title: Stickerboard sharing
+      - path: docs/handbook-public/enterprise-actions-allowlists.md
+      - path: docs/handbook-public/enterprise-llm-boundaries.md
+      - path: docs/handbook-public/enterprise-fleet-integration.md
+      - path: docs/handbook-public/enterprise-backup-upgrades.md
+      - path: docs/handbook-public/enterprise-deployment.md
+      - path: docs/handbook-public/enterprise-incident-response.md
+
+  - id: builders
+    title: Builders & API
+    entries:
+      - path: docs/handbook-public/builders-api-overview.md
+        nav_title: Builders overview
+      - path: docs/handbook-public/builders-route-families.md
+      - path: docs/handbook-public/builders-auth-and-safety.md
+      - path: docs/handbook-public/builders-schemas.md
+      - path: docs/handbook-public/builders-openapi.md
+      - path: docs/handbook-public/builders-stability-policy.md
+      - path: docs/handbook-public/19-examples-hub.md
+        nav_title: JSON examples
+      - path: docs/handbook-public/26-examples-scenarios-hub.md
+        nav_title: Scenario examples
+      - path: docs/handbook-public/examples-scenario-sibling-repos.md
+      - path: docs/handbook-public/examples-scenario-root-choice.md
+      - path: docs/handbook-public/examples-scenario-classic-studio-daily.md
+      - path: docs/handbook-public/examples-scenario-wizard-greenfield.md
+      - path: docs/handbook-public/examples-scenario-wizard-repair.md
+      - path: docs/handbook-public/examples-scenario-cursor-launch-pack.md
+      - path: docs/handbook-public/examples-scenario-docs-health.md
+      - path: docs/handbook-public/examples-scenario-enterprise-network-binding.md
+      - path: docs/handbook-public/examples-scenario-oidc-login.md
+      - path: docs/handbook-public/examples-scenario-live-deploy-parity.md
+      - path: docs/handbook-public/examples-scenario-api-workspace-scan.md
+      - path: docs/handbook-public/examples-scenario-docs-inventory-refresh.md
+      - path: docs/handbook-public/examples-scenario-llm-local.md
+      - path: docs/handbook-public/examples-scenario-api-error-shape.md
+      - path: docs/handbook-public/16-schemas-and-api-for-builders.md
+      - path: docs/generated/api-routes.md
+        nav_title: HTTP API route catalog
+      - path: docs/reference/config-env.md
+        nav_title: Configuration reference
+
+  - id: resources
+    title: Resources
+    entries:
+      - path: docs/handbook-public/12-troubleshooting.md
+      - path: docs/handbook-public/cross-site-map.md
+        nav_title: Cross-site map
+      - path: docs/handbook-public/diagram-catalog-lenses.md
+        nav_title: Diagram catalog
+      - path: docs/handbook-public/24-release-notes.md
+        nav_title: Release notes
+      - path: docs/handbook-public/25-docs-versioning.md
+        nav_title: Docs versioning
+      - path: docs/handbook-public/20-support.md
+      - path: docs/handbook-public/21-glossary.md
+      - path: docs/handbook-public/22-changelog.md
+      - path: docs/handbook-public/23-roadmap.md

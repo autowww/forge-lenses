@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import math
+from datetime import date, datetime, timedelta
 from typing import Any
 
 # KS diagram templates (static SVG) — served under /__ks/assets/svg/
@@ -182,7 +183,10 @@ def svg_roadmap_gantt(
             continue
         label = str(b.get("label") or "Epic")
         st = str(b.get("status") or "")
-        bars.append({"start": s, "end": e, "label": label, "status": st})
+        epic_id = str(b.get("epic_id") or "").strip()
+        bars.append(
+            {"start": s, "end": e, "label": label, "status": st, "epic_id": epic_id}
+        )
 
     if not bars:
         return ""
@@ -238,18 +242,209 @@ def svg_roadmap_gantt(
         tip = lab
         if bar.get("status"):
             tip = f"{lab} ({bar['status']})"
+        eid = str(bar.get("epic_id") or "").strip()
+        data_eid = f' data-lenses-node-id="{_esc(eid)}"' if eid else ""
         parts.append(
             f'<text x="{margin_l:.1f}" y="{y + 12:.1f}" fill="var(--forge-muted,#94a3b8)" '
             f'font-size="10.5">{_esc(short)}</text>'
         )
         parts.append(
             f'<rect x="{bx:.2f}" y="{y:.2f}" width="{bw:.2f}" height="16" rx="3" '
-            f'fill="{fill}" stroke="rgba(15,23,42,0.5)" stroke-width="0.5">'
+            f'class="lenses-gantt-bar"{data_eid}'
+            f' fill="{fill}" stroke="rgba(15,23,42,0.5)" stroke-width="0.5">'
             f"<title>{_esc(tip)}</title></rect>"
         )
 
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def _parse_iso_date(s: str | None) -> date | None:
+    if not s or not isinstance(s, str):
+        return None
+    try:
+        return datetime.strptime(s.strip()[:10], "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _range_ends(a: str | None, b: str | None) -> tuple[date | None, date | None]:
+    da = _parse_iso_date(a)
+    db = _parse_iso_date(b)
+    if da and db:
+        if da > db:
+            da, db = db, da
+        return da, db
+    if da and not db:
+        return da, da
+    if db and not da:
+        return db, db
+    return None, None
+
+
+def svg_roadmap_date_shift(
+    model: dict[str, Any],
+    *,
+    width: int = 900,
+    label_w: float = 200.0,
+    row_h: float = 36.0,
+    header_h: float = 36.0,
+    bar_h: float = 11.0,
+) -> str:
+    """Calendar strip: initial vs target ranges per epic (ISO dates)."""
+    raw_rows = model.get("rows") if isinstance(model.get("rows"), list) else []
+    if not raw_rows:
+        return ""
+
+    rows: list[dict[str, Any]] = []
+    all_dates: list[date] = []
+    for r in raw_rows[:40]:
+        if not isinstance(r, dict):
+            continue
+        i0, i1 = _range_ends(
+            str(r.get("initial_start") or ""),
+            str(r.get("initial_end") or ""),
+        )
+        t0, t1 = _range_ends(
+            str(r.get("target_start") or ""),
+            str(r.get("target_end") or ""),
+        )
+        if not any((i0, i1, t0, t1)):
+            continue
+        label = str(r.get("label") or "Epic")[:52]
+        eid = str(r.get("epic_id") or "").strip()
+        rows.append(
+            {
+                "label": label,
+                "epic_id": eid,
+                "i0": i0,
+                "i1": i1,
+                "t0": t0,
+                "t1": t1,
+            }
+        )
+        for d in (i0, i1, t0, t1):
+            if d:
+                all_dates.append(d)
+
+    if not rows or not all_dates:
+        return ""
+
+    t_min = min(all_dates)
+    t_max = max(all_dates)
+    if t_min == t_max:
+        t_min = t_min - timedelta(days=7)
+        t_max = t_max + timedelta(days=7)
+    span_days = max(1, (t_max - t_min).days + 1)
+
+    margin_l = 8.0
+    margin_r = 10.0
+    margin_b = 22.0
+    chart_x0 = margin_l + label_w
+    chart_w = max(120.0, float(width) - margin_l - margin_r - label_w)
+    n = len(rows)
+    height = int(header_h + n * row_h + margin_b)
+
+    def x_for(d: date) -> float:
+        off = (d - t_min).days
+        return chart_x0 + (off / float(span_days)) * chart_w
+
+    fill_initial = "rgba(148,163,184,0.88)"
+    fill_target = "rgba(6,182,212,0.85)"
+    grid_stroke = "rgba(6,182,212,0.12)"
+
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'role="img" aria-label="Initial vs target date ranges" '
+        f'preserveAspectRatio="xMinYMin meet" '
+        f'style="width:100%;height:auto;display:block">',
+        '<rect width="100%" height="100%" fill="transparent"/>',
+    ]
+    # Axis labels (start / end of window)
+    parts.append(
+        f'<text x="{chart_x0:.2f}" y="{header_h - 10:.2f}" fill="var(--forge-muted,#94a3b8)" '
+        f'font-size="10">{_esc(str(t_min))}</text>'
+    )
+    parts.append(
+        f'<text x="{chart_x0 + chart_w:.2f}" y="{header_h - 10:.2f}" text-anchor="end" '
+        f'fill="var(--forge-muted,#94a3b8)" font-size="10">{_esc(str(t_max))}</text>'
+    )
+    # Legend
+    lx = chart_x0 + chart_w * 0.35
+    parts.append(
+        f'<rect x="{lx:.1f}" y="4" width="10" height="8" rx="2" fill="{fill_initial}"/>'
+        f'<text x="{lx + 14:.1f}" y="11" fill="var(--forge-muted,#94a3b8)" font-size="9">Initial</text>'
+    )
+    parts.append(
+        f'<rect x="{lx + 72:.1f}" y="4" width="10" height="8" rx="2" fill="{fill_target}"/>'
+        f'<text x="{lx + 86:.1f}" y="11" fill="var(--forge-muted,#94a3b8)" font-size="9">Target</text>'
+    )
+
+    for j in range(5):
+        frac = j / 4.0
+        x = chart_x0 + frac * chart_w
+        parts.append(
+            f'<line x1="{x:.2f}" y1="{header_h:.2f}" x2="{x:.2f}" y2="{height - margin_b:.2f}" '
+            f'stroke="{grid_stroke}" stroke-width="1"/>'
+        )
+
+    y0 = header_h
+    for i, bar in enumerate(rows):
+        y = y0 + i * row_h
+        lab = bar["label"]
+        short = lab[:44] + ("…" if len(lab) > 44 else "")
+        parts.append(
+            f'<text x="{margin_l:.1f}" y="{y + 14:.1f}" fill="var(--forge-muted,#94a3b8)" '
+            f'font-size="10">{_esc(short)}</text>'
+        )
+        i0, i1 = bar["i0"], bar["i1"]
+        t0, t1 = bar["t0"], bar["t1"]
+        data_eid = ""
+        eid = str(bar.get("epic_id") or "")
+        if eid:
+            data_eid = f' data-lenses-node-id="{_esc(eid)}"'
+        # Initial bar (upper)
+        if i0 and i1:
+            xa, xb = x_for(i0), x_for(i1)
+            if xb < xa:
+                xa, xb = xb, xa
+            bw = max(xb - xa, 3.0)
+            tip = f"Initial: {i0} – {i1}"
+            parts.append(
+                f'<rect x="{xa:.2f}" y="{y + 2:.1f}" width="{bw:.2f}" height="{bar_h:.1f}" rx="2" '
+                f'fill="{fill_initial}"{data_eid}><title>{_esc(tip)}</title></rect>'
+            )
+        # Target bar (lower)
+        if t0 and t1:
+            xa, xb = x_for(t0), x_for(t1)
+            if xb < xa:
+                xa, xb = xb, xa
+            bw = max(xb - xa, 3.0)
+            tip = f"Target: {t0} – {t1}"
+            parts.append(
+                f'<rect x="{xa:.2f}" y="{y + 15:.1f}" width="{bw:.2f}" height="{bar_h:.1f}" rx="2" '
+                f'fill="{fill_target}"{data_eid}><title>{_esc(tip)}</title></rect>'
+            )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def roadmap_date_shift_html(model: dict[str, Any], *, heading: bool = True) -> str:
+    if not model.get("has_date_shift"):
+        return ""
+    svg = svg_roadmap_date_shift(model)
+    if not svg:
+        return ""
+    h = (
+        '<h3 class="h6 text-cyan mb-2">Calendar (initial vs target)</h3>'
+        if heading
+        else ""
+    )
+    return (
+        f'<div class="lenses-roadmap-dateshift-wrap mb-2">{h}'
+        f'<div class="lenses-roadmap-dateshift-svg">{svg}</div></div>'
+    )
 
 
 def roadmap_gantt_html(model: dict[str, Any], *, heading: bool = True) -> str:
@@ -273,10 +468,15 @@ def roadmap_gantt_html(model: dict[str, Any], *, heading: bool = True) -> str:
 def roadmap_summary_html(
     metrics: dict[str, Any],
     gantt_model: dict[str, Any] | None = None,
+    date_shift_model: dict[str, Any] | None = None,
+    *,
+    include_ks_diagrams: bool = True,
 ) -> str:
     """HTML fragment for #lenses-roadmap-summary in the shell page."""
     gantt_model = gantt_model or {}
+    date_shift_model = date_shift_model or {}
     has_gantt = bool(gantt_model.get("has_gantt"))
+    has_date_shift = bool(date_shift_model.get("has_date_shift"))
     has_any = bool(metrics.get("has_chartable"))
     epic_bars = metrics.get("epic_bars") or []
     status_counts = metrics.get("status_counts") or {}
@@ -296,10 +496,15 @@ def roadmap_summary_html(
         and not status_counts
         and not horizon_counts
         and not has_gantt
+        and not has_date_shift
     ):
         return (
-            '<p class="forge-support small mb-0 lenses-roadmap-summary-empty">'
-            "No chartable table columns detected in this roadmap (status, % complete, horizon).</p>"
+            '<div class="lenses-roadmap-summary-empty">'
+            '<p class="lenses-plan-empty-title">No chartable tables</p>'
+            '<p class="forge-support small mb-0">'
+            "Add tables with status, % complete, horizon, or optional Initial/Target "
+            "date columns to ROADMAP.md.</p>"
+            "</div>"
         )
 
     blocks: list[str] = ['<div class="lenses-roadmap-summary-inner">']
@@ -308,12 +513,16 @@ def roadmap_summary_html(
     if gantt_html:
         blocks.append(f'<div class="mb-3">{gantt_html}</div>')
 
+    date_shift_html = roadmap_date_shift_html(date_shift_model, heading=True)
+    if date_shift_html:
+        blocks.append(f'<div class="mb-3">{date_shift_html}</div>')
+
     metrics_inner: list[str] = ['<div class="row g-3">']
 
     diagram_bits = ""
     # Native KS templates are 680px wide; avoid squeezing into a narrow column.
     _diagram_max = 680
-    if not gantt_html:
+    if include_ks_diagrams and not gantt_html and not date_shift_html:
         if horizon_counts:
             diagram_bits += ks_diagram_img(
                 KS_TIMELINE_TEMPLATE,
@@ -364,7 +573,7 @@ def roadmap_summary_html(
 
     metrics_block = "\n".join(metrics_inner)
     has_metrics_row = bool(diagram_bits or hz or epic_pairs or donut)
-    if gantt_html and has_metrics_row:
+    if (gantt_html or date_shift_html) and has_metrics_row:
         blocks.append(
             '<details class="lenses-roadmap-metrics-details mt-1">'
             '<summary class="h6 text-cyan mb-0 user-select-none" style="cursor:pointer">'

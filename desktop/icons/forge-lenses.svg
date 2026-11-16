@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#0b0e14"/>
+  <text
+    x="256"
+    y="268"
+    font-family="system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif"
+    font-size="200"
+    font-weight="800"
+    fill="#e1e4e8"
+    text-anchor="middle"
+    dominant-baseline="central"
+  >F</text>
+</svg>

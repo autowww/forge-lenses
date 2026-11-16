@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/api-error.schema.json",
+  "title": "Forge Lenses HTTP error envelope",
+  "type": "object",
+  "required": ["ok"],
+  "properties": {
+    "ok": { "type": "boolean", "const": false },
+    "error": { "type": "string" },
+    "detail": {
+      "oneOf": [{ "type": "string" }, { "type": "null" }]
+    },
+    "hint": { "type": "string" },
+    "remediation": { "type": "string" },
+    "context": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "status": { "type": "integer" }
+  },
+  "additionalProperties": false
+}
+

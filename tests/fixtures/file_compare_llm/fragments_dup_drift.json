@@ -1,0 +1,15 @@
+{
+  "schema_version": "situ8-taxonomy-logic-fragment-v1-test",
+  "fragments": [
+    {
+      "taxonomy_id": "issue/housing",
+      "node_axis": "issue",
+      "suggested_description": "Housing basics. Track bugs in JIRA and link github.com/issues for QA."
+    },
+    {
+      "taxonomy_id": "issue/housing",
+      "node_axis": "issue",
+      "suggested_description": "Duplicate id row for regression."
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "registry_version": "2026.04-b5",
+  "targets": {
+    "cursor": {
+      "label": "Cursor",
+      "export_mime_hints": {
+        "markdown_pack": "text/markdown",
+        "json_manifest": "application/json",
+        "task_file": "text/markdown",
+        "summary_card": "text/markdown"
+      }
+    },
+    "claude": {
+      "label": "Claude",
+      "export_mime_hints": {
+        "markdown_pack": "text/markdown",
+        "json_manifest": "application/json",
+        "task_file": "text/markdown",
+        "summary_card": "text/markdown"
+      }
+    }
+  },
+  "templates": {
+    "markdown_pack": {
+      "cursor": "# Handoff — {{title}}\n\n## Objective\n{{objective}}\n\n## Work units\n{{work_units}}\n\n## Acceptance criteria\n{{acceptance_criteria}}\n\n## Scope boundaries\n{{scope_boundaries}}\n\n## Files / paths of interest\n{{files_of_interest}}\n\n## Recipes / tasklets\n{{recipes_block}}\n\n## Review / gate expectations\n{{gate_expectations}}\n\n## Output contract\n{{output_contract}}\n\n## Linked artifacts\n{{artifacts_block}}\n\n---\n*Launch pack version: {{launch_pack_version}} · Target: {{target_label}}*\n",
+      "claude": "# Claude session handoff — {{title}}\n\n### Mission\n{{objective}}\n\n### Must satisfy\n{{acceptance_criteria}}\n\n### Stay within\n{{scope_boundaries}}\n\n### Context files\n{{files_of_interest}}\n\n### Tooling hints\n{{recipes_block}}\n\n### Evidence to produce\n{{output_contract}}\n\n### Graph links\n{{artifacts_block}}\n\n`launch_pack_version`: {{launch_pack_version}}\n"
+    },
+    "task_file": {
+      "cursor": "## Task — {{title}}\n\n- [ ] {{objective}}\n- [ ] Meet criteria: {{acceptance_criteria}}\n- [ ] Respect scope: {{scope_boundaries}}\n",
+      "claude": "## Claude task card\n\n**Goal:** {{objective}}\n\n**Checklist:** {{acceptance_criteria}}\n"
+    },
+    "summary_card": {
+      "cursor": "**{{title}}** · {{target_label}} · LP {{launch_pack_version}}\n{{objective}}\n",
+      "claude": "**{{title}}** (Claude) — {{objective}}\n"
+    }
+  }
+}

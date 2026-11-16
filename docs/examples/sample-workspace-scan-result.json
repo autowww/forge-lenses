@@ -1,0 +1,24 @@
+{
+  "workspace_root": "/srv/workspaces/monorepo",
+  "lenses_repo_root": "/opt/forge-lenses",
+  "resolved_at": "2026-05-17T12:34:56+00:00",
+  "children": [
+    {
+      "name": "forge-lenses",
+      "path": "/srv/workspaces/monorepo/forge-lenses",
+      "is_git": true,
+      "git": {
+        "branch": "main",
+        "ahead": 0,
+        "behind": 0,
+        "clean": true
+      }
+    }
+  ],
+  "websites": [],
+  "toolset": {
+    "root_scripts": ["sync.sh"],
+    "script_cards": [],
+    "cursor_dir": ""
+  }
+}

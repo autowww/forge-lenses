@@ -1,0 +1,6 @@
+{
+  "severity": "warning",
+  "source": "proxy_access_log",
+  "detail": "/api mutation observed from RFC1918 LAN without pinned OIDC subject match.",
+  "emitted_at": "2026-05-01T08:41:03Z"
+}

@@ -1,0 +1,124 @@
+{
+  "ok": true,
+  "capabilities": [
+    {
+      "id": "triage.small",
+      "label": "Triage (small)",
+      "family": "triage",
+      "tier": "small",
+      "description": "Cluster context, enrichment, and brief agents — prefer local Ollama."
+    },
+    {
+      "id": "writer.medium",
+      "label": "Writer (medium)",
+      "family": "writer",
+      "tier": "medium",
+      "description": "Markdown / diagram / ADR drafting — prefer local, then private URL, then cloud."
+    },
+    {
+      "id": "reviewer.high",
+      "label": "Reviewer (high)",
+      "family": "reviewer",
+      "tier": "high",
+      "description": "Structured review JSON — same routing profile as writer; tier encodes expected rigor."
+    }
+  ],
+  "slots": [
+    {
+      "id": "triage.small",
+      "capability_id": "triage.small",
+      "label": "Triage (small)",
+      "studio_task_id": "docs_health_enricher",
+      "preferred_privacy": "local_only",
+      "primary_endpoint_kind": "local",
+      "fallback_order": ["ollama", "openai_compatible", "cloud_default"]
+    },
+    {
+      "id": "writer.medium",
+      "capability_id": "writer.medium",
+      "label": "Writer (medium)",
+      "studio_task_id": "docs_health_writer",
+      "preferred_privacy": "local_only",
+      "primary_endpoint_kind": "local",
+      "fallback_order": ["ollama", "openai_compatible", "cloud_default"]
+    },
+    {
+      "id": "reviewer.high",
+      "capability_id": "reviewer.high",
+      "label": "Reviewer (high)",
+      "studio_task_id": "docs_health_reviewer",
+      "preferred_privacy": "local_only",
+      "primary_endpoint_kind": "local",
+      "fallback_order": ["ollama", "openai_compatible", "cloud_default"]
+    },
+    {
+      "id": "external_writer",
+      "capability_id": "writer.medium",
+      "label": "External writer (private URL)",
+      "studio_task_id": "docs_health_writer",
+      "preferred_privacy": "private_url",
+      "primary_endpoint_kind": "external_url",
+      "fallback_order": ["openai_compatible", "cloud_default"]
+    },
+    {
+      "id": "external_reviewer",
+      "capability_id": "reviewer.high",
+      "label": "External reviewer (private URL)",
+      "studio_task_id": "docs_health_reviewer",
+      "preferred_privacy": "private_url",
+      "primary_endpoint_kind": "external_url",
+      "fallback_order": ["openai_compatible", "cloud_default"]
+    }
+  ],
+  "providers": [
+    {
+      "id": "ollama_local",
+      "adapter": "ollama",
+      "display_name": "Ollama (local)",
+      "supports_text": true,
+      "supports_streaming": true,
+      "max_context_tokens": 128000,
+      "json_mode_reliable": false,
+      "health": "healthy",
+      "token_counting": "estimated",
+      "privacy": "local_only",
+      "cost_tier": "free",
+      "latency_tier": "local_low",
+      "served_capabilities": ["triage.small", "writer.medium", "reviewer.high"]
+    },
+    {
+      "id": "openai_compatible_url",
+      "adapter": "openai_compatible",
+      "display_name": "OpenAI-compatible URL",
+      "supports_text": false,
+      "supports_streaming": false,
+      "max_context_tokens": 128000,
+      "json_mode_reliable": false,
+      "health": "not_configured",
+      "token_counting": "exact",
+      "privacy": "private_url",
+      "cost_tier": "low",
+      "latency_tier": "network_variable",
+      "served_capabilities": ["triage.small", "writer.medium", "reviewer.high"]
+    }
+  ],
+  "policy": {
+    "dispatch_policy": {
+      "local_first": true,
+      "allow_cloud_escalation": true,
+      "allow_private_compat_url": true,
+      "require_loopback_for_external_url": true,
+      "max_escalation_steps": 4
+    },
+    "llm_routing_mode": "smart",
+    "slots": ["triage.small", "writer.medium", "reviewer.high", "external_writer", "external_reviewer"],
+    "capability_ids": ["triage.small", "writer.medium", "reviewer.high"],
+    "summary": "local_first=True; cloud_escalation=True; compat_url=True; llm_mode=smart"
+  },
+  "legacy_slot_aliases": {
+    "local_triage": "triage.small",
+    "local_writer": "writer.medium",
+    "local_reviewer": "reviewer.high"
+  },
+  "last_ledger_records": []
+}

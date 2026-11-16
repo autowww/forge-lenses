@@ -1,0 +1,5 @@
+{
+  "kind": "host_path",
+  "label": "~/Code/forge-lenses",
+  "resolution_note": "Validated via Studio workspace picker; host path reachable from launcher."
+}

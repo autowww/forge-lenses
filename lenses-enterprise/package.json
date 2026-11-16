@@ -1,0 +1,56 @@
+{
+  "name": "lenses-enterprise",
+  "private": true,
+  "version": "1.0.79",
+  "type": "module",
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "predev": "sh scripts/sync-ollama-setup-snippet.sh",
+    "prebuild": "sh scripts/sync-ollama-setup-snippet.sh",
+    "dev": "vite",
+    "watch": "vite build --watch",
+    "build": "node scripts/bump-studio-patch-version.mjs && tsc -b && vite build",
+    "build:stickerboard": "tsc -b && vite build -c vite.stickerboard.config.ts",
+    "dev:stickerboard": "vite -c vite.stickerboard.config.ts",
+    "build:museum": "node scripts/bump-studio-patch-version.mjs && VITE_STATIC_MUSEUM=true tsc -b && VITE_STATIC_MUSEUM=true vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e:docs-health": "playwright test e2e/docs-health-scan.spec.ts e2e/docs-health-session.spec.ts",
+    "test:e2e:human-copy": "playwright test e2e/studio-human-copy-oracle.spec.ts",
+    "sync-kitchensink-react": "sh scripts/sync-kitchensink-react.sh"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "framer-motion": "^12.38.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.13.2",
+    "remark-gfm": "^4.0.1",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.51.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "jsdom": "^29.0.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.57.0",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.2"
+  }
+}

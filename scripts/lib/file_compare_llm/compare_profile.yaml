@@ -1,0 +1,85 @@
+# Default profile for hybrid file compare (deterministic clues + LLM judgment).
+# Paths in wrapper_flatten are JSON-pointer-like: key segments separated by /
+
+excerpts:
+  # 0 = no limit: entire raw file text is sent to the LLM (large JSON runs can exceed model context).
+  max_chars_per_file: 0
+  # 0 = all paragraphs for plain-text / unknown fallback chunk ids (chunk:0, chunk:1, …).
+  max_plaintext_chunks: 0
+
+dimensions:
+  - id: structural_integrity
+    label: Structural integrity
+    why: Whether structure, IDs, and references hang together for the document type.
+  - id: scope
+    label: Scope
+    why: How much ground the file covers versus what a reader would expect.
+  - id: domain_fidelity
+    label: Domain fidelity
+    why: How well vocabulary and examples fit the intended domain (vs generic or off-domain drift).
+  - id: consistency
+    label: Consistency
+    why: Internal coherence of terms, tone, and cross-references.
+  - id: clearness
+    label: Clearness
+    why: How easy it is for the intended reader to understand.
+  - id: depth
+    label: Depth
+    why: Richness of explanation, examples, and actionable detail.
+  - id: actionability
+    label: Actionability
+    why: How usable the content is for the next step (review, merge, publish, engineering).
+  - id: overall
+    label: Overall
+    why: Holistic quality for the stated purpose.
+
+normalization:
+  # Unwrap list-of-wrappers to list of inner dicts (applied recursively when path matches).
+  wrapper_flatten:
+    - path: fragments
+      inner_key: target_node
+    - path: nodes
+      inner_key: target_node
+
+  # Rename keys on each record (after flatten). Canonical names used downstream.
+  key_aliases:
+    id: taxonomy_id
+    axis: node_axis
+    description: suggested_description
+    examples: suggested_examples
+    aliases: suggested_aliases
+
+  # Required canonical fields when schema_version matches (substring) or always (match: "*")
+  required_fields:
+    - match: "situ8-taxonomy-logic-fragment"
+      fields: [taxonomy_id, node_axis]
+    - match: "*"
+      fields: []
+
+evidence:
+  entity_id_fields:
+    - taxonomy_id
+    - id
+  reference_checks:
+    - field: parentId
+      universe: taxonomy_id
+    - field: sibling_id
+      universe: taxonomy_id
+    - field: sibling_id
+      list_under: sibling_contrast
+      nested_id_field: sibling_id
+      universe: taxonomy_id
+
+  malformed_id_patterns:
+    - "^!!!"
+    - "/other_unspecified$"
+
+  lexical_drift:
+    case_insensitive: true
+    suspicious_substrings:
+      - "github.com"
+      - "jira"
+      - "gradle"
+      - "stack overflow"
+      - "npm "
+      - "kubernetes"

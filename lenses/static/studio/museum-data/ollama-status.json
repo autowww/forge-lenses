@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "configured": true,
+  "reachable": true,
+  "base": "http://127.0.0.1:11434",
+  "models": ["llama3.2:latest", "nomic-embed-text:latest"],
+  "model_catalog": [
+    {
+      "name": "llama3.2:latest",
+      "size": 2147483648,
+      "modified_at": "2026-01-15T10:00:00Z",
+      "digest": "sha256:abcd1234ef567890abcd12",
+      "last_used": "2026-04-10T14:22:00+00:00"
+    },
+    {
+      "name": "nomic-embed-text:latest",
+      "size": 274000000,
+      "modified_at": "2026-02-01T08:30:00Z",
+      "digest": "sha256:feedfacefeedfacefeedfa",
+      "last_used": null
+    }
+  ]
+}

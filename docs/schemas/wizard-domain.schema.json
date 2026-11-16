@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/wizard-domain.schema.json",
+  "title": "Blueprints Wizard domain model",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "mission": {
+      "type": "string",
+      "maxLength": 4000,
+      "description": "Neutral mission statement synthesized from user inputs."
+    },
+    "contribution": {
+      "enum": ["new_product", "existing_workspace_evolution"],
+      "description": "Contribution mode distinguishes greenfield sessions from retrofits."
+    },
+    "target_stage": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "Target methodology stage slug (Forge / Blueprint specific)."
+    },
+    "autonomy": {
+      "enum": ["co_pilot", "guided", "autonomous_stub"],
+      "description": "LLM autonomy tier for deterministic vs free-form prompting."
+    },
+    "mutation_policy": {
+      "enum": ["no_repo_writes", "bounded_writes", "github_push_ok"],
+      "description": "How aggressively server-side automation may mutate files."
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "Outstanding human review stubs."
+    }
+  },
+  "additionalProperties": true
+}
+

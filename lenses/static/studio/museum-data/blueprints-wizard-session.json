@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "session": {
+    "payload": {
+      "created_repo_url": null,
+      "mode": "existing_workspace",
+      "new_product_draft": {
+        "account_type": "user",
+        "description": "",
+        "license": "",
+        "owner": "",
+        "repo_name": "",
+        "visibility": "private"
+      },
+      "parent_session_id": null,
+      "purpose": "",
+      "scope": {
+        "roadmap_rel": null,
+        "roadmap_section_id": null,
+        "wbs_rel": null
+      },
+      "state": "draft",
+      "title": ""
+    },
+    "step_index": 0,
+    "updated_at": "2026-01-01T00:00:00Z",
+    "version": 2
+  }
+}

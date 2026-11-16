@@ -1,0 +1,90 @@
+{
+  "contract": {
+    "doc_roots": [".", "docs"],
+    "version": 1
+  },
+  "contract_status": {
+    "contract_path": "forge/docs-contract.yaml",
+    "legacy_contract": false,
+    "mode": "configured",
+    "uses_convention_defaults": false
+  },
+  "docs_scan_run": {
+    "finding_count": 4,
+    "finished_at": "2026-01-01T12:00:00+00:00",
+    "id": "museum-run-1",
+    "status": "completed"
+  },
+  "feature": { "docs_health": true },
+  "inventory_summary": {
+    "by_doc_type": { "guide": 8, "readme": 1 },
+    "by_knowledge_category": { "decisions": 2, "docs": 7 },
+    "document_count": 12,
+    "id": "museum-inv-1",
+    "link_edge_count": 24,
+    "updated_at": "2026-01-01T11:00:00+00:00"
+  },
+  "latest_inventory": null,
+  "latest_run": {
+    "clusters": [
+      {
+        "finding_ids": ["a1", "a2"],
+        "id": "cluster-demo",
+        "label": "Structure — README.md",
+        "primary_category": "structure",
+        "suggested_next": "Open remediation session to draft safe documentation updates."
+      }
+    ],
+    "finding_count": 4,
+    "findings": [
+      {
+        "affected_paths": ["README.md"],
+        "category": "structure",
+        "confidence": 1,
+        "fixability": "draft_only",
+        "id": "a1",
+        "rule_code": "readme_section",
+        "score_impact": -5,
+        "severity": "minor",
+        "summary": "Add a heading such as `## Overview` with a short, accurate description.",
+        "title": "README missing “Overview” section",
+        "why_it_matters": "Readers skim headings first; missing sections hide important context."
+      }
+    ],
+    "finished_at": "2026-01-01T12:00:00+00:00",
+    "id": "museum-run-1",
+    "inventory": { "markdown_file_count": 12, "markdown_files": ["README.md"] },
+    "project": "demo-repo",
+    "score": { "finding_count": 4, "scale_max": 100, "value": 72 },
+    "started_at": "2026-01-01T12:00:00+00:00"
+  },
+  "ok": true,
+  "project": "demo-repo",
+  "project_docs_contract": {
+    "doc_roots": [".", "docs"],
+    "version": 1,
+    "_meta": { "contract_path": "forge/docs-contract.yaml", "source": "repo_file" }
+  },
+  "required_doc_type_count": 5,
+  "run_history": [
+    {
+      "finding_count": 4,
+      "finished_at": "2026-01-01T12:00:00+00:00",
+      "id": "museum-run-1",
+      "score": 72,
+      "started_at": "2026-01-01T12:00:00+00:00"
+    }
+  ],
+  "work_items": [],
+  "cluster_suppressions": [],
+  "finding_suppressions": [],
+  "closure_status": {
+    "complete": true,
+    "notes": "No unsuppressed critical/major findings in the latest scan.",
+    "open_critical_or_major": 0,
+    "open_docs_work_items": 0,
+    "open_manual_or_ticket_style": 0,
+    "suppressed_findings_in_view": 0
+  },
+  "recent_sessions": []
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "situ8-taxonomy-logic-fragment-v1-test",
+  "fragments": [
+    {
+      "taxonomy_id": "!!!bad-id",
+      "node_axis": "issue",
+      "suggested_description": "Malformed id sample."
+    },
+    {
+      "taxonomy_id": "issue/housing/other_unspecified",
+      "node_axis": "issue",
+      "suggested_description": "Generic tail id."
+    }
+  ]
+}

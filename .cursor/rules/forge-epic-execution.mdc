@@ -1,0 +1,59 @@
+---
+description: Epic execution profile — execute L1–L2 inside a Charged Epic; apply OpenSpec acceptance; escalate L4+; no Task Charge minting.
+globs: forge/**/*,openspec/**/*,docs/requirements/**/*
+alwaysApply: false
+---
+
+# Forge Epic execution (agent)
+
+You execute work **inside** a **Charged Epic** when the repo uses the **Epic execution profile**. Core Forge teams that Charge **Forge Sparks** should use `@spark-planner` / `@forge-daily` instead — Spark is **not** removed from Forge.
+
+## Scope
+
+- **Pick up** a Charged Epic from `forge/charge.md` (`Active Epics` table: id, OpenSpec change, status, actor).
+- **Autonomously execute L1–L2** (and L3 when the Epic is scoped as the default use-case slice) **inside** the Epic boundary.
+- **Apply** the linked **OpenSpec change** — observable **SHALL** / **MUST** acceptance and Given/When/Then scenarios — not implementation SHALLs (no file or class names in acceptance).
+- **Decompose runs**, not WBS backlogs: classify → plan → apply → verify → repair → escalate.
+
+## Do not
+
+- **Do not mint** `M1E3S2T4` (or any `…T{n}`) rows on Charge or as committed WBS Task process for Charged Epics.
+- **Do not** treat Story/Task/Forge Spark as Charge work items under this profile — they are **agent scratch** inside the Epic only when needed for reasoning.
+- **Do not** expand scope beyond the Epic's OpenSpec acceptance without human approval.
+
+## OpenSpec (Lite default)
+
+- One OpenSpec change folder **1:1** with the Epic — one intent, one reviewable scope.
+- Capability spec → at least one observable **SHALL** → ≥1 scenario.
+- `tasks.md` is **non-binding** hints; acceptance lives in the spec.
+- **OpenSpec Full** (API, security, cross-cutting): human selects at Epic specification — stricter layout and gates per team pack.
+
+Humans approve OpenSpec acceptance **before** Charge; you apply the change and prove scenarios in verify.
+
+## Escalate L4+ (stop and ask)
+
+Stop and ask a human before proceeding when:
+
+| Trigger | Action |
+|---------|--------|
+| **Cross-repo change** (submodule bump, **L4.2**) | Stop; request human plan, ADR, or explicit approval |
+| **New component or platform pattern** (**L4.1+**) | Stop; escalate to architecture gate |
+| **Security / compliance ambiguity** | Stop; invoke Security Versona or human owner |
+| **OpenSpec Full required but only Lite present** | Stop; request profile upgrade or scope reduction |
+
+**L4+ is out of autonomous scope** unless a human explicitly expands the Epic with new gates and acceptance.
+
+## Trivial L1 skip
+
+Typical one-liners (typo, obvious config knob) may **skip Epic ceremony** when classifier policy marks **L1 trivial** — no OpenSpec folder, no Epic Charge row. When in doubt, **use an Epic**.
+
+## Ember Log
+
+Log **Epic-scope** or **cross-cutting** decisions only — not every L1 run. Operational trace: PR, Assay evidence, OpenSpec verify output.
+
+## References
+
+- Profile canon: `blueprints/sdlc/methodologies/forge/EPIC-EXECUTION-PROFILE.md`
+- Autonomy ladder: `blueprints/sdlc/methodologies/forge/AUTONOMY-LEVELS.md`
+- Daily Charge: `blueprints/sdlc/methodologies/forge/daily/README.md`
+- Naming: `blueprints/sdlc/methodologies/forge/NAMING-REFERENCE.md`

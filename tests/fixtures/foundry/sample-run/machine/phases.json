@@ -1,0 +1,11 @@
+{
+  "phases": [
+    {"name": "classify", "status": "ok", "detail": "coding/simple"},
+    {"name": "route", "status": "ok", "detail": "tier=fake"},
+    {"name": "context", "status": "ok", "detail": "3 items"},
+    {"name": "plan", "status": "ok", "detail": "1 patch unit"},
+    {"name": "draft-unit-1", "status": "ok", "detail": "fake worker"},
+    {"name": "apply+verify", "status": "ok", "detail": "changed=[src/dfcalc/engine.py]"},
+    {"name": "assay", "status": "ok", "detail": "all checks passed"}
+  ]
+}

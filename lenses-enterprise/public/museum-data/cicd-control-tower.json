@@ -1,0 +1,330 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "feature_enabled": true,
+  "provider_kind": "local_fixture",
+  "resolved_at": "2026-04-11T12:00:00Z",
+  "workspace_summary": {
+    "child_count": 1,
+    "git_repo_count": 1
+  },
+  "pipeline_runs": [
+    {
+      "pipeline_run_id": "884422",
+      "provider": "github_actions",
+      "project": "forgesdlc",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-04-11T07:55:00Z",
+      "finished_at": "2026-04-11T08:10:00Z",
+      "url": "https://github.com/example/forgesdlc/actions/runs/884422",
+      "head_sha": "a1b2c3d4e5f6789012345678901234567890abcd",
+      "ref": "main",
+      "stages": [
+        {
+          "name": "unit",
+          "status": "success",
+          "started_at": "2026-04-11T07:56:00Z",
+          "finished_at": "2026-04-11T08:00:00Z"
+        },
+        {
+          "name": "contract",
+          "status": "success",
+          "started_at": "2026-04-11T08:00:00Z",
+          "finished_at": "2026-04-11T08:08:00Z"
+        }
+      ]
+    },
+    {
+      "pipeline_run_id": "99001",
+      "provider": "gitlab_ci",
+      "project": "forgesdlc",
+      "name": "security-scan",
+      "status": "success",
+      "conclusion": "success",
+      "started_at": "2026-04-11T06:00:00Z",
+      "finished_at": "2026-04-11T06:12:00Z",
+      "url": "https://gitlab.com/example/forgesdlc/-/pipelines/99001",
+      "head_sha": "a1b2c3d4",
+      "ref": "main",
+      "stages": [
+        {
+          "name": "sast",
+          "status": "success",
+          "started_at": "2026-04-11T06:01:00Z",
+          "finished_at": "2026-04-11T06:10:00Z"
+        }
+      ]
+    },
+    {
+      "pipeline_run_id": "50021",
+      "provider": "azure_pipelines",
+      "project": "forgesdlc",
+      "name": "package-image",
+      "status": "success",
+      "conclusion": "success",
+      "started_at": "2026-04-11T05:00:00Z",
+      "finished_at": "2026-04-11T05:45:00Z",
+      "url": "https://dev.azure.com/org/proj/_build/results?buildId=50021",
+      "head_sha": "a1b2c3d4",
+      "ref": "main",
+      "stages": [
+        {
+          "name": "Build",
+          "status": "succeeded",
+          "started_at": "2026-04-11T05:05:00Z",
+          "finished_at": "2026-04-11T05:30:00Z"
+        }
+      ]
+    },
+    {
+      "pipeline_run_id": "1204",
+      "provider": "jenkins",
+      "project": "forgesdlc",
+      "name": "forgesdlc \u00bb main #1204",
+      "status": "success",
+      "conclusion": "success",
+      "started_at": "2026-04-10T22:00:00Z",
+      "finished_at": "",
+      "url": "https://jenkins.example/job/forgesdlc/1204/",
+      "head_sha": "",
+      "ref": "main",
+      "stages": [
+        {
+          "name": "Declarative: Checkout SCM",
+          "status": "SUCCESS",
+          "started_at": "2026-04-10T22:01:00Z",
+          "finished_at": ""
+        }
+      ]
+    },
+    {
+      "pipeline_run_id": "argo-uid-stg-1",
+      "provider": "argo_cd",
+      "project": "forgesdlc",
+      "name": "forgesdlc-staging",
+      "status": "success",
+      "conclusion": "Healthy",
+      "started_at": "2026-04-10T19:06:00Z",
+      "finished_at": "",
+      "url": "",
+      "head_sha": "1.4.0-rc.3",
+      "ref": "1.4.0-rc.3",
+      "stages": [
+        {
+          "name": "sync",
+          "status": "Synced",
+          "started_at": "2026-04-10T19:06:00Z",
+          "finished_at": ""
+        }
+      ],
+      "kind": "deployment_sync",
+      "target_cluster": "staging-cluster"
+    }
+  ],
+  "environments": [
+    {
+      "id": "development",
+      "display_name": "Development",
+      "tier": "dev",
+      "project": "forgesdlc",
+      "current_version": "1.4.0-rc.3",
+      "current_artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "last_successful_deploy_at": "2026-04-11T08:22:00Z",
+      "last_deploy_status": "success",
+      "rollback_target_version": "1.4.0-rc.2",
+      "approval_status": "auto",
+      "deployment_history": [
+        {
+          "at": "2026-04-11T08:22:00Z",
+          "version": "1.4.0-rc.3",
+          "status": "success",
+          "actor": "ci-bot"
+        },
+        {
+          "at": "2026-04-09T14:00:00Z",
+          "version": "1.4.0-rc.2",
+          "status": "success",
+          "actor": "ci-bot"
+        }
+      ]
+    },
+    {
+      "id": "staging",
+      "display_name": "Staging",
+      "tier": "stage",
+      "project": "forgesdlc",
+      "current_version": "1.4.0-rc.3",
+      "current_artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "last_successful_deploy_at": "2026-04-10T19:05:00Z",
+      "last_deploy_status": "success",
+      "rollback_target_version": "1.4.0-rc.1",
+      "approval_status": "approved",
+      "deployment_history": [
+        {
+          "at": "2026-04-10T19:05:00Z",
+          "version": "1.4.0-rc.3",
+          "status": "success",
+          "actor": "release-bot"
+        }
+      ]
+    },
+    {
+      "id": "production",
+      "display_name": "Production",
+      "tier": "prod",
+      "project": "forgesdlc",
+      "current_version": "1.4.0",
+      "current_artifact_ref": "oci://registry.example/forgesdlc:1.4.0",
+      "last_successful_deploy_at": "2026-04-08T10:00:00Z",
+      "last_deploy_status": "success",
+      "rollback_target_version": "1.3.9",
+      "approval_status": "change_advisory",
+      "deployment_history": [
+        {
+          "at": "2026-04-08T10:00:00Z",
+          "version": "1.4.0",
+          "status": "success",
+          "actor": "release-bot"
+        }
+      ]
+    }
+  ],
+  "release_train": {
+    "name": "Train FY26.04",
+    "track": "monthly",
+    "current_focus": "1.4.0-rc.3",
+    "candidates": [
+      {
+        "version": "1.4.0-rc.3",
+        "status": "candidate",
+        "artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+        "changelog_url": "https://github.com/example/forgesdlc/releases/tag/v1.4.0-rc.3"
+      },
+      {
+        "version": "1.4.0",
+        "status": "stable",
+        "artifact_ref": "oci://registry.example/forgesdlc:1.4.0",
+        "changelog_url": "https://github.com/example/forgesdlc/releases/tag/v1.4.0"
+      }
+    ]
+  },
+  "promotions": [
+    {
+      "id": "promo-stg-prod-1",
+      "from_env": "staging",
+      "to_env": "production",
+      "artifact_version": "1.4.0-rc.3",
+      "checkpoints": [
+        {
+          "name": "QA sign-off",
+          "status": "pending",
+          "required_role": "qa_lead"
+        },
+        {
+          "name": "SRE readiness",
+          "status": "approved",
+          "required_role": "sre"
+        }
+      ],
+      "blocked_reason": "freeze_window_active",
+      "blocked_detail": "Q2 patch freeze blocks production until 2026-04-15"
+    },
+    {
+      "id": "promo-dev-stg-1",
+      "from_env": "development",
+      "to_env": "staging",
+      "artifact_version": "1.4.0-rc.3",
+      "checkpoints": [
+        {
+          "name": "CI green",
+          "status": "approved",
+          "required_role": "ci"
+        }
+      ],
+      "blocked_reason": null,
+      "blocked_detail": null
+    }
+  ],
+  "freeze_windows": [
+    {
+      "id": "fw-q2-2026",
+      "name": "Q2 patch freeze",
+      "start": "2026-04-10T00:00:00Z",
+      "end": "2026-04-14T23:59:59Z",
+      "blocks_promotion_to": [
+        "production"
+      ],
+      "active": true
+    }
+  ],
+  "blocked_promotions": [
+    {
+      "promotion_id": "promo-stg-prod-1",
+      "reason": "manual_approval_pending",
+      "detail": "QA sign-off pending"
+    },
+    {
+      "promotion_id": "promo-stg-prod-1",
+      "reason": "promotion_blocked",
+      "detail": "freeze_window_active"
+    },
+    {
+      "promotion_id": "promo-stg-prod-1",
+      "reason": "freeze_window",
+      "detail": "Q2 patch freeze"
+    }
+  ],
+  "what_is_live": [
+    {
+      "environment_id": "development",
+      "display_name": "Development",
+      "tier": "dev",
+      "version": "1.4.0-rc.3",
+      "artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "last_successful_deploy_at": "2026-04-11T08:22:00Z",
+      "last_deploy_status": "success",
+      "project": "forgesdlc"
+    },
+    {
+      "environment_id": "staging",
+      "display_name": "Staging",
+      "tier": "stage",
+      "version": "1.4.0-rc.3",
+      "artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "last_successful_deploy_at": "2026-04-10T19:05:00Z",
+      "last_deploy_status": "success",
+      "project": "forgesdlc"
+    },
+    {
+      "environment_id": "production",
+      "display_name": "Production",
+      "tier": "prod",
+      "version": "1.4.0",
+      "artifact_ref": "oci://registry.example/forgesdlc:1.4.0",
+      "last_successful_deploy_at": "2026-04-08T10:00:00Z",
+      "last_deploy_status": "success",
+      "project": "forgesdlc"
+    }
+  ],
+  "rollback_targets": [
+    {
+      "environment_id": "development",
+      "rollback_target_version": "1.4.0-rc.2",
+      "approval_status": "auto"
+    },
+    {
+      "environment_id": "staging",
+      "rollback_target_version": "1.4.0-rc.1",
+      "approval_status": "approved"
+    },
+    {
+      "environment_id": "production",
+      "rollback_target_version": "1.3.9",
+      "approval_status": "change_advisory"
+    }
+  ],
+  "artifacts": [],
+  "hints": []
+}

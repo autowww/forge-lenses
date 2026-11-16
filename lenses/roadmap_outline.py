@@ -6,6 +6,7 @@ import html
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 
 HEADING_RE = re.compile(r"^(#{2,6})\s+(.+?)\s*$")
 DELIM_ROW_RE = re.compile(r"^\s*\|?[\s\-:|]+\|\s*$")
@@ -233,6 +234,7 @@ def extract_chart_metrics(md: str) -> dict[str, object]:
 
 
 _MILESTONE_ID_RE = re.compile(r"M\s*(\d+)\s*\.\s*(\d+)", re.I)
+_EPIC_ID_IN_CELL = re.compile(r"\b(M\d+E\d+)\b")
 
 
 def _strip_md_noise(s: str) -> str:
@@ -302,6 +304,109 @@ def _gantt_find_col(hdr: list[str], predicates: tuple[str, ...]) -> int | None:
             if p in h or h == p:
                 return i
     return None
+
+
+ISO_DATE_RE = re.compile(r"\b(\d{4}-\d{2}-\d{2})\b")
+
+
+def _parse_iso_date_str(cell: str) -> str | None:
+    m = ISO_DATE_RE.search(_strip_md_noise(cell))
+    if not m:
+        return None
+    s = m.group(1)
+    try:
+        datetime.strptime(s, "%Y-%m-%d")
+    except ValueError:
+        return None
+    return s
+
+
+def _is_epic_date_shift_table(hdr: list[str]) -> bool:
+    if not hdr:
+        return False
+    joined = " ".join(_normalize_header(c) for c in hdr)
+    if "epic" not in joined:
+        return False
+    for c in hdr:
+        n = _normalize_header(c)
+        if (
+            "initial start" in n
+            or "initial end" in n
+            or "target start" in n
+            or "target end" in n
+        ):
+            return True
+    return False
+
+
+def _date_shift_col(hdr: list[str], *needles: str) -> int | None:
+    for i, h in enumerate(hdr):
+        n = _normalize_header(h)
+        for nd in needles:
+            if n == nd or nd in n:
+                return i
+    return None
+
+
+def extract_date_shift_model(md: str) -> dict[str, object]:
+    """
+    Epic rows with Initial/Target start/end columns (ISO YYYY-MM-DD).
+    Used for baseline vs current plan visualization in Lenses.
+    """
+    rows_out: list[dict[str, object]] = []
+    for table in iter_gfm_tables(md):
+        if len(table) < 2:
+            continue
+        hdr = [_normalize_header(c) for c in table[0]]
+        if not _is_epic_date_shift_table(hdr):
+            continue
+        idx_is = _date_shift_col(hdr, "initial start")
+        idx_ie = _date_shift_col(hdr, "initial end")
+        idx_ts = _date_shift_col(hdr, "target start")
+        idx_te = _date_shift_col(hdr, "target end")
+        if idx_is is None and idx_ie is None and idx_ts is None and idx_te is None:
+            continue
+        idx_epic = _gantt_find_col(hdr, ("epic id", "epic"))
+        idx_title = _gantt_find_col(hdr, ("title",))
+        idx_hz = _gantt_find_col(hdr, ("horizon", "window"))
+        for row in table[2:]:
+            if len(row) < len(hdr):
+                row = row + [""] * (len(hdr) - len(row))
+
+            def cell(i: int | None) -> str:
+                if i is None or i >= len(row):
+                    return ""
+                return row[i] if i < len(row) else ""
+
+            i_s = _parse_iso_date_str(cell(idx_is)) if idx_is is not None else None
+            i_e = _parse_iso_date_str(cell(idx_ie)) if idx_ie is not None else None
+            t_s = _parse_iso_date_str(cell(idx_ts)) if idx_ts is not None else None
+            t_e = _parse_iso_date_str(cell(idx_te)) if idx_te is not None else None
+            if not any((i_s, i_e, t_s, t_e)):
+                continue
+            hz_cell = cell(idx_hz) if idx_hz is not None else ""
+            label = _gantt_row_label(row, idx_epic, idx_title, hz_cell)
+            epic_id = ""
+            if idx_epic is not None and idx_epic < len(row):
+                cell_e = _strip_md_noise(row[idx_epic])
+                m_e = _EPIC_ID_IN_CELL.search(cell_e)
+                if m_e:
+                    epic_id = m_e.group(1)
+            rows_out.append(
+                {
+                    "label": label,
+                    "epic_id": epic_id,
+                    "initial_start": i_s,
+                    "initial_end": i_e,
+                    "target_start": t_s,
+                    "target_end": t_e,
+                }
+            )
+
+    return {
+        "has_date_shift": bool(rows_out),
+        "rows": rows_out,
+    }
 
 
 def _gantt_row_label(
@@ -400,8 +505,20 @@ def extract_gantt_model(md: str) -> dict[str, object]:
             if not indices:
                 continue
             i0, i1 = min(indices), max(indices)
+            epic_id = ""
+            if idx_epic is not None and idx_epic < len(row):
+                cell_e = _strip_md_noise(row[idx_epic])
+                m_e = _EPIC_ID_IN_CELL.search(cell_e)
+                if m_e:
+                    epic_id = m_e.group(1)
             bars.append(
-                {"label": label, "start": i0, "end": i1, "status": st}
+                {
+                    "label": label,
+                    "start": i0,
+                    "end": i1,
+                    "status": st,
+                    "epic_id": epic_id,
+                }
             )
 
     has_gantt = bool(milestones and bars)
@@ -472,7 +589,11 @@ def _body_lines_to_html(body: str) -> str:
             text = " ".join(para)
             parts.append(f'<p class="forge-support">{_esc(text)}</p>')
         continue
-    return "\n".join(parts) if parts else '<p class="forge-support text-muted">(empty)</p>'
+    return (
+        "\n".join(parts)
+        if parts
+        else '<p class="forge-support text-muted"><span class="lenses-plan-empty-title">Empty section</span> — add body text in ROADMAP.md.</p>'
+    )
 
 
 def section_to_html(section: RoadmapSection) -> str:

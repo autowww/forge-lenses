@@ -1,0 +1,336 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "feature_enabled": true,
+  "provider_kind": "local_fixture",
+  "resolved_at": "2026-04-11T12:00:00Z",
+  "workspace_summary": {
+    "child_count": 1,
+    "git_repo_count": 1
+  },
+  "security_findings": [
+    {
+      "finding_id": "SAST-AUTH-01",
+      "project": "forgesdlc",
+      "provider": "sonarqube",
+      "category": "sast",
+      "severity": "critical",
+      "state": "open",
+      "title": "Hardcoded cipher mode",
+      "rule_id": "java:crypto-bad",
+      "file_path": "src/main/java/CryptoUtil.java",
+      "story_ids": [
+        "S-1842"
+      ],
+      "initiative_id": "init-oauth-hardening",
+      "release_versions": [
+        "1.4.0-rc.3"
+      ],
+      "url": "https://sonar.example/issue/SAST-AUTH-01",
+      "detected_at": "2026-04-10T15:00:00Z"
+    },
+    {
+      "canonical_kind": "security_finding",
+      "finding_id": "codeql-88",
+      "project": "forgesdlc",
+      "provider": "codeql",
+      "category": "sast",
+      "severity": "high",
+      "state": "open",
+      "title": "SQL injection pattern in auth handler",
+      "rule_id": "java/sql-injection",
+      "file_path": "src/main/java/AuthHandler.java",
+      "url": "https://github.com/example/forgesdlc/security/code-scanning/88",
+      "detected_at": "2026-04-09T10:00:00Z"
+    },
+    {
+      "canonical_kind": "security_finding",
+      "finding_id": "trivy-CVE-2026-8888-oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "project": "forgesdlc",
+      "provider": "trivy",
+      "category": "container",
+      "severity": "high",
+      "state": "open",
+      "title": "OpenSSL buffer issue in base image",
+      "rule_id": "CVE-2026-8888",
+      "file_path": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "url": "",
+      "detected_at": "",
+      "cve_id": "CVE-2026-8888"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "canonical_kind": "vulnerability",
+      "vuln_id": "901",
+      "project": "forgesdlc",
+      "provider": "dependabot",
+      "severity": "critical",
+      "state": "open",
+      "title": "Remote code in upstream parser",
+      "cve_id": "CVE-2026-9999",
+      "ghsa_id": "GHSA-xxxx",
+      "package_ecosystem": "npm",
+      "package_name": "parser-lib",
+      "url": "https://github.com/example/forgesdlc/security/dependabot/901",
+      "detected_at": "2026-04-07T08:00:00Z"
+    }
+  ],
+  "secret_exposures": [
+    {
+      "canonical_kind": "secret_exposure",
+      "exposure_id": "redacted-match-1",
+      "project": "forgesdlc",
+      "provider": "gitleaks",
+      "rule_id": "generic-api-key",
+      "severity": "high",
+      "state": "open",
+      "file_path": "legacy/config.yml",
+      "line": 42,
+      "redacted_preview": "secret",
+      "detected_at": "2026-04-08T12:00:00Z"
+    }
+  ],
+  "dependency_risks": [
+    {
+      "risk_id": "dep-transitive-1",
+      "project": "forgesdlc",
+      "package_name": "legacy-json",
+      "severity": "medium",
+      "direct": false,
+      "url": "https://deps.example/legacy-json"
+    }
+  ],
+  "sbom_components": [
+    {
+      "canonical_kind": "sbom_component",
+      "component_id": "forgesdlc-app@1.4.0-rc.3",
+      "project": "forgesdlc",
+      "sbom_id": "sbom-forgesdlc-1.4.0-rc.3",
+      "name": "forgesdlc-app",
+      "version": "1.4.0-rc.3",
+      "type": "application",
+      "purl": "pkg:golang/example/forgesdlc@1.4.0-rc.3",
+      "licenses": []
+    }
+  ],
+  "provenance_attestations": [
+    {
+      "canonical_kind": "provenance_attestation",
+      "attestation_id": "sha256:abc123",
+      "project": "forgesdlc",
+      "provider": "cosign",
+      "artifact_ref": "oci://registry.example/forgesdlc:1.4.0-rc.3",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "signed_at": "2026-04-11T07:00:00Z",
+      "verifier": "sigstore",
+      "valid": true
+    }
+  ],
+  "controls": [
+    {
+      "control_id": "SOC2-CC6.1",
+      "name": "Logical access \u2014 production deploy",
+      "framework": "SOC2",
+      "implementation_status": "implemented",
+      "applies_to_releases": [
+        "1.4.0-rc.3"
+      ],
+      "risk_mitigation_points": 12,
+      "evidence_urls": [
+        "https://wiki.example/controls/CC6.1"
+      ],
+      "story_ids": [
+        "S-1842"
+      ]
+    }
+  ],
+  "exceptions": [
+    {
+      "id": "EXC-2026-04",
+      "title": "Time-boxed acceptance for legacy config secret",
+      "status": "active",
+      "owner": "security@example.com",
+      "expires_at": "2026-06-30T23:59:59Z",
+      "reason": "Rotation scheduled; tracked in SEC-441",
+      "finding_ids": [],
+      "exposure_ids": [
+        "redacted-match-1"
+      ],
+      "story_ids": [
+        "S-1842"
+      ],
+      "audit_trail": [
+        {
+          "at": "2026-04-08T14:00:00Z",
+          "actor": "ciso",
+          "action": "submitted",
+          "note": "Risk accepted pending vault migration"
+        },
+        {
+          "at": "2026-04-08T16:00:00Z",
+          "actor": "sec-approver",
+          "action": "approved",
+          "note": "Expires 2026-06-30"
+        }
+      ]
+    }
+  ],
+  "policy_decisions": [
+    {
+      "id": "pol-dec-1",
+      "decided_at": "2026-04-08T16:05:00Z",
+      "decision": "allow_with_exception",
+      "exception_id": "EXC-2026-04",
+      "actor": "sec-approver",
+      "summary": "Exception EXC-2026-04 recorded for gitleaks match"
+    }
+  ],
+  "policy_check_evaluations": [
+    {
+      "policy_id": "pol-no-critical-prod",
+      "name": "No open critical findings for production",
+      "passed": false,
+      "detail": "2 critical item(s) without active exception (max 0)",
+      "applies_to_environments": [
+        "production"
+      ],
+      "blocks_release_train": true
+    },
+    {
+      "policy_id": "pol-risk-cap",
+      "name": "Aggregate risk score cap",
+      "passed": false,
+      "detail": "Risk score 83 (max 45)",
+      "applies_to_environments": [
+        "staging",
+        "production"
+      ],
+      "blocks_release_train": true
+    },
+    {
+      "policy_id": "pol-sbom",
+      "name": "SBOM components present",
+      "passed": true,
+      "detail": "1 SBOM component(s) (min 1)",
+      "applies_to_environments": [],
+      "blocks_release_train": false
+    },
+    {
+      "policy_id": "pol-provenance",
+      "name": "Signed provenance for image",
+      "passed": true,
+      "detail": "1 provenance attestation(s)",
+      "applies_to_environments": [],
+      "blocks_release_train": false
+    },
+    {
+      "policy_id": "pol-secrets",
+      "name": "No high/critical secret hits without exception",
+      "passed": true,
+      "detail": "0 high/critical secret exposure(s) without exception",
+      "applies_to_environments": [
+        "production"
+      ],
+      "blocks_release_train": false
+    }
+  ],
+  "rollups": {
+    "by_repo": {
+      "forgesdlc": {
+        "open_security_findings": 3,
+        "open_vulnerabilities": 1,
+        "open_secret_exposures": 1,
+        "dependency_risk_rows": 1,
+        "weighted_open_score": 116
+      }
+    },
+    "by_initiative": {
+      "init-oauth-hardening": {
+        "finding_ids": [
+          "SAST-AUTH-01"
+        ],
+        "open_critical": 1,
+        "open_high": 0
+      }
+    },
+    "by_release": {
+      "1.4.0-rc.3": {
+        "open_findings": 1,
+        "finding_ids": [
+          "SAST-AUTH-01"
+        ]
+      }
+    },
+    "by_environment": {
+      "production": {
+        "open_findings": 2,
+        "last_scan_at": "2026-04-11T06:00:00Z",
+        "scan_tool": "trivy+codeql"
+      },
+      "staging": {
+        "open_findings": 1,
+        "last_scan_at": "2026-04-10T20:00:00Z",
+        "scan_tool": "trivy"
+      }
+    },
+    "summary_counts": {
+      "security_findings": {
+        "critical": 1,
+        "high": 2,
+        "medium": 0,
+        "low": 0,
+        "open": 3
+      },
+      "vulnerabilities": {
+        "critical": 1,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "open": 1
+      },
+      "secret_exposures": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "open": 1
+      }
+    }
+  },
+  "risk_score": {
+    "value": 83,
+    "scale": "0-100 (higher is worse)",
+    "computed_from": "open findings, vulnerabilities, secret exposures, dependency risks; minus active control mitigation; exceptions exclude listed ids",
+    "breakdown": {
+      "from_findings": 60,
+      "from_vulnerabilities": 28,
+      "from_secrets": 0,
+      "from_dependency_risks": 7,
+      "mitigation_controls": 12
+    },
+    "exception_count_active": 1
+  },
+  "security_release_gate": {
+    "passed": false,
+    "failed_policy_ids": [
+      "pol-no-critical-prod",
+      "pol-risk-cap"
+    ],
+    "risk_score": {
+      "value": 83,
+      "scale": "0-100 (higher is worse)",
+      "computed_from": "open findings, vulnerabilities, secret exposures, dependency risks; minus active control mitigation; exceptions exclude listed ids",
+      "breakdown": {
+        "from_findings": 60,
+        "from_vulnerabilities": 28,
+        "from_secrets": 0,
+        "from_dependency_risks": 7,
+        "mitigation_controls": 12
+      },
+      "exception_count_active": 1
+    },
+    "summary": "2 policy check(s) failed; risk score 83"
+  },
+  "hints": []
+}

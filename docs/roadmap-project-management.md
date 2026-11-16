@@ -20,7 +20,47 @@
 
 ## What exists today (baseline)
 
-Lenses already provides a **local delivery cockpit**: workspace and project dashboards, WBS index and viewer, **Forge plan** (`/plan`) with work tree and story cockpit, **Today** (`/api/today-charge`), timeline and roadmap fragments from `ROADMAP.md`, sticker boards, search, websites preview, optional team RBAC, and Lenses Studio shells with documented Enterprise **targets** (Portfolio, Programs, Risk). See [Dashboard pages](../lenses/website/dashboard-pages.md), [Forge plan UI map](../lenses/website/ui-map-workflow.md), and [Studio Flow shell MVP scope](studio-flow-shell-mvp-scope.md).
+Lenses ships a **local delivery cockpit skeleton**: workspace and project dashboards, WBS index and paths into **`/plan`**, **Today** (`/api/today-charge`), parsed timeline/roadmap fragments, boards, search, websites preview, Studio shells, and documented Enterprise **targets** (Portfolio, Programs, Risk). Several routes are **exposed but incomplete** relative to the orchestrator vision—see [Observed gaps (capture evidence)](#observed-gaps-capture-evidence) and the [WBS](requirements/WBS.md) **T5** rows for traceable backlog. See [Dashboard pages](../lenses/website/dashboard-pages.md), [Forge plan UI map](../lenses/website/ui-map-workflow.md), and [Studio Flow shell MVP scope](studio-flow-shell-mvp-scope.md).
+
+---
+
+## Observed gaps (capture evidence)
+
+**Evidence:** External **zip capture** of the running product (not hypothetical). Use this table to keep roadmap rows honest and to prioritize **surface completeness** before claiming portfolio/orchestrator maturity.
+
+| Area | Symptom (as seen) | Desired outcome (product) | Horizon |
+|------|-------------------|---------------------------|---------|
+| **Project Overview** | Loading stats, raw API JSON, no live operational model | Overview reflects a coherent workspace/project model with stable loading and explainable metrics | NOW |
+| **Project Strategy / Charts** | “Failed to load chart data” | Charts bind to real APIs or documented empty/error states; no silent permanent failure | NOW → NEXT |
+| **Workspace / Delivery charts** | Placeholder loading, not reporting | Same as above; **Delivery** reads as its own reporting domain | NEXT |
+| **Delivery IA** | Routes reuse planning/workspace pages | Distinct Delivery experience or explicit “same as plan” with honest nav | NEXT |
+| **Story Cockpit vs Source Context** | Collapse to same planning screen | Differentiated workflows and panels per role of each surface | NOW → NEXT |
+| **WBS Viewer** | Raw path input only | Object-driven selection (repo, canonical WBS) with safe deep links | NOW → NEXT |
+| **Boards** | Create/templates work; load/editor fails on probe | End-to-end open/edit path for a board in the exercised route | NOW |
+| **Search** | Flat keyword only | Roadmap toward cross-entity, evidence-aware search (phase 0 = contract + slice) | NEXT |
+| **Blueprints Wizard** | Empty shell / session launcher | Progress [implementation plan](blueprints/wizard-implementation-plan.md) toward real provisioning steps | NEXT |
+| **Workspace markdown / evidence** | File-path loader | Managed evidence model (index, provenance, not arbitrary paths only) | NEXT → LATER |
+| **Tutorials** | Disconnected / empty in capture | Tutorials linked to built content and entry points (see `docs/index.md` tutorial pipeline) | NOW |
+| **Auth / session / permissions** | “Not signed in,” open/legacy, read/write unclear | Tier-aware auth story: functional sign-in where promised, documented posture elsewhere | NOW → NEXT |
+
+---
+
+## Orchestrator capability backlog (not yet in UI)
+
+**Scope:** Layers expected for a **best-in-class orchestrator**, largely **absent or implied** today. These are **product-strategy** outcomes; governance PM milestones **M2–M4** stay focused on delivery signals and control. A dedicated milestone **M5** (below) holds discovery/spec Sparks so M1 surface work does not silently subsume multi-quarter platform scope.
+
+| Capability | Outcome | Horizon |
+|------------|---------|---------|
+| **Demand intake / business request funnel** | Work enters Lenses with intake metadata, triage, and traceability to WBS/Charge | LATER |
+| **Requirements baseline & approval workflow** | Baselined scope with explicit approve/change semantics | LATER |
+| **Decision records / ADR governance** | ADRs linked to work nodes, searchable, status-aware | LATER |
+| **Unified evidence management** | Single evidence index across files, sessions, exports (not path-only) | LATER |
+| **Workflow inbox, approvals, subscriptions, notifications** | Operator sees actionable queue; optional subscriptions | LATER |
+| **Governed automation / runbooks** | Automation is policy-tagged, auditable, not ad hoc script launch only | LATER |
+| **Transparent standards governance (“score”)** | Users can inspect *why* a score changed and which rules fired | NEXT → LATER |
+| **Blueprint-based project bootstrapping** | Wizard or flow creates/aligns repo skeleton from blueprint templates | LATER |
+| **Documentation / release publishing tied to delivery** | Release or doc publish events correlate to Charge/milestones | LATER |
+| **Connector health, freshness, lineage, conflict handling** | External or multi-root connectors show health and conflict UX | LATER |
 
 ---
 
@@ -28,10 +68,11 @@ Lenses already provides a **local delivery cockpit**: workspace and project dash
 
 | Milestone | Status | Window | Notes |
 |-----------|--------|--------|-------|
-| **M1 — PM narrative and IA fit** | In progress | NOW | Document governance PM gaps vs shipped routes; keep [Interface pages](../lenses/website/interface-pages.md) Enterprise mapping honest (documentation-first where APIs are missing). |
-| **M2 — Monitoring and portfolio signals** | Planned | NEXT | Stronger **delivery** health signals (beyond git/LoC): slip, throughput, blocked work rollup; optional workspace-level portfolio strip / attention items backed by existing or new APIs. |
+| **M1 — PM narrative and IA fit** | In progress | NOW | Document governance PM gaps vs shipped routes; **close T5 surface gaps** where routes are broken or misleading. Keep [Interface pages](../lenses/website/interface-pages.md) Enterprise mapping honest. |
+| **M2 — Monitoring and portfolio signals** | Planned | NEXT | Stronger **delivery** health signals (beyond git/LoC): slip, throughput, blocked work rollup; workspace charts that are real reporting surfaces; optional portfolio strip / attention APIs. |
 | **M3 — Control plane (risk, baseline, cost)** | Aspirational | LATER | Formal **risk register** or equivalent, scope/baseline story, budget or cost **signals** (even manual/registry-first), change-awareness — only after M2 learnings and demand. |
 | **M4 — Reporting and integrations** | Aspirational | LATER | Stakeholder **export** or status pack, optional **external** system-of-record sync (e.g. work trackers); gated on product tier and privacy. |
+| **M5 — Orchestrator foundations (discovery/spec)** | Planned | LATER | Spikes and §5-gated specs for intake, evidence unification, workflow, ADR linkage, connectors, and publish hooks—**no UI completeness claim** until M1/M2 stable. |
 
 ---
 
@@ -84,15 +125,32 @@ Themes are mapped to **NOW / NEXT / LATER** per PRODUCT-MANAGEMENT §2.
 | File-first Forge artifacts as system of record | NOW | Default posture. |
 | Optional sync with external trackers | LATER | High cost; privacy and tier gating. |
 
+### Surface completeness (capture-backed)
+
+| Theme | Horizon | Notes |
+|-------|---------|-------|
+| Charts and Overview **truthful** (data or explicit empty state) | NOW | Aligns with [Observed gaps](#observed-gaps-capture-evidence); blocks inflated PM claims. |
+| Plan lens **differentiation** (cockpit vs source, WBS picker) | NOW → NEXT | User can answer *where am I in the workflow* without duplicate screens. |
+| Boards **probe path** reliable | NOW | Creation without load/edit is not shippable for boards narrative. |
+| Tutorials and Wizard **connected** to real content / plan milestones | NOW → NEXT | Empty shells erode trust; tie to `build-fa-tutorials.sh` and wizard implementation plan. |
+| Auth/RBAC **documented and functional** per tier | NOW → NEXT | Resolves “open / legacy” confusion. |
+
+### Orchestrator depth (M5)
+
+| Theme | Horizon | Notes |
+|-------|---------|-------|
+| Intake, baseline, ADR, unified evidence, workflow inbox | LATER | WBS **M5** epics; §5 before locking storage and policy. |
+| Runbooks, score transparency, blueprint bootstrap, publish + connectors | LATER | Depends on evidence and identity posture from M1/M2. |
+
 ---
 
 ## NOW / NEXT / LATER (summary)
 
 | Horizon | Themes |
 |---------|--------|
-| **NOW** | Harden **M1**: clarity on PM governance scope; ship and document **Planning** and **Monitoring** baselines (plan lens, Today, dashboards, boards, Studio shell MVP). |
-| **NEXT** | **M2**: delivery-oriented metrics, portfolio/attention signals, Studio/Classic parity for chart and plan surfaces; start **Control** prototypes if backlog allows. |
-| **LATER** | **M3–M4**: risk/baseline/cost **signals**, stakeholder exports, integrations — only with evidence and tier strategy. |
+| **NOW** | Harden **M1**: PM narrative + **T5** surface truth (Overview, broken charts, boards path, tutorials link-up, auth clarity); **Planning** and **Monitoring** baselines where they are already honest. |
+| **NEXT** | **M2**: delivery-oriented metrics, real workspace/Delivery reporting, portfolio/attention signals, Studio/Classic chart parity; **search** and **wizard** tranche toward orchestrator shape. |
+| **LATER** | **M3–M4**: control plane and exports; **M5** orchestrator spikes (intake, evidence, workflow, ADR, connectors, publish) — evidence- and tier-gated. |
 
 ---
 

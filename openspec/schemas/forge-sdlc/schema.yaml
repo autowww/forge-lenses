@@ -1,0 +1,109 @@
+name: forge-sdlc
+version: 1
+description: >-
+  Forge Epic execution profile — Lite OpenSpec workflow for L3 Epics.
+  WBS Epic id in proposal; observable Lite SHALLs in spec; optional design;
+  tasks.md is non-binding agent scratch.
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Epic intent, WBS Epic id, and change scope
+    template: proposal.md
+    instruction: |
+      Create the proposal for a **ready Epic** under the Epic execution profile.
+
+      **Required — WBS Epic ID:** First section after the title block must be
+      `## WBS Epic ID` with the committed Epic id (e.g. `M1E3`). One OpenSpec
+      change = one Epic = one WBS Epic id. Do not list Story or Task ids here.
+
+      Sections:
+      - **Why**: 1–2 sentences — problem or opportunity. Why Charge this Epic now?
+      - **What Changes**: Bullet list of user-visible or system-visible outcomes.
+        Mark **BREAKING** when applicable.
+      - **Capabilities**: New or modified capability paths under `specs/` (kebab-case).
+        One Epic typically maps to **one** primary capability unless the operator
+        splits scope. Each capability needs a delta at `specs/<capability>/spec.md`.
+      - **Impact**: Affected surfaces, dependencies, or Assay evidence — not file lists.
+
+      Keep the proposal concise. Motivation here; observable acceptance in `spec.md`;
+      implementation choices in `design.md` when needed.
+
+      Every change must declare at least one capability or set `skip_specs: true`
+      in the change `.openspec.yaml` (refactors/tooling only).
+    requires: []
+
+  - id: specs
+    generates: "specs/**/*.md"
+    description: Lite capability spec — observable SHALL/MUST + scenarios
+    template: spec.md
+    instruction: |
+      Write **OpenSpec Lite** acceptance for this Epic.
+
+      **Lite bar (default under the Epic execution profile):**
+      - One capability → at least one observable **SHALL** or **MUST**
+      - Every requirement → ≥1 **Given / When / Then** scenario (`#### Scenario:`)
+      - **Not** implementation SHALLs — no source file, class, or function names
+      - Describe behavior a human or Assay gate can test or review
+
+      Format:
+      - New capabilities: open with `## Purpose` (50+ characters), then `## ADDED Requirements`
+      - Each requirement: `### Requirement:` + normative **SHALL**/**MUST** text
+      - Scenarios: `#### Scenario:` with **WHEN** / **THEN** bullets (exactly four `#`)
+
+      Modified capabilities: use `## MODIFIED Requirements` with full requirement blocks
+      copied from the main spec before editing.
+
+      Specs are the **merge gate** for this Epic. `tasks.md` does not override them.
+    requires:
+      - proposal
+
+  - id: design
+    generates: design.md
+    description: Optional technical design — create only when ambiguity or cross-cutting risk remains
+    template: design.md
+    instruction: |
+      **Optional artifact.** Skip `design.md` when the Epic is a straight Lite change
+      in one repo and specs already bound observable behavior.
+
+      Create design only when any apply:
+      - Cross-cutting change (multiple modules/services) or new pattern
+      - New external dependency or meaningful data model change
+      - Security, performance, or migration complexity
+      - Spec ambiguity that needs a technical decision before coding
+
+      Sections when present: Context, Goals / Non-Goals, Decisions, Risks / Trade-offs,
+      Migration Plan (if needed), Open Questions (deferrable unknowns only).
+
+      Do not restate SHALLs from `spec.md`. Point to specs for acceptance.
+    requires:
+      - proposal
+
+  - id: tasks
+    generates: tasks.md
+    description: Non-binding agent scratch — execution hints, not Charge or WBS Tasks
+    template: tasks.md
+    instruction: |
+      **Non-binding agent scratch only.**
+
+      Under the Epic execution profile, `tasks.md` is **not** a Charge item, **not**
+      a WBS Task backlog, and **not** a merge gate. Agents may rewrite or ignore it
+      during runs inside the Epic. OpenSpec acceptance lives in `specs/**/*.md`.
+
+      Optional checklist for the agent's own session — use `- [ ]` if helpful, but
+      apply does **not** require completing these boxes.
+
+      Group hints under `##` headings. Reference spec scenarios for verification intent.
+      Do not mint `M1E3S2T4` rows or parallel WBS Task process here.
+    requires:
+      - specs
+
+apply:
+  requires:
+    - specs
+  tracks: null
+  instruction: |
+    Read `proposal.md` (note WBS Epic id), `specs/**/*.md` (Lite SHALLs), and
+    optional `design.md`. Use `tasks.md` only as non-binding scratch.
+
+    Implement until spec scenarios pass review/verify. Pause at L4.2 triggers
+    (cross-repo, ADR, security ambiguity) — see Epic execution profile.

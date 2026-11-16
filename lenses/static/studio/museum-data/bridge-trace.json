@@ -1,0 +1,3979 @@
+{
+  "ok": true,
+  "root_id": "ogs:demo:story:rate-limit-auth",
+  "root": {
+    "id": "ogs:demo:story:rate-limit-auth",
+    "kind": "story",
+    "display_name": "Rate-limit authentication endpoints per tenant",
+    "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+    "payload": {
+      "duration_days": 5,
+      "points": 5,
+      "story_id": "S-1842"
+    },
+    "external_ref": "demo:story:rate-limit-auth",
+    "source_system": "lenses_demo_seed",
+    "source_record_id": "story-1842"
+  },
+  "nodes": [
+    {
+      "id": "ogs:demo:artifact:oci-1.4.0",
+      "kind": "artifact",
+      "display_name": "oci://registry.example/forgesdlc:1.4.0",
+      "summary": "Container image built from merge commit.",
+      "payload": {
+        "digest": "sha256:deadbeef",
+        "type": "container_image"
+      },
+      "external_ref": "oci:forgesdlc:1.4.0",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "art-1.4.0",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:artifact:oci-1.4.0",
+          "ogs_kind": "artifact",
+          "canonical_kind": "artifact_ref",
+          "display_name": "oci://registry.example/forgesdlc:1.4.0",
+          "summary": "Container image built from merge commit.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "art-1.4.0",
+          "external_ref": "oci:forgesdlc:1.4.0",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:artifact:oci-1.4.0",
+          "ogs_kind": "artifact",
+          "canonical_kind": "artifact_ref",
+          "display_name": "oci://registry.example/forgesdlc:1.4.0",
+          "summary": "Container image built from merge commit.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "art-1.4.0",
+          "external_ref": "oci:forgesdlc:1.4.0",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:artifact:oci-1.4.0",
+          "ogs_kind": "artifact",
+          "canonical_kind": "artifact_ref",
+          "display_name": "oci://registry.example/forgesdlc:1.4.0",
+          "summary": "Container image built from merge commit.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "art-1.4.0",
+          "external_ref": "oci:forgesdlc:1.4.0",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:artifact:oci-1.4.0",
+          "ogs_kind": "artifact",
+          "canonical_kind": "artifact_ref",
+          "display_name": "oci://registry.example/forgesdlc:1.4.0",
+          "summary": "Container image built from merge commit.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "art-1.4.0",
+          "external_ref": "oci:forgesdlc:1.4.0",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:branch:forgesdlc-main",
+      "kind": "branch",
+      "display_name": "main",
+      "summary": "Default integration branch.",
+      "payload": {
+        "ref": "refs/heads/main"
+      },
+      "external_ref": "git:refs/heads/main",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "branch-main",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:branch:forgesdlc-main",
+          "ogs_kind": "branch",
+          "canonical_kind": "work_unit",
+          "display_name": "main",
+          "summary": "Default integration branch.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "branch-main",
+          "external_ref": "git:refs/heads/main",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:branch:forgesdlc-main",
+          "ogs_kind": "branch",
+          "canonical_kind": "work_unit",
+          "display_name": "main",
+          "summary": "Default integration branch.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "branch-main",
+          "external_ref": "git:refs/heads/main",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:branch:forgesdlc-main",
+          "ogs_kind": "branch",
+          "canonical_kind": "work_unit",
+          "display_name": "main",
+          "summary": "Default integration branch.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "branch-main",
+          "external_ref": "git:refs/heads/main",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:branch:forgesdlc-main",
+          "ogs_kind": "branch",
+          "canonical_kind": "work_unit",
+          "display_name": "main",
+          "summary": "Default integration branch.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "branch-main",
+          "external_ref": "git:refs/heads/main",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:build:ci-9912",
+      "kind": "build",
+      "display_name": "CI build 9912",
+      "summary": "main @ a1b2c3d \u2014 unit + contract tests green.",
+      "payload": {
+        "ci_run_id": "9912",
+        "workflow": "CI"
+      },
+      "external_ref": "github:actions:9912",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "build-9912",
+      "canonical_kind": "build_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:build:ci-9912",
+          "ogs_kind": "build",
+          "canonical_kind": "build_ref",
+          "display_name": "CI build 9912",
+          "summary": "main @ a1b2c3d \u2014 unit + contract tests green.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "build-9912",
+          "external_ref": "github:actions:9912",
+          "labels": {
+            "primary": "build ref",
+            "terminology": {
+              "neutral": "build_ref",
+              "forge_labels": [
+                "CI build"
+              ],
+              "sdlc_labels": [
+                "pipeline run",
+                "build"
+              ],
+              "pdlc_labels": [
+                "build evidence"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:build:ci-9912",
+          "ogs_kind": "build",
+          "canonical_kind": "build_ref",
+          "display_name": "CI build 9912",
+          "summary": "main @ a1b2c3d \u2014 unit + contract tests green.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "build-9912",
+          "external_ref": "github:actions:9912",
+          "labels": [
+            "CI build"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:build:ci-9912",
+          "ogs_kind": "build",
+          "canonical_kind": "build_ref",
+          "display_name": "CI build 9912",
+          "summary": "main @ a1b2c3d \u2014 unit + contract tests green.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "build-9912",
+          "external_ref": "github:actions:9912",
+          "labels": [
+            "pipeline run",
+            "build"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:build:ci-9912",
+          "ogs_kind": "build",
+          "canonical_kind": "build_ref",
+          "display_name": "CI build 9912",
+          "summary": "main @ a1b2c3d \u2014 unit + contract tests green.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "build-9912",
+          "external_ref": "github:actions:9912",
+          "labels": [
+            "build evidence"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:commit:a1b2c3d",
+      "kind": "commit",
+      "display_name": "a1b2c3d \u2014 merge PR #184",
+      "summary": "feat(auth): per-tenant rate limits on /auth/*",
+      "payload": {
+        "sha": "a1b2c3d4",
+        "short_sha": "a1b2c3d"
+      },
+      "external_ref": "github:commit:example/forgesdlc:a1b2c3d4",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "commit-a1b2c3d",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:commit:a1b2c3d",
+          "ogs_kind": "commit",
+          "canonical_kind": "artifact_ref",
+          "display_name": "a1b2c3d \u2014 merge PR #184",
+          "summary": "feat(auth): per-tenant rate limits on /auth/*",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "commit-a1b2c3d",
+          "external_ref": "github:commit:example/forgesdlc:a1b2c3d4",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:commit:a1b2c3d",
+          "ogs_kind": "commit",
+          "canonical_kind": "artifact_ref",
+          "display_name": "a1b2c3d \u2014 merge PR #184",
+          "summary": "feat(auth): per-tenant rate limits on /auth/*",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "commit-a1b2c3d",
+          "external_ref": "github:commit:example/forgesdlc:a1b2c3d4",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:commit:a1b2c3d",
+          "ogs_kind": "commit",
+          "canonical_kind": "artifact_ref",
+          "display_name": "a1b2c3d \u2014 merge PR #184",
+          "summary": "feat(auth): per-tenant rate limits on /auth/*",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "commit-a1b2c3d",
+          "external_ref": "github:commit:example/forgesdlc:a1b2c3d4",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:commit:a1b2c3d",
+          "ogs_kind": "commit",
+          "canonical_kind": "artifact_ref",
+          "display_name": "a1b2c3d \u2014 merge PR #184",
+          "summary": "feat(auth): per-tenant rate limits on /auth/*",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "commit-a1b2c3d",
+          "external_ref": "github:commit:example/forgesdlc:a1b2c3d4",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:contrib:lead-alex",
+      "kind": "contributor",
+      "display_name": "Alex (platform lead)",
+      "summary": "Human reviewer placeholder for bridge trace demo.",
+      "payload": {
+        "login_hint": "alex",
+        "role": "owner"
+      },
+      "external_ref": "demo:person:alex",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "contrib-alex",
+      "canonical_kind": "contributor",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:contrib:lead-alex",
+          "ogs_kind": "contributor",
+          "canonical_kind": "contributor",
+          "display_name": "Alex (platform lead)",
+          "summary": "Human reviewer placeholder for bridge trace demo.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "contrib-alex",
+          "external_ref": "demo:person:alex",
+          "labels": {
+            "primary": "contributor",
+            "terminology": {
+              "neutral": "contributor",
+              "forge_labels": [
+                "discipline owner",
+                "Charge owner"
+              ],
+              "sdlc_labels": [
+                "developer",
+                "engineer"
+              ],
+              "pdlc_labels": [
+                "product partner",
+                "sponsor"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:contrib:lead-alex",
+          "ogs_kind": "contributor",
+          "canonical_kind": "contributor",
+          "display_name": "Alex (platform lead)",
+          "summary": "Human reviewer placeholder for bridge trace demo.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "contrib-alex",
+          "external_ref": "demo:person:alex",
+          "labels": [
+            "discipline owner",
+            "Charge owner"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:contrib:lead-alex",
+          "ogs_kind": "contributor",
+          "canonical_kind": "contributor",
+          "display_name": "Alex (platform lead)",
+          "summary": "Human reviewer placeholder for bridge trace demo.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "contrib-alex",
+          "external_ref": "demo:person:alex",
+          "labels": [
+            "developer",
+            "engineer"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:contrib:lead-alex",
+          "ogs_kind": "contributor",
+          "canonical_kind": "contributor",
+          "display_name": "Alex (platform lead)",
+          "summary": "Human reviewer placeholder for bridge trace demo.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "contrib-alex",
+          "external_ref": "demo:person:alex",
+          "labels": [
+            "product partner",
+            "sponsor"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:control:soc2-cc6",
+      "kind": "control",
+      "display_name": "SOC2 CC6.1 \u2014 logical access",
+      "summary": "Control mapped to release with evidence.",
+      "payload": {
+        "control_id": "SOC2-CC6.1",
+        "framework": "SOC2"
+      },
+      "external_ref": "demo:ctrl:soc2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ctrl-1",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:control:soc2-cc6",
+          "ogs_kind": "control",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SOC2 CC6.1 \u2014 logical access",
+          "summary": "Control mapped to release with evidence.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ctrl-1",
+          "external_ref": "demo:ctrl:soc2",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:control:soc2-cc6",
+          "ogs_kind": "control",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SOC2 CC6.1 \u2014 logical access",
+          "summary": "Control mapped to release with evidence.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ctrl-1",
+          "external_ref": "demo:ctrl:soc2",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:control:soc2-cc6",
+          "ogs_kind": "control",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SOC2 CC6.1 \u2014 logical access",
+          "summary": "Control mapped to release with evidence.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ctrl-1",
+          "external_ref": "demo:ctrl:soc2",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:control:soc2-cc6",
+          "ogs_kind": "control",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SOC2 CC6.1 \u2014 logical access",
+          "summary": "Control mapped to release with evidence.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ctrl-1",
+          "external_ref": "demo:ctrl:soc2",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:cr:184",
+      "kind": "change_request",
+      "display_name": "PR #184 \u2014 Auth rate limits",
+      "summary": "Adds token-bucket limiter and integration tests.",
+      "payload": {
+        "number": 184,
+        "state": "merged",
+        "vcs": "github"
+      },
+      "external_ref": "github:pr:example/forgesdlc:184",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "pr-184",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:cr:184",
+          "ogs_kind": "change_request",
+          "canonical_kind": "work_unit",
+          "display_name": "PR #184 \u2014 Auth rate limits",
+          "summary": "Adds token-bucket limiter and integration tests.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pr-184",
+          "external_ref": "github:pr:example/forgesdlc:184",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:cr:184",
+          "ogs_kind": "change_request",
+          "canonical_kind": "work_unit",
+          "display_name": "PR #184 \u2014 Auth rate limits",
+          "summary": "Adds token-bucket limiter and integration tests.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pr-184",
+          "external_ref": "github:pr:example/forgesdlc:184",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:cr:184",
+          "ogs_kind": "change_request",
+          "canonical_kind": "work_unit",
+          "display_name": "PR #184 \u2014 Auth rate limits",
+          "summary": "Adds token-bucket limiter and integration tests.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pr-184",
+          "external_ref": "github:pr:example/forgesdlc:184",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:cr:184",
+          "ogs_kind": "change_request",
+          "canonical_kind": "work_unit",
+          "display_name": "PR #184 \u2014 Auth rate limits",
+          "summary": "Adds token-bucket limiter and integration tests.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pr-184",
+          "external_ref": "github:pr:example/forgesdlc:184",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:defect:441",
+      "kind": "defect",
+      "display_name": "DEF-441 \u2014 Flaky metrics assertion",
+      "summary": "Open major defect linked to TC-RATE-002.",
+      "payload": {
+        "defect_id": "DEF-441",
+        "severity": "major",
+        "status": "open"
+      },
+      "external_ref": "demo:def:441",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "def-441",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:defect:441",
+          "ogs_kind": "defect",
+          "canonical_kind": "work_unit",
+          "display_name": "DEF-441 \u2014 Flaky metrics assertion",
+          "summary": "Open major defect linked to TC-RATE-002.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "def-441",
+          "external_ref": "demo:def:441",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:defect:441",
+          "ogs_kind": "defect",
+          "canonical_kind": "work_unit",
+          "display_name": "DEF-441 \u2014 Flaky metrics assertion",
+          "summary": "Open major defect linked to TC-RATE-002.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "def-441",
+          "external_ref": "demo:def:441",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:defect:441",
+          "ogs_kind": "defect",
+          "canonical_kind": "work_unit",
+          "display_name": "DEF-441 \u2014 Flaky metrics assertion",
+          "summary": "Open major defect linked to TC-RATE-002.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "def-441",
+          "external_ref": "demo:def:441",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:defect:441",
+          "ogs_kind": "defect",
+          "canonical_kind": "work_unit",
+          "display_name": "DEF-441 \u2014 Flaky metrics assertion",
+          "summary": "Open major defect linked to TC-RATE-002.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "def-441",
+          "external_ref": "demo:def:441",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:demand:ore-auth-throttle",
+      "kind": "demand_signal",
+      "display_name": "Ore \u2014 tenant abuse on /auth/* (demo)",
+      "summary": "Bridge B1: upstream demand signal before scoped commitment.",
+      "payload": {
+        "forge_term": "Ore",
+        "freshness_hint": "demo",
+        "trust_level": "stated"
+      },
+      "external_ref": "demo:ore:auth-throttle",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ore-auth",
+      "canonical_kind": "demand_signal",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:demand:ore-auth-throttle",
+          "ogs_kind": "demand_signal",
+          "canonical_kind": "demand_signal",
+          "display_name": "Ore \u2014 tenant abuse on /auth/* (demo)",
+          "summary": "Bridge B1: upstream demand signal before scoped commitment.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ore-auth",
+          "external_ref": "demo:ore:auth-throttle",
+          "labels": {
+            "primary": "demand signal",
+            "terminology": {
+              "neutral": "demand_signal",
+              "forge_labels": [
+                "Ore",
+                "upstream demand"
+              ],
+              "sdlc_labels": [
+                "feature request",
+                "intake"
+              ],
+              "pdlc_labels": [
+                "market signal",
+                "outcome pressure"
+              ],
+              "conflict_notes": "Ore is Forge-specific demand intake; neutral demand_signal covers product and engineering intake."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:demand:ore-auth-throttle",
+          "ogs_kind": "demand_signal",
+          "canonical_kind": "demand_signal",
+          "display_name": "Ore \u2014 tenant abuse on /auth/* (demo)",
+          "summary": "Bridge B1: upstream demand signal before scoped commitment.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ore-auth",
+          "external_ref": "demo:ore:auth-throttle",
+          "labels": [
+            "Ore",
+            "upstream demand"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Ore is Forge-specific demand intake; neutral demand_signal covers product and engineering intake.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:demand:ore-auth-throttle",
+          "ogs_kind": "demand_signal",
+          "canonical_kind": "demand_signal",
+          "display_name": "Ore \u2014 tenant abuse on /auth/* (demo)",
+          "summary": "Bridge B1: upstream demand signal before scoped commitment.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ore-auth",
+          "external_ref": "demo:ore:auth-throttle",
+          "labels": [
+            "feature request",
+            "intake"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Ore is Forge-specific demand intake; neutral demand_signal covers product and engineering intake."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:demand:ore-auth-throttle",
+          "ogs_kind": "demand_signal",
+          "canonical_kind": "demand_signal",
+          "display_name": "Ore \u2014 tenant abuse on /auth/* (demo)",
+          "summary": "Bridge B1: upstream demand signal before scoped commitment.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ore-auth",
+          "external_ref": "demo:ore:auth-throttle",
+          "labels": [
+            "market signal",
+            "outcome pressure"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Ore is Forge-specific demand intake; neutral demand_signal covers product and engineering intake."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:env:production",
+      "kind": "environment",
+      "display_name": "production",
+      "summary": "Customer-facing production cells.",
+      "payload": {
+        "region": "us-central"
+      },
+      "external_ref": "k8s:cluster:prod",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "env-prod",
+      "canonical_kind": "environment_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:env:production",
+          "ogs_kind": "environment",
+          "canonical_kind": "environment_ref",
+          "display_name": "production",
+          "summary": "Customer-facing production cells.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "env-prod",
+          "external_ref": "k8s:cluster:prod",
+          "labels": {
+            "primary": "environment ref",
+            "terminology": {
+              "neutral": "environment_ref",
+              "forge_labels": [
+                "environment",
+                "cell"
+              ],
+              "sdlc_labels": [
+                "environment",
+                "stage"
+              ],
+              "pdlc_labels": [
+                "touchpoint environment"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:env:production",
+          "ogs_kind": "environment",
+          "canonical_kind": "environment_ref",
+          "display_name": "production",
+          "summary": "Customer-facing production cells.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "env-prod",
+          "external_ref": "k8s:cluster:prod",
+          "labels": [
+            "environment",
+            "cell"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:env:production",
+          "ogs_kind": "environment",
+          "canonical_kind": "environment_ref",
+          "display_name": "production",
+          "summary": "Customer-facing production cells.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "env-prod",
+          "external_ref": "k8s:cluster:prod",
+          "labels": [
+            "environment",
+            "stage"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:env:production",
+          "ogs_kind": "environment",
+          "canonical_kind": "environment_ref",
+          "display_name": "production",
+          "summary": "Customer-facing production cells.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "env-prod",
+          "external_ref": "k8s:cluster:prod",
+          "labels": [
+            "touchpoint environment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:epic:api-security",
+      "kind": "epic",
+      "display_name": "API security controls",
+      "summary": "Rate limits, scopes, and observability for public APIs.",
+      "payload": {
+        "epic_key": "SEC-API"
+      },
+      "external_ref": "demo:epic:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "epic-1",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:epic:api-security",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "API security controls",
+          "summary": "Rate limits, scopes, and observability for public APIs.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-1",
+          "external_ref": "demo:epic:1",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:epic:api-security",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "API security controls",
+          "summary": "Rate limits, scopes, and observability for public APIs.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-1",
+          "external_ref": "demo:epic:1",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:epic:api-security",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "API security controls",
+          "summary": "Rate limits, scopes, and observability for public APIs.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-1",
+          "external_ref": "demo:epic:1",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:epic:api-security",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "API security controls",
+          "summary": "Rate limits, scopes, and observability for public APIs.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-1",
+          "external_ref": "demo:epic:1",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:epic:client-oauth",
+      "kind": "epic",
+      "display_name": "Client OAuth refresh",
+      "summary": "Second product surface \u2014 depends on server-side throttles.",
+      "payload": {
+        "epic_key": "CLIENT-OAUTH"
+      },
+      "external_ref": "demo:epic:client",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "epic-client",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:epic:client-oauth",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "Client OAuth refresh",
+          "summary": "Second product surface \u2014 depends on server-side throttles.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-client",
+          "external_ref": "demo:epic:client",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:epic:client-oauth",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "Client OAuth refresh",
+          "summary": "Second product surface \u2014 depends on server-side throttles.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-client",
+          "external_ref": "demo:epic:client",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:epic:client-oauth",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "Client OAuth refresh",
+          "summary": "Second product surface \u2014 depends on server-side throttles.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-client",
+          "external_ref": "demo:epic:client",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:epic:client-oauth",
+          "ogs_kind": "epic",
+          "canonical_kind": "work_unit",
+          "display_name": "Client OAuth refresh",
+          "summary": "Second product surface \u2014 depends on server-side throttles.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "epic-client",
+          "external_ref": "demo:epic:client",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:evidence:wbs-auth",
+      "kind": "evidence",
+      "display_name": "WBS \u2014 Auth & sessions slice",
+      "summary": "Markdown evidence describing acceptance and rollout notes.",
+      "payload": {
+        "path_hint": "docs/requirements/WBS.md#auth"
+      },
+      "external_ref": "file:wbs:auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ev-wbs",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:evidence:wbs-auth",
+          "ogs_kind": "evidence",
+          "canonical_kind": "artifact_ref",
+          "display_name": "WBS \u2014 Auth & sessions slice",
+          "summary": "Markdown evidence describing acceptance and rollout notes.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ev-wbs",
+          "external_ref": "file:wbs:auth",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:evidence:wbs-auth",
+          "ogs_kind": "evidence",
+          "canonical_kind": "artifact_ref",
+          "display_name": "WBS \u2014 Auth & sessions slice",
+          "summary": "Markdown evidence describing acceptance and rollout notes.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ev-wbs",
+          "external_ref": "file:wbs:auth",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:evidence:wbs-auth",
+          "ogs_kind": "evidence",
+          "canonical_kind": "artifact_ref",
+          "display_name": "WBS \u2014 Auth & sessions slice",
+          "summary": "Markdown evidence describing acceptance and rollout notes.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ev-wbs",
+          "external_ref": "file:wbs:auth",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:evidence:wbs-auth",
+          "ogs_kind": "evidence",
+          "canonical_kind": "artifact_ref",
+          "display_name": "WBS \u2014 Auth & sessions slice",
+          "summary": "Markdown evidence describing acceptance and rollout notes.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ev-wbs",
+          "external_ref": "file:wbs:auth",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:exception:exc-demo",
+      "kind": "compliance_exception",
+      "display_name": "EXC-2026-04 \u2014 legacy secret rotation",
+      "summary": "Risk acceptance with expiry and audit trail.",
+      "payload": {
+        "exception_id": "EXC-2026-04",
+        "expires": "2026-06-30"
+      },
+      "external_ref": "demo:exc:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "exc-1",
+      "canonical_kind": "decision_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:exception:exc-demo",
+          "ogs_kind": "compliance_exception",
+          "canonical_kind": "decision_ref",
+          "display_name": "EXC-2026-04 \u2014 legacy secret rotation",
+          "summary": "Risk acceptance with expiry and audit trail.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "exc-1",
+          "external_ref": "demo:exc:1",
+          "labels": {
+            "primary": "decision ref",
+            "terminology": {
+              "neutral": "decision_ref",
+              "forge_labels": [
+                "ADR",
+                "Directive"
+              ],
+              "sdlc_labels": [
+                "architecture decision",
+                "RFC"
+              ],
+              "pdlc_labels": [
+                "steering decision",
+                "policy choice"
+              ],
+              "conflict_notes": "ADR records decision state; Directive is binding governance text\u2014both map to decision_ref with subtype."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:exception:exc-demo",
+          "ogs_kind": "compliance_exception",
+          "canonical_kind": "decision_ref",
+          "display_name": "EXC-2026-04 \u2014 legacy secret rotation",
+          "summary": "Risk acceptance with expiry and audit trail.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "exc-1",
+          "external_ref": "demo:exc:1",
+          "labels": [
+            "ADR",
+            "Directive"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "ADR records decision state; Directive is binding governance text\u2014both map to decision_ref with subtype.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:exception:exc-demo",
+          "ogs_kind": "compliance_exception",
+          "canonical_kind": "decision_ref",
+          "display_name": "EXC-2026-04 \u2014 legacy secret rotation",
+          "summary": "Risk acceptance with expiry and audit trail.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "exc-1",
+          "external_ref": "demo:exc:1",
+          "labels": [
+            "architecture decision",
+            "RFC"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "ADR records decision state; Directive is binding governance text\u2014both map to decision_ref with subtype."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:exception:exc-demo",
+          "ogs_kind": "compliance_exception",
+          "canonical_kind": "decision_ref",
+          "display_name": "EXC-2026-04 \u2014 legacy secret rotation",
+          "summary": "Risk acceptance with expiry and audit trail.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "exc-1",
+          "external_ref": "demo:exc:1",
+          "labels": [
+            "steering decision",
+            "policy choice"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "ADR records decision state; Directive is binding governance text\u2014both map to decision_ref with subtype."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:gate:assay-auth-release",
+      "kind": "gate",
+      "display_name": "Assay + release gate \u2014 auth train",
+      "summary": "Combined assay evidence and promotion gate placeholder.",
+      "payload": {
+        "forge_term": "Assay gate",
+        "gate_class": "assay_evidence"
+      },
+      "external_ref": "demo:gate:assay-auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "gate-assay",
+      "canonical_kind": "gate_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:gate:assay-auth-release",
+          "ogs_kind": "gate",
+          "canonical_kind": "gate_ref",
+          "display_name": "Assay + release gate \u2014 auth train",
+          "summary": "Combined assay evidence and promotion gate placeholder.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "gate-assay",
+          "external_ref": "demo:gate:assay-auth",
+          "labels": {
+            "primary": "gate ref",
+            "terminology": {
+              "neutral": "gate_ref",
+              "forge_labels": [
+                "Assay gate",
+                "release gate"
+              ],
+              "sdlc_labels": [
+                "quality gate",
+                "CAB"
+              ],
+              "pdlc_labels": [
+                "launch gate",
+                "outcome checkpoint"
+              ],
+              "conflict_notes": "Assay gate is evidence-heavy pre-release; release gate is promotion control\u2014both gate_ref."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:gate:assay-auth-release",
+          "ogs_kind": "gate",
+          "canonical_kind": "gate_ref",
+          "display_name": "Assay + release gate \u2014 auth train",
+          "summary": "Combined assay evidence and promotion gate placeholder.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "gate-assay",
+          "external_ref": "demo:gate:assay-auth",
+          "labels": [
+            "Assay gate",
+            "release gate"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay gate is evidence-heavy pre-release; release gate is promotion control\u2014both gate_ref.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:gate:assay-auth-release",
+          "ogs_kind": "gate",
+          "canonical_kind": "gate_ref",
+          "display_name": "Assay + release gate \u2014 auth train",
+          "summary": "Combined assay evidence and promotion gate placeholder.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "gate-assay",
+          "external_ref": "demo:gate:assay-auth",
+          "labels": [
+            "quality gate",
+            "CAB"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay gate is evidence-heavy pre-release; release gate is promotion control\u2014both gate_ref."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:gate:assay-auth-release",
+          "ogs_kind": "gate",
+          "canonical_kind": "gate_ref",
+          "display_name": "Assay + release gate \u2014 auth train",
+          "summary": "Combined assay evidence and promotion gate placeholder.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "gate-assay",
+          "external_ref": "demo:gate:assay-auth",
+          "labels": [
+            "launch gate",
+            "outcome checkpoint"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay gate is evidence-heavy pre-release; release gate is promotion control\u2014both gate_ref."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:incident:2026-04-sev2",
+      "kind": "incident",
+      "display_name": "INC-2026-042 \u2014 auth latency spike",
+      "summary": "Correlated with abusive client; mitigated by rate limits in 1.4.0.",
+      "payload": {
+        "severity": "sev2",
+        "status": "resolved"
+      },
+      "external_ref": "pagerduty:INC42",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "inc-42",
+      "canonical_kind": "event",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:incident:2026-04-sev2",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-2026-042 \u2014 auth latency spike",
+          "summary": "Correlated with abusive client; mitigated by rate limits in 1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-42",
+          "external_ref": "pagerduty:INC42",
+          "labels": {
+            "primary": "event",
+            "terminology": {
+              "neutral": "event",
+              "forge_labels": [
+                "Ember Log entry",
+                "journal event"
+              ],
+              "sdlc_labels": [
+                "deployment event",
+                "CI run"
+              ],
+              "pdlc_labels": [
+                "outcome signal event"
+              ],
+              "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:incident:2026-04-sev2",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-2026-042 \u2014 auth latency spike",
+          "summary": "Correlated with abusive client; mitigated by rate limits in 1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-42",
+          "external_ref": "pagerduty:INC42",
+          "labels": [
+            "Ember Log entry",
+            "journal event"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:incident:2026-04-sev2",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-2026-042 \u2014 auth latency spike",
+          "summary": "Correlated with abusive client; mitigated by rate limits in 1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-42",
+          "external_ref": "pagerduty:INC42",
+          "labels": [
+            "deployment event",
+            "CI run"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:incident:2026-04-sev2",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-2026-042 \u2014 auth latency spike",
+          "summary": "Correlated with abusive client; mitigated by rate limits in 1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-42",
+          "external_ref": "pagerduty:INC42",
+          "labels": [
+            "outcome signal event"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:incident:prod-auth-latency",
+      "kind": "incident",
+      "display_name": "INC-PROD-441 \u2014 Auth latency after 1.4.0",
+      "summary": "p99 auth latency spike correlated with 1.4.0 deploy; mitigated by config tune.",
+      "payload": {
+        "severity": "sev2",
+        "status": "resolved",
+        "story_id": "S-1842"
+      },
+      "external_ref": "pagerduty:INC441",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "inc-prod-441",
+      "canonical_kind": "event",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:incident:prod-auth-latency",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-PROD-441 \u2014 Auth latency after 1.4.0",
+          "summary": "p99 auth latency spike correlated with 1.4.0 deploy; mitigated by config tune.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-prod-441",
+          "external_ref": "pagerduty:INC441",
+          "labels": {
+            "primary": "event",
+            "terminology": {
+              "neutral": "event",
+              "forge_labels": [
+                "Ember Log entry",
+                "journal event"
+              ],
+              "sdlc_labels": [
+                "deployment event",
+                "CI run"
+              ],
+              "pdlc_labels": [
+                "outcome signal event"
+              ],
+              "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:incident:prod-auth-latency",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-PROD-441 \u2014 Auth latency after 1.4.0",
+          "summary": "p99 auth latency spike correlated with 1.4.0 deploy; mitigated by config tune.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-prod-441",
+          "external_ref": "pagerduty:INC441",
+          "labels": [
+            "Ember Log entry",
+            "journal event"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:incident:prod-auth-latency",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-PROD-441 \u2014 Auth latency after 1.4.0",
+          "summary": "p99 auth latency spike correlated with 1.4.0 deploy; mitigated by config tune.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-prod-441",
+          "external_ref": "pagerduty:INC441",
+          "labels": [
+            "deployment event",
+            "CI run"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:incident:prod-auth-latency",
+          "ogs_kind": "incident",
+          "canonical_kind": "event",
+          "display_name": "INC-PROD-441 \u2014 Auth latency after 1.4.0",
+          "summary": "p99 auth latency spike correlated with 1.4.0 deploy; mitigated by config tune.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "inc-prod-441",
+          "external_ref": "pagerduty:INC441",
+          "labels": [
+            "outcome signal event"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:initiative:oauth-hardening",
+      "kind": "initiative",
+      "display_name": "OAuth and API hardening",
+      "summary": "Reduce token abuse and noisy-neighbor effects on auth paths.",
+      "payload": {
+        "owner": "Platform"
+      },
+      "external_ref": "demo:init:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "init-1",
+      "canonical_kind": "outcome_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:initiative:oauth-hardening",
+          "ogs_kind": "initiative",
+          "canonical_kind": "outcome_ref",
+          "display_name": "OAuth and API hardening",
+          "summary": "Reduce token abuse and noisy-neighbor effects on auth paths.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "init-1",
+          "external_ref": "demo:init:1",
+          "labels": {
+            "primary": "outcome ref",
+            "terminology": {
+              "neutral": "outcome_ref",
+              "forge_labels": [
+                "objective",
+                "initiative outcome"
+              ],
+              "sdlc_labels": [
+                "product goal"
+              ],
+              "pdlc_labels": [
+                "outcome",
+                "OKR"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:initiative:oauth-hardening",
+          "ogs_kind": "initiative",
+          "canonical_kind": "outcome_ref",
+          "display_name": "OAuth and API hardening",
+          "summary": "Reduce token abuse and noisy-neighbor effects on auth paths.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "init-1",
+          "external_ref": "demo:init:1",
+          "labels": [
+            "objective",
+            "initiative outcome"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:initiative:oauth-hardening",
+          "ogs_kind": "initiative",
+          "canonical_kind": "outcome_ref",
+          "display_name": "OAuth and API hardening",
+          "summary": "Reduce token abuse and noisy-neighbor effects on auth paths.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "init-1",
+          "external_ref": "demo:init:1",
+          "labels": [
+            "product goal"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:initiative:oauth-hardening",
+          "ogs_kind": "initiative",
+          "canonical_kind": "outcome_ref",
+          "display_name": "OAuth and API hardening",
+          "summary": "Reduce token abuse and noisy-neighbor effects on auth paths.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "init-1",
+          "external_ref": "demo:init:1",
+          "labels": [
+            "outcome",
+            "OKR"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:objective:platform-reliability",
+      "kind": "objective",
+      "display_name": "Platform reliability and abuse resistance",
+      "summary": "Keep Forge-hosted surfaces responsive under load and misuse.",
+      "payload": {
+        "horizon": "FY26"
+      },
+      "external_ref": "demo:objective:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "obj-1",
+      "canonical_kind": "outcome_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:objective:platform-reliability",
+          "ogs_kind": "objective",
+          "canonical_kind": "outcome_ref",
+          "display_name": "Platform reliability and abuse resistance",
+          "summary": "Keep Forge-hosted surfaces responsive under load and misuse.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "obj-1",
+          "external_ref": "demo:objective:1",
+          "labels": {
+            "primary": "outcome ref",
+            "terminology": {
+              "neutral": "outcome_ref",
+              "forge_labels": [
+                "objective",
+                "initiative outcome"
+              ],
+              "sdlc_labels": [
+                "product goal"
+              ],
+              "pdlc_labels": [
+                "outcome",
+                "OKR"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:objective:platform-reliability",
+          "ogs_kind": "objective",
+          "canonical_kind": "outcome_ref",
+          "display_name": "Platform reliability and abuse resistance",
+          "summary": "Keep Forge-hosted surfaces responsive under load and misuse.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "obj-1",
+          "external_ref": "demo:objective:1",
+          "labels": [
+            "objective",
+            "initiative outcome"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:objective:platform-reliability",
+          "ogs_kind": "objective",
+          "canonical_kind": "outcome_ref",
+          "display_name": "Platform reliability and abuse resistance",
+          "summary": "Keep Forge-hosted surfaces responsive under load and misuse.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "obj-1",
+          "external_ref": "demo:objective:1",
+          "labels": [
+            "product goal"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:objective:platform-reliability",
+          "ogs_kind": "objective",
+          "canonical_kind": "outcome_ref",
+          "display_name": "Platform reliability and abuse resistance",
+          "summary": "Keep Forge-hosted surfaces responsive under load and misuse.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "obj-1",
+          "external_ref": "demo:objective:1",
+          "labels": [
+            "outcome",
+            "OKR"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:pm:auth-latency-2026",
+      "kind": "postmortem",
+      "display_name": "PM-2026-04 \u2014 Auth latency",
+      "summary": "Blameless review linked to S-1842 and release v1.4.0.",
+      "payload": {
+        "status": "published",
+        "template_id": "pm-tpl-change-correlated"
+      },
+      "external_ref": "wiki:pm/auth-latency-2026",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "pm-1",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:pm:auth-latency-2026",
+          "ogs_kind": "postmortem",
+          "canonical_kind": "artifact_ref",
+          "display_name": "PM-2026-04 \u2014 Auth latency",
+          "summary": "Blameless review linked to S-1842 and release v1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pm-1",
+          "external_ref": "wiki:pm/auth-latency-2026",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:pm:auth-latency-2026",
+          "ogs_kind": "postmortem",
+          "canonical_kind": "artifact_ref",
+          "display_name": "PM-2026-04 \u2014 Auth latency",
+          "summary": "Blameless review linked to S-1842 and release v1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pm-1",
+          "external_ref": "wiki:pm/auth-latency-2026",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:pm:auth-latency-2026",
+          "ogs_kind": "postmortem",
+          "canonical_kind": "artifact_ref",
+          "display_name": "PM-2026-04 \u2014 Auth latency",
+          "summary": "Blameless review linked to S-1842 and release v1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pm-1",
+          "external_ref": "wiki:pm/auth-latency-2026",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:pm:auth-latency-2026",
+          "ogs_kind": "postmortem",
+          "canonical_kind": "artifact_ref",
+          "display_name": "PM-2026-04 \u2014 Auth latency",
+          "summary": "Blameless review linked to S-1842 and release v1.4.0.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "pm-1",
+          "external_ref": "wiki:pm/auth-latency-2026",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:release:v1.4.0",
+      "kind": "release",
+      "display_name": "Release v1.4.0",
+      "summary": "Production rollout including auth rate limits.",
+      "payload": {
+        "semver": "1.4.0",
+        "tag": "v1.4.0"
+      },
+      "external_ref": "github:release:example/forgesdlc:v1.4.0",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "rel-v1.4.0",
+      "canonical_kind": "release_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:release:v1.4.0",
+          "ogs_kind": "release",
+          "canonical_kind": "release_ref",
+          "display_name": "Release v1.4.0",
+          "summary": "Production rollout including auth rate limits.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "rel-v1.4.0",
+          "external_ref": "github:release:example/forgesdlc:v1.4.0",
+          "labels": {
+            "primary": "release ref",
+            "terminology": {
+              "neutral": "release_ref",
+              "forge_labels": [
+                "Release",
+                "Launch Record"
+              ],
+              "sdlc_labels": [
+                "release",
+                "deployment train"
+              ],
+              "pdlc_labels": [
+                "launch",
+                "outcome release"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:release:v1.4.0",
+          "ogs_kind": "release",
+          "canonical_kind": "release_ref",
+          "display_name": "Release v1.4.0",
+          "summary": "Production rollout including auth rate limits.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "rel-v1.4.0",
+          "external_ref": "github:release:example/forgesdlc:v1.4.0",
+          "labels": [
+            "Release",
+            "Launch Record"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:release:v1.4.0",
+          "ogs_kind": "release",
+          "canonical_kind": "release_ref",
+          "display_name": "Release v1.4.0",
+          "summary": "Production rollout including auth rate limits.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "rel-v1.4.0",
+          "external_ref": "github:release:example/forgesdlc:v1.4.0",
+          "labels": [
+            "release",
+            "deployment train"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:release:v1.4.0",
+          "ogs_kind": "release",
+          "canonical_kind": "release_ref",
+          "display_name": "Release v1.4.0",
+          "summary": "Production rollout including auth rate limits.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "rel-v1.4.0",
+          "external_ref": "github:release:example/forgesdlc:v1.4.0",
+          "labels": [
+            "launch",
+            "outcome release"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:repo:forgesdlc",
+      "kind": "repo",
+      "display_name": "forgesdlc",
+      "summary": "Product site generator repository (workspace child name may differ).",
+      "payload": {
+        "remote_hint": "git@github.com:example/forgesdlc.git",
+        "workspace_child": "forgesdlc"
+      },
+      "external_ref": "github:repo:example/forgesdlc",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "repo-forgesdlc",
+      "canonical_kind": "repo_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:repo:forgesdlc",
+          "ogs_kind": "repo",
+          "canonical_kind": "repo_ref",
+          "display_name": "forgesdlc",
+          "summary": "Product site generator repository (workspace child name may differ).",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "repo-forgesdlc",
+          "external_ref": "github:repo:example/forgesdlc",
+          "labels": {
+            "primary": "repo ref",
+            "terminology": {
+              "neutral": "repo_ref",
+              "forge_labels": [
+                "repository"
+              ],
+              "sdlc_labels": [
+                "repository",
+                "VCS root"
+              ],
+              "pdlc_labels": [
+                "code asset"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:repo:forgesdlc",
+          "ogs_kind": "repo",
+          "canonical_kind": "repo_ref",
+          "display_name": "forgesdlc",
+          "summary": "Product site generator repository (workspace child name may differ).",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "repo-forgesdlc",
+          "external_ref": "github:repo:example/forgesdlc",
+          "labels": [
+            "repository"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:repo:forgesdlc",
+          "ogs_kind": "repo",
+          "canonical_kind": "repo_ref",
+          "display_name": "forgesdlc",
+          "summary": "Product site generator repository (workspace child name may differ).",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "repo-forgesdlc",
+          "external_ref": "github:repo:example/forgesdlc",
+          "labels": [
+            "repository",
+            "VCS root"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:repo:forgesdlc",
+          "ogs_kind": "repo",
+          "canonical_kind": "repo_ref",
+          "display_name": "forgesdlc",
+          "summary": "Product site generator repository (workspace child name may differ).",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "repo-forgesdlc",
+          "external_ref": "github:repo:example/forgesdlc",
+          "labels": [
+            "code asset"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:scoped:ingot-auth-q2",
+      "kind": "scoped_commitment",
+      "display_name": "Ingot \u2014 Q2 API protection scope (demo)",
+      "summary": "Approved scope slice tying Ore to delivery work units.",
+      "payload": {
+        "forge_term": "Ingot",
+        "freshness_hint": "demo",
+        "trust_level": "approved"
+      },
+      "external_ref": "demo:ingot:auth-q2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ingot-auth",
+      "canonical_kind": "scoped_commitment",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:scoped:ingot-auth-q2",
+          "ogs_kind": "scoped_commitment",
+          "canonical_kind": "scoped_commitment",
+          "display_name": "Ingot \u2014 Q2 API protection scope (demo)",
+          "summary": "Approved scope slice tying Ore to delivery work units.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ingot-auth",
+          "external_ref": "demo:ingot:auth-q2",
+          "labels": {
+            "primary": "scoped commitment",
+            "terminology": {
+              "neutral": "scoped_commitment",
+              "forge_labels": [
+                "Ingot",
+                "approved scope item"
+              ],
+              "sdlc_labels": [
+                "committed backlog item",
+                "scoped epic"
+              ],
+              "pdlc_labels": [
+                "committed initiative slice"
+              ],
+              "conflict_notes": "Ingot is time-boxed approved scope in Forge; maps to scoped_commitment, not every epic."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:scoped:ingot-auth-q2",
+          "ogs_kind": "scoped_commitment",
+          "canonical_kind": "scoped_commitment",
+          "display_name": "Ingot \u2014 Q2 API protection scope (demo)",
+          "summary": "Approved scope slice tying Ore to delivery work units.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ingot-auth",
+          "external_ref": "demo:ingot:auth-q2",
+          "labels": [
+            "Ingot",
+            "approved scope item"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Ingot is time-boxed approved scope in Forge; maps to scoped_commitment, not every epic.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:scoped:ingot-auth-q2",
+          "ogs_kind": "scoped_commitment",
+          "canonical_kind": "scoped_commitment",
+          "display_name": "Ingot \u2014 Q2 API protection scope (demo)",
+          "summary": "Approved scope slice tying Ore to delivery work units.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ingot-auth",
+          "external_ref": "demo:ingot:auth-q2",
+          "labels": [
+            "committed backlog item",
+            "scoped epic"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Ingot is time-boxed approved scope in Forge; maps to scoped_commitment, not every epic."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:scoped:ingot-auth-q2",
+          "ogs_kind": "scoped_commitment",
+          "canonical_kind": "scoped_commitment",
+          "display_name": "Ingot \u2014 Q2 API protection scope (demo)",
+          "summary": "Approved scope slice tying Ore to delivery work units.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ingot-auth",
+          "external_ref": "demo:ingot:auth-q2",
+          "labels": [
+            "committed initiative slice"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Ingot is time-boxed approved scope in Forge; maps to scoped_commitment, not every epic."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:sf:sast-auth",
+      "kind": "security_finding",
+      "display_name": "SAST \u2014 hardcoded cipher mode",
+      "summary": "Sprint 6 demo critical finding on auth story.",
+      "payload": {
+        "finding_id": "SAST-AUTH-01",
+        "severity": "critical",
+        "story_id": "S-1842"
+      },
+      "external_ref": "demo:sf:sast-auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "sf-sast",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:sf:sast-auth",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SAST \u2014 hardcoded cipher mode",
+          "summary": "Sprint 6 demo critical finding on auth story.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sast",
+          "external_ref": "demo:sf:sast-auth",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:sf:sast-auth",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SAST \u2014 hardcoded cipher mode",
+          "summary": "Sprint 6 demo critical finding on auth story.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sast",
+          "external_ref": "demo:sf:sast-auth",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:sf:sast-auth",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SAST \u2014 hardcoded cipher mode",
+          "summary": "Sprint 6 demo critical finding on auth story.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sast",
+          "external_ref": "demo:sf:sast-auth",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:sf:sast-auth",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "SAST \u2014 hardcoded cipher mode",
+          "summary": "Sprint 6 demo critical finding on auth story.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sast",
+          "external_ref": "demo:sf:sast-auth",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:sf:secret-leak",
+      "kind": "security_finding",
+      "display_name": "Secret scan \u2014 legacy/config.yml",
+      "summary": "Demo secret exposure covered by time-boxed exception.",
+      "payload": {
+        "category": "secret",
+        "finding_id": "SECRET-LEG-1",
+        "severity": "high"
+      },
+      "external_ref": "demo:sf:secret",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "sf-sec",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:sf:secret-leak",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Secret scan \u2014 legacy/config.yml",
+          "summary": "Demo secret exposure covered by time-boxed exception.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sec",
+          "external_ref": "demo:sf:secret",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:sf:secret-leak",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Secret scan \u2014 legacy/config.yml",
+          "summary": "Demo secret exposure covered by time-boxed exception.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sec",
+          "external_ref": "demo:sf:secret",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:sf:secret-leak",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Secret scan \u2014 legacy/config.yml",
+          "summary": "Demo secret exposure covered by time-boxed exception.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sec",
+          "external_ref": "demo:sf:secret",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:sf:secret-leak",
+          "ogs_kind": "security_finding",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Secret scan \u2014 legacy/config.yml",
+          "summary": "Demo secret exposure covered by time-boxed exception.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "sf-sec",
+          "external_ref": "demo:sf:secret",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:story:oauth-refresh-ui",
+      "kind": "story",
+      "display_name": "OAuth refresh UI & SDK hooks",
+      "summary": "Cannot ship until auth rate limits exist \u2014 cross-product dependency.",
+      "payload": {
+        "duration_days": 3,
+        "points": 3,
+        "story_id": "S-2200"
+      },
+      "external_ref": "demo:story:oauth-ui",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "story-2200",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:story:oauth-refresh-ui",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "OAuth refresh UI & SDK hooks",
+          "summary": "Cannot ship until auth rate limits exist \u2014 cross-product dependency.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-2200",
+          "external_ref": "demo:story:oauth-ui",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": "story_default"
+        },
+        "forge": {
+          "entity_id": "ogs:demo:story:oauth-refresh-ui",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "OAuth refresh UI & SDK hooks",
+          "summary": "Cannot ship until auth rate limits exist \u2014 cross-product dependency.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-2200",
+          "external_ref": "demo:story:oauth-ui",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": "story_default"
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:story:oauth-refresh-ui",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "OAuth refresh UI & SDK hooks",
+          "summary": "Cannot ship until auth rate limits exist \u2014 cross-product dependency.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-2200",
+          "external_ref": "demo:story:oauth-ui",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:story:oauth-refresh-ui",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "OAuth refresh UI & SDK hooks",
+          "summary": "Cannot ship until auth rate limits exist \u2014 cross-product dependency.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-2200",
+          "external_ref": "demo:story:oauth-ui",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:story:rate-limit-auth",
+      "kind": "story",
+      "display_name": "Rate-limit authentication endpoints per tenant",
+      "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+      "payload": {
+        "duration_days": 5,
+        "points": 5,
+        "story_id": "S-1842"
+      },
+      "external_ref": "demo:story:rate-limit-auth",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "story-1842",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:story:rate-limit-auth",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "Rate-limit authentication endpoints per tenant",
+          "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-1842",
+          "external_ref": "demo:story:rate-limit-auth",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": "story_default"
+        },
+        "forge": {
+          "entity_id": "ogs:demo:story:rate-limit-auth",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "Rate-limit authentication endpoints per tenant",
+          "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-1842",
+          "external_ref": "demo:story:rate-limit-auth",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": "story_default"
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:story:rate-limit-auth",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "Rate-limit authentication endpoints per tenant",
+          "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-1842",
+          "external_ref": "demo:story:rate-limit-auth",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:story:rate-limit-auth",
+          "ogs_kind": "story",
+          "canonical_kind": "work_unit",
+          "display_name": "Rate-limit authentication endpoints per tenant",
+          "summary": "As an operator, I need per-tenant throttles on /auth/* so bursts cannot starve others.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "story-1842",
+          "external_ref": "demo:story:rate-limit-auth",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:svc:forge-web",
+      "kind": "service",
+      "display_name": "forge-web (product site)",
+      "summary": "Static site + generator runtime surfaced to customers.",
+      "payload": {
+        "service_id": "svc-forge-web",
+        "tier": "customer_facing"
+      },
+      "external_ref": "demo:svc:forge-web",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "svc-1",
+      "canonical_kind": "environment_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:svc:forge-web",
+          "ogs_kind": "service",
+          "canonical_kind": "environment_ref",
+          "display_name": "forge-web (product site)",
+          "summary": "Static site + generator runtime surfaced to customers.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "svc-1",
+          "external_ref": "demo:svc:forge-web",
+          "labels": {
+            "primary": "environment ref",
+            "terminology": {
+              "neutral": "environment_ref",
+              "forge_labels": [
+                "environment",
+                "cell"
+              ],
+              "sdlc_labels": [
+                "environment",
+                "stage"
+              ],
+              "pdlc_labels": [
+                "touchpoint environment"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:svc:forge-web",
+          "ogs_kind": "service",
+          "canonical_kind": "environment_ref",
+          "display_name": "forge-web (product site)",
+          "summary": "Static site + generator runtime surfaced to customers.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "svc-1",
+          "external_ref": "demo:svc:forge-web",
+          "labels": [
+            "environment",
+            "cell"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:svc:forge-web",
+          "ogs_kind": "service",
+          "canonical_kind": "environment_ref",
+          "display_name": "forge-web (product site)",
+          "summary": "Static site + generator runtime surfaced to customers.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "svc-1",
+          "external_ref": "demo:svc:forge-web",
+          "labels": [
+            "environment",
+            "stage"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:svc:forge-web",
+          "ogs_kind": "service",
+          "canonical_kind": "environment_ref",
+          "display_name": "forge-web (product site)",
+          "summary": "Static site + generator runtime surfaced to customers.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "svc-1",
+          "external_ref": "demo:svc:forge-web",
+          "labels": [
+            "touchpoint environment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:task:token-bucket",
+      "kind": "task",
+      "display_name": "Implement token-bucket limiter middleware",
+      "summary": "Configurable burst + sustained RPS; emit metrics labels tenant_id.",
+      "payload": {
+        "task_id": "T-9012"
+      },
+      "external_ref": "demo:task:1",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "task-9012",
+      "canonical_kind": "work_unit",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:task:token-bucket",
+          "ogs_kind": "task",
+          "canonical_kind": "work_unit",
+          "display_name": "Implement token-bucket limiter middleware",
+          "summary": "Configurable burst + sustained RPS; emit metrics labels tenant_id.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "task-9012",
+          "external_ref": "demo:task:1",
+          "labels": {
+            "primary": "work unit",
+            "terminology": {
+              "neutral": "work_unit",
+              "forge_labels": [
+                "Forge Spark",
+                "Product Spark Plan line",
+                "task under Charge"
+              ],
+              "sdlc_labels": [
+                "story",
+                "task",
+                "bug",
+                "change request"
+              ],
+              "pdlc_labels": [
+                "delivery slice",
+                "hypothesis experiment"
+              ],
+              "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+            }
+          },
+          "forge_subtype": "tasklet"
+        },
+        "forge": {
+          "entity_id": "ogs:demo:task:token-bucket",
+          "ogs_kind": "task",
+          "canonical_kind": "work_unit",
+          "display_name": "Implement token-bucket limiter middleware",
+          "summary": "Configurable burst + sustained RPS; emit metrics labels tenant_id.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "task-9012",
+          "external_ref": "demo:task:1",
+          "labels": [
+            "Forge Spark",
+            "Product Spark Plan line",
+            "task under Charge"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting.",
+          "forge_subtype": "tasklet"
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:task:token-bucket",
+          "ogs_kind": "task",
+          "canonical_kind": "work_unit",
+          "display_name": "Implement token-bucket limiter middleware",
+          "summary": "Configurable burst + sustained RPS; emit metrics labels tenant_id.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "task-9012",
+          "external_ref": "demo:task:1",
+          "labels": [
+            "story",
+            "task",
+            "bug",
+            "change request"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:task:token-bucket",
+          "ogs_kind": "task",
+          "canonical_kind": "work_unit",
+          "display_name": "Implement token-bucket limiter middleware",
+          "summary": "Configurable burst + sustained RPS; emit metrics labels tenant_id.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "task-9012",
+          "external_ref": "demo:task:1",
+          "labels": [
+            "delivery slice",
+            "hypothesis experiment"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Forge Spark (execution unit) must not be conflated with Product Spark Plan (product intent document); disambiguate with forge_subtype spark vs plan_item when projecting."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:testcase:rate-001",
+      "kind": "test_case",
+      "display_name": "TC-RATE-001 \u2014 Throttle returns 429",
+      "summary": "Maps to WBS S-1842.",
+      "payload": {
+        "case_id": "TC-RATE-001",
+        "story_id": "S-1842"
+      },
+      "external_ref": "demo:tc:rate-001",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "tc-001",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:testcase:rate-001",
+          "ogs_kind": "test_case",
+          "canonical_kind": "artifact_ref",
+          "display_name": "TC-RATE-001 \u2014 Throttle returns 429",
+          "summary": "Maps to WBS S-1842.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tc-001",
+          "external_ref": "demo:tc:rate-001",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:testcase:rate-001",
+          "ogs_kind": "test_case",
+          "canonical_kind": "artifact_ref",
+          "display_name": "TC-RATE-001 \u2014 Throttle returns 429",
+          "summary": "Maps to WBS S-1842.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tc-001",
+          "external_ref": "demo:tc:rate-001",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:testcase:rate-001",
+          "ogs_kind": "test_case",
+          "canonical_kind": "artifact_ref",
+          "display_name": "TC-RATE-001 \u2014 Throttle returns 429",
+          "summary": "Maps to WBS S-1842.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tc-001",
+          "external_ref": "demo:tc:rate-001",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:testcase:rate-001",
+          "ogs_kind": "test_case",
+          "canonical_kind": "artifact_ref",
+          "display_name": "TC-RATE-001 \u2014 Throttle returns 429",
+          "summary": "Maps to WBS S-1842.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tc-001",
+          "external_ref": "demo:tc:rate-001",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:testplan:auth-q2",
+      "kind": "test_plan",
+      "display_name": "Auth & API hardening \u2014 Q2",
+      "summary": "Sprint 5 demo test plan.",
+      "payload": {
+        "plan_id": "tp-auth-2026"
+      },
+      "external_ref": "demo:testplan:auth-q2",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "tp-auth",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:testplan:auth-q2",
+          "ogs_kind": "test_plan",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Auth & API hardening \u2014 Q2",
+          "summary": "Sprint 5 demo test plan.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tp-auth",
+          "external_ref": "demo:testplan:auth-q2",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:testplan:auth-q2",
+          "ogs_kind": "test_plan",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Auth & API hardening \u2014 Q2",
+          "summary": "Sprint 5 demo test plan.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tp-auth",
+          "external_ref": "demo:testplan:auth-q2",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:testplan:auth-q2",
+          "ogs_kind": "test_plan",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Auth & API hardening \u2014 Q2",
+          "summary": "Sprint 5 demo test plan.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tp-auth",
+          "external_ref": "demo:testplan:auth-q2",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:testplan:auth-q2",
+          "ogs_kind": "test_plan",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Auth & API hardening \u2014 Q2",
+          "summary": "Sprint 5 demo test plan.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tp-auth",
+          "external_ref": "demo:testplan:auth-q2",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:testrun:9912-unit",
+      "kind": "test_run",
+      "display_name": "Unit + contract (9912)",
+      "summary": "812 tests, 0 failures.",
+      "payload": {
+        "failed": 0,
+        "passed": 812,
+        "skipped": 4
+      },
+      "external_ref": "ci:testrun:9912",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "tr-9912",
+      "canonical_kind": "event",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:testrun:9912-unit",
+          "ogs_kind": "test_run",
+          "canonical_kind": "event",
+          "display_name": "Unit + contract (9912)",
+          "summary": "812 tests, 0 failures.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tr-9912",
+          "external_ref": "ci:testrun:9912",
+          "labels": {
+            "primary": "event",
+            "terminology": {
+              "neutral": "event",
+              "forge_labels": [
+                "Ember Log entry",
+                "journal event"
+              ],
+              "sdlc_labels": [
+                "deployment event",
+                "CI run"
+              ],
+              "pdlc_labels": [
+                "outcome signal event"
+              ],
+              "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:testrun:9912-unit",
+          "ogs_kind": "test_run",
+          "canonical_kind": "event",
+          "display_name": "Unit + contract (9912)",
+          "summary": "812 tests, 0 failures.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tr-9912",
+          "external_ref": "ci:testrun:9912",
+          "labels": [
+            "Ember Log entry",
+            "journal event"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:testrun:9912-unit",
+          "ogs_kind": "test_run",
+          "canonical_kind": "event",
+          "display_name": "Unit + contract (9912)",
+          "summary": "812 tests, 0 failures.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tr-9912",
+          "external_ref": "ci:testrun:9912",
+          "labels": [
+            "deployment event",
+            "CI run"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:testrun:9912-unit",
+          "ogs_kind": "test_run",
+          "canonical_kind": "event",
+          "display_name": "Unit + contract (9912)",
+          "summary": "812 tests, 0 failures.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "tr-9912",
+          "external_ref": "ci:testrun:9912",
+          "labels": [
+            "outcome signal event"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Ember Log is human narrative; ADR is decision record\u2014do not merge."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:testsuite:regression",
+      "kind": "test_suite",
+      "display_name": "Full regression (automated)",
+      "summary": "Pytest regression pack.",
+      "payload": {
+        "suite_id": "ts-regression"
+      },
+      "external_ref": "demo:suite:regression",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ts-reg",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:testsuite:regression",
+          "ogs_kind": "test_suite",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Full regression (automated)",
+          "summary": "Pytest regression pack.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ts-reg",
+          "external_ref": "demo:suite:regression",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:testsuite:regression",
+          "ogs_kind": "test_suite",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Full regression (automated)",
+          "summary": "Pytest regression pack.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ts-reg",
+          "external_ref": "demo:suite:regression",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:testsuite:regression",
+          "ogs_kind": "test_suite",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Full regression (automated)",
+          "summary": "Pytest regression pack.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ts-reg",
+          "external_ref": "demo:suite:regression",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:testsuite:regression",
+          "ogs_kind": "test_suite",
+          "canonical_kind": "artifact_ref",
+          "display_name": "Full regression (automated)",
+          "summary": "Pytest regression pack.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ts-reg",
+          "external_ref": "demo:suite:regression",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:vuln:ghsa-abc",
+      "kind": "vulnerability",
+      "display_name": "GHSA-abc \u2014 timing side channel",
+      "summary": "Disclosed dependency issue; fixed in 1.4.0 dependency bump.",
+      "payload": {
+        "cve": "CVE-2026-0001",
+        "severity": "medium"
+      },
+      "external_ref": "ghsa:GHSA-abc",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "vuln-1",
+      "canonical_kind": "artifact_ref",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:vuln:ghsa-abc",
+          "ogs_kind": "vulnerability",
+          "canonical_kind": "artifact_ref",
+          "display_name": "GHSA-abc \u2014 timing side channel",
+          "summary": "Disclosed dependency issue; fixed in 1.4.0 dependency bump.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "vuln-1",
+          "external_ref": "ghsa:GHSA-abc",
+          "labels": {
+            "primary": "artifact ref",
+            "terminology": {
+              "neutral": "artifact_ref",
+              "forge_labels": [
+                "Review Pack",
+                "Assay Packet",
+                "WBS row"
+              ],
+              "sdlc_labels": [
+                "spec",
+                "test plan",
+                "build artifact"
+              ],
+              "pdlc_labels": [
+                "evidence pack",
+                "readout"
+              ],
+              "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:vuln:ghsa-abc",
+          "ogs_kind": "vulnerability",
+          "canonical_kind": "artifact_ref",
+          "display_name": "GHSA-abc \u2014 timing side channel",
+          "summary": "Disclosed dependency issue; fixed in 1.4.0 dependency bump.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "vuln-1",
+          "external_ref": "ghsa:GHSA-abc",
+          "labels": [
+            "Review Pack",
+            "Assay Packet",
+            "WBS row"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs.",
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:vuln:ghsa-abc",
+          "ogs_kind": "vulnerability",
+          "canonical_kind": "artifact_ref",
+          "display_name": "GHSA-abc \u2014 timing side channel",
+          "summary": "Disclosed dependency issue; fixed in 1.4.0 dependency bump.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "vuln-1",
+          "external_ref": "ghsa:GHSA-abc",
+          "labels": [
+            "spec",
+            "test plan",
+            "build artifact"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:vuln:ghsa-abc",
+          "ogs_kind": "vulnerability",
+          "canonical_kind": "artifact_ref",
+          "display_name": "GHSA-abc \u2014 timing side channel",
+          "summary": "Disclosed dependency issue; fixed in 1.4.0 dependency bump.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "vuln-1",
+          "external_ref": "ghsa:GHSA-abc",
+          "labels": [
+            "evidence pack",
+            "readout"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": "Assay Packet (quality gate evidence) vs release gate checklist\u2014both artifact_ref; gate type differs."
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:ws:platform",
+      "kind": "workstream",
+      "display_name": "Platform team",
+      "summary": "Capacity placeholder \u2014 auth, infra, shared services.",
+      "payload": {
+        "capacity_units": 6.0,
+        "team": "platform"
+      },
+      "external_ref": "demo:ws:platform",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ws-platform",
+      "canonical_kind": "contributor",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:ws:platform",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Platform team",
+          "summary": "Capacity placeholder \u2014 auth, infra, shared services.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-platform",
+          "external_ref": "demo:ws:platform",
+          "labels": {
+            "primary": "contributor",
+            "terminology": {
+              "neutral": "contributor",
+              "forge_labels": [
+                "discipline owner",
+                "Charge owner"
+              ],
+              "sdlc_labels": [
+                "developer",
+                "engineer"
+              ],
+              "pdlc_labels": [
+                "product partner",
+                "sponsor"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:ws:platform",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Platform team",
+          "summary": "Capacity placeholder \u2014 auth, infra, shared services.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-platform",
+          "external_ref": "demo:ws:platform",
+          "labels": [
+            "discipline owner",
+            "Charge owner"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:ws:platform",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Platform team",
+          "summary": "Capacity placeholder \u2014 auth, infra, shared services.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-platform",
+          "external_ref": "demo:ws:platform",
+          "labels": [
+            "developer",
+            "engineer"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:ws:platform",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Platform team",
+          "summary": "Capacity placeholder \u2014 auth, infra, shared services.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-platform",
+          "external_ref": "demo:ws:platform",
+          "labels": [
+            "product partner",
+            "sponsor"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    },
+    {
+      "id": "ogs:demo:ws:product",
+      "kind": "workstream",
+      "display_name": "Product team",
+      "summary": "Capacity placeholder \u2014 client features.",
+      "payload": {
+        "capacity_units": 4.0,
+        "team": "product"
+      },
+      "external_ref": "demo:ws:product",
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "ws-product",
+      "canonical_kind": "contributor",
+      "overlay": null,
+      "projections": {
+        "neutral": {
+          "entity_id": "ogs:demo:ws:product",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Product team",
+          "summary": "Capacity placeholder \u2014 client features.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-product",
+          "external_ref": "demo:ws:product",
+          "labels": {
+            "primary": "contributor",
+            "terminology": {
+              "neutral": "contributor",
+              "forge_labels": [
+                "discipline owner",
+                "Charge owner"
+              ],
+              "sdlc_labels": [
+                "developer",
+                "engineer"
+              ],
+              "pdlc_labels": [
+                "product partner",
+                "sponsor"
+              ],
+              "conflict_notes": null
+            }
+          },
+          "forge_subtype": null
+        },
+        "forge": {
+          "entity_id": "ogs:demo:ws:product",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Product team",
+          "summary": "Capacity placeholder \u2014 client features.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-product",
+          "external_ref": "demo:ws:product",
+          "labels": [
+            "discipline owner",
+            "Charge owner"
+          ],
+          "subtitle": "Forge SDLC",
+          "conflict_notes": null,
+          "forge_subtype": null
+        },
+        "sdlc": {
+          "entity_id": "ogs:demo:ws:product",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Product team",
+          "summary": "Capacity placeholder \u2014 client features.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-product",
+          "external_ref": "demo:ws:product",
+          "labels": [
+            "developer",
+            "engineer"
+          ],
+          "subtitle": "SDLC",
+          "conflict_notes": null
+        },
+        "pdlc": {
+          "entity_id": "ogs:demo:ws:product",
+          "ogs_kind": "workstream",
+          "canonical_kind": "contributor",
+          "display_name": "Product team",
+          "summary": "Capacity placeholder \u2014 client features.",
+          "source_system": "lenses_demo_seed",
+          "source_record_id": "ws-product",
+          "external_ref": "demo:ws:product",
+          "labels": [
+            "product partner",
+            "sponsor"
+          ],
+          "subtitle": "PDLC",
+          "conflict_notes": null
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "ogs:demo:b1:e1",
+      "from_id": "ogs:demo:demand:ore-auth-throttle",
+      "to_id": "ogs:demo:objective:platform-reliability",
+      "kind": "originates_from",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b1-e1"
+    },
+    {
+      "id": "ogs:demo:b1:e2",
+      "from_id": "ogs:demo:demand:ore-auth-throttle",
+      "to_id": "ogs:demo:scoped:ingot-auth-q2",
+      "kind": "decomposes_to",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b1-e2"
+    },
+    {
+      "id": "ogs:demo:b1:e3",
+      "from_id": "ogs:demo:scoped:ingot-auth-q2",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "decomposes_to",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b1-e3"
+    },
+    {
+      "id": "ogs:demo:b1:e4",
+      "from_id": "ogs:demo:story:rate-limit-auth",
+      "to_id": "ogs:demo:contrib:lead-alex",
+      "kind": "reviewed_by",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b1-e4"
+    },
+    {
+      "id": "ogs:demo:b1:e5",
+      "from_id": "ogs:demo:story:rate-limit-auth",
+      "to_id": "ogs:demo:evidence:wbs-auth",
+      "kind": "evidenced_by",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b1-e5"
+    },
+    {
+      "id": "ogs:demo:b1:e6",
+      "from_id": "ogs:demo:release:v1.4.0",
+      "to_id": "ogs:demo:gate:assay-auth-release",
+      "kind": "gated_by",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "b1-e6"
+    },
+    {
+      "id": "ogs:demo:e1",
+      "from_id": "ogs:demo:objective:platform-reliability",
+      "to_id": "ogs:demo:initiative:oauth-hardening",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e1"
+    },
+    {
+      "id": "ogs:demo:e10",
+      "from_id": "ogs:demo:task:token-bucket",
+      "to_id": "ogs:demo:branch:forgesdlc-main",
+      "kind": "targets",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e10"
+    },
+    {
+      "id": "ogs:demo:e11",
+      "from_id": "ogs:demo:build:ci-9912",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "tests",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e11"
+    },
+    {
+      "id": "ogs:demo:e12",
+      "from_id": "ogs:demo:build:ci-9912",
+      "to_id": "ogs:demo:artifact:oci-1.4.0",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e12"
+    },
+    {
+      "id": "ogs:demo:e13",
+      "from_id": "ogs:demo:testrun:9912-unit",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "tests",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e13"
+    },
+    {
+      "id": "ogs:demo:e14",
+      "from_id": "ogs:demo:testrun:9912-unit",
+      "to_id": "ogs:demo:build:ci-9912",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e14"
+    },
+    {
+      "id": "ogs:demo:e15",
+      "from_id": "ogs:demo:release:v1.4.0",
+      "to_id": "ogs:demo:artifact:oci-1.4.0",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e15"
+    },
+    {
+      "id": "ogs:demo:e16",
+      "from_id": "ogs:demo:release:v1.4.0",
+      "to_id": "ogs:demo:env:production",
+      "kind": "deploys",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e16"
+    },
+    {
+      "id": "ogs:demo:e17",
+      "from_id": "ogs:demo:vuln:ghsa-abc",
+      "to_id": "ogs:demo:release:v1.4.0",
+      "kind": "affects",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e17"
+    },
+    {
+      "id": "ogs:demo:e18",
+      "from_id": "ogs:demo:incident:2026-04-sev2",
+      "to_id": "ogs:demo:vuln:ghsa-abc",
+      "kind": "caused_by",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e18"
+    },
+    {
+      "id": "ogs:demo:e19",
+      "from_id": "ogs:demo:release:v1.4.0",
+      "to_id": "ogs:demo:vuln:ghsa-abc",
+      "kind": "mitigates",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e19"
+    },
+    {
+      "id": "ogs:demo:e2",
+      "from_id": "ogs:demo:initiative:oauth-hardening",
+      "to_id": "ogs:demo:epic:api-security",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e2"
+    },
+    {
+      "id": "ogs:demo:e20",
+      "from_id": "ogs:demo:initiative:oauth-hardening",
+      "to_id": "ogs:demo:epic:client-oauth",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e20"
+    },
+    {
+      "id": "ogs:demo:e21",
+      "from_id": "ogs:demo:epic:client-oauth",
+      "to_id": "ogs:demo:story:oauth-refresh-ui",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e21"
+    },
+    {
+      "id": "ogs:demo:e22",
+      "from_id": "ogs:demo:story:oauth-refresh-ui",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "depends_on",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e22"
+    },
+    {
+      "id": "ogs:demo:e23",
+      "from_id": "ogs:demo:story:rate-limit-auth",
+      "to_id": "ogs:demo:ws:platform",
+      "kind": "allocated_to",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e23"
+    },
+    {
+      "id": "ogs:demo:e24",
+      "from_id": "ogs:demo:story:oauth-refresh-ui",
+      "to_id": "ogs:demo:ws:product",
+      "kind": "allocated_to",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e24"
+    },
+    {
+      "id": "ogs:demo:e25",
+      "from_id": "ogs:demo:testplan:auth-q2",
+      "to_id": "ogs:demo:testsuite:regression",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e25"
+    },
+    {
+      "id": "ogs:demo:e26",
+      "from_id": "ogs:demo:testsuite:regression",
+      "to_id": "ogs:demo:testcase:rate-001",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e26"
+    },
+    {
+      "id": "ogs:demo:e27",
+      "from_id": "ogs:demo:testcase:rate-001",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "validates",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e27"
+    },
+    {
+      "id": "ogs:demo:e28",
+      "from_id": "ogs:demo:testcase:rate-001",
+      "to_id": "ogs:demo:defect:441",
+      "kind": "raised_defect",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e28"
+    },
+    {
+      "id": "ogs:demo:e29",
+      "from_id": "ogs:demo:defect:441",
+      "to_id": "ogs:demo:release:v1.4.0",
+      "kind": "affects",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e29"
+    },
+    {
+      "id": "ogs:demo:e3",
+      "from_id": "ogs:demo:epic:api-security",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e3"
+    },
+    {
+      "id": "ogs:demo:e30",
+      "from_id": "ogs:demo:sf:sast-auth",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "affects",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e30"
+    },
+    {
+      "id": "ogs:demo:e31",
+      "from_id": "ogs:demo:exception:exc-demo",
+      "to_id": "ogs:demo:sf:secret-leak",
+      "kind": "accepted_risk_for",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e31"
+    },
+    {
+      "id": "ogs:demo:e32",
+      "from_id": "ogs:demo:control:soc2-cc6",
+      "to_id": "ogs:demo:release:v1.4.0",
+      "kind": "satisfies",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e32"
+    },
+    {
+      "id": "ogs:demo:e33",
+      "from_id": "ogs:demo:sf:secret-leak",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "affects",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e33"
+    },
+    {
+      "id": "ogs:demo:e34",
+      "from_id": "ogs:demo:incident:prod-auth-latency",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "affects",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e34"
+    },
+    {
+      "id": "ogs:demo:e35",
+      "from_id": "ogs:demo:incident:prod-auth-latency",
+      "to_id": "ogs:demo:release:v1.4.0",
+      "kind": "triggered_after",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e35"
+    },
+    {
+      "id": "ogs:demo:e36",
+      "from_id": "ogs:demo:incident:prod-auth-latency",
+      "to_id": "ogs:demo:svc:forge-web",
+      "kind": "impacts",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e36"
+    },
+    {
+      "id": "ogs:demo:e37",
+      "from_id": "ogs:demo:pm:auth-latency-2026",
+      "to_id": "ogs:demo:incident:prod-auth-latency",
+      "kind": "analyzes",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e37"
+    },
+    {
+      "id": "ogs:demo:e4",
+      "from_id": "ogs:demo:story:rate-limit-auth",
+      "to_id": "ogs:demo:task:token-bucket",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e4"
+    },
+    {
+      "id": "ogs:demo:e5",
+      "from_id": "ogs:demo:story:rate-limit-auth",
+      "to_id": "ogs:demo:evidence:wbs-auth",
+      "kind": "documented_by",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e5"
+    },
+    {
+      "id": "ogs:demo:e6",
+      "from_id": "ogs:demo:cr:184",
+      "to_id": "ogs:demo:story:rate-limit-auth",
+      "kind": "implements",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e6"
+    },
+    {
+      "id": "ogs:demo:e7",
+      "from_id": "ogs:demo:cr:184",
+      "to_id": "ogs:demo:commit:a1b2c3d",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e7"
+    },
+    {
+      "id": "ogs:demo:e8",
+      "from_id": "ogs:demo:repo:forgesdlc",
+      "to_id": "ogs:demo:branch:forgesdlc-main",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e8"
+    },
+    {
+      "id": "ogs:demo:e9",
+      "from_id": "ogs:demo:branch:forgesdlc-main",
+      "to_id": "ogs:demo:commit:a1b2c3d",
+      "kind": "contains",
+      "payload": {},
+      "source_system": "lenses_demo_seed",
+      "source_record_id": "e9"
+    }
+  ],
+  "truncated": false,
+  "limits": {
+    "max_depth": 5,
+    "max_nodes": 40
+  },
+  "bridge": {
+    "registry_version": "2026.04.11",
+    "traceability_score": {
+      "ok": true,
+      "entity_id": "ogs:demo:story:rate-limit-auth",
+      "canonical_kind": "work_unit",
+      "score": 0.75,
+      "matched_rules": 6,
+      "total_rules": 8,
+      "present_in": [
+        "affects",
+        "contains",
+        "decomposes_to",
+        "depends_on",
+        "implements",
+        "tests",
+        "validates"
+      ],
+      "present_out": [
+        "allocated_to",
+        "contains",
+        "documented_by",
+        "evidenced_by",
+        "reviewed_by"
+      ]
+    },
+    "root_gaps": [
+      {
+        "kind": "missing_outgoing_edge",
+        "edge_kind": "targets",
+        "canonical_kind": "work_unit",
+        "detail": "No outgoing `targets` edge \u2014 evidence or downstream link may be missing."
+      },
+      {
+        "kind": "missing_outgoing_edge",
+        "edge_kind": "blocked_by",
+        "canonical_kind": "work_unit",
+        "detail": "No outgoing `blocked_by` edge \u2014 evidence or downstream link may be missing."
+      }
+    ]
+  }
+}

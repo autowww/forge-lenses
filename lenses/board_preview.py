@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import threading
 import urllib.parse
 from pathlib import Path
@@ -16,7 +17,7 @@ _DEBOUNCE_SEC = 20.0
 
 # Slightly smaller than doc previews; enough for freeform / kanban frame.
 _THUMB_SIZE = (900, 560)
-_VIRTUAL_TIME_MS = 14_000
+_THUMB_SETTLE_MS = 1800
 
 
 def board_previews_enabled() -> bool:
@@ -44,15 +45,21 @@ def schedule_board_preview_capture(
             + urllib.parse.quote(board_id, safe="")
             + "?thumb=1"
         )
+        root = Path(__file__).resolve().parents[1]
+        tools = str(root / "blueprints" / "sdlc" / "tools")
+        if tools not in sys.path:
+            sys.path.insert(0, tools)
         try:
-            from lenses.html2image_capture import capture_url_to_png
+            from forge_static_capture import capture_url_to_png
         except ImportError:
             return
         capture_url_to_png(
             url,
             dest,
-            size=_THUMB_SIZE,
-            virtual_time_budget_ms=_VIRTUAL_TIME_MS,
+            viewport_size=_THUMB_SIZE,
+            full_page=False,
+            settle_ms=_THUMB_SETTLE_MS,
+            goto_timeout_ms=90_000,
         )
 
     def fire() -> None:

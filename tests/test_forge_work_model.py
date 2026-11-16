@@ -37,6 +37,17 @@ WBS_SYNTH_EPIC = """## Themes
 | M1E2S1 | Story under synthesized epic |
 """
 
+WBS_WITH_MILESTONE_OUTCOME = """## Milestone M1 — Ship v1
+
+Deliver the first vertical slice to production.
+
+#### Epic: M1E1 — Epic one
+
+| Story ID | Story | Dependencies | Priority | Acceptance criteria (summary) |
+|----------|-------|--------------|----------|------------------------------|
+| M1E1S1 | First story | | | Done |
+"""
+
 
 def _write_min_repo(
     root: Path,
@@ -118,6 +129,20 @@ class ForgeWorkModelTests(unittest.TestCase):
             ch = [x.id for x in m.children("M1")]
             self.assertIn("M1E1", ch)
 
+    def test_summary_missing_node(self) -> None:
+        from tempfile import TemporaryDirectory
+
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            wbs_rel = _write_min_repo(root, wbs_md=WBS_CHAIN)
+            m = build_forge_work_model(
+                root,
+                repo_hint="repo",
+                wbs_rel=wbs_rel,
+                roadmap_rel=None,
+            )
+            self.assertTrue(m.summary("NO_SUCH_ID").get("missing"))
+
     def test_missing_optional_sources(self) -> None:
         from tempfile import TemporaryDirectory
 
@@ -136,6 +161,22 @@ class ForgeWorkModelTests(unittest.TestCase):
             self.assertFalse(m.sources_present.get("versona"))
             self.assertFalse(m.sources_present.get("product_docs"))
             self.assertIn("M1E1S1", m.nodes)
+
+    def test_milestone_business_outcome_from_wbs_heading(self) -> None:
+        from tempfile import TemporaryDirectory
+
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            wbs_rel = _write_min_repo(root, wbs_md=WBS_WITH_MILESTONE_OUTCOME)
+            m = build_forge_work_model(
+                root,
+                repo_hint="repo",
+                wbs_rel=wbs_rel,
+                roadmap_rel=None,
+            )
+            self.assertIn("M1", m.nodes)
+            bo = (m.nodes["M1"].extra or {}).get("business_outcome", "")
+            self.assertIn("vertical slice", bo)
 
     def test_provenance_synthesized_epic_story_selectors(self) -> None:
         from tempfile import TemporaryDirectory

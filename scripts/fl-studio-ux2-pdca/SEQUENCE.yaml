@@ -1,0 +1,41 @@
+# Forge Lenses Studio UX2 remediation — phase order
+
+phases:
+  T00:
+    title: PDCA scaffold and gate harness
+    depends_on: []
+  T01:
+    title: Human-copy oracle + sparse workspace guides
+    backlog: [FLS2-001, FLS2-002]
+    depends_on: [T00]
+  T02:
+    title: Autonomy H1 + Docs Management Home summary
+    backlog: [FLS2-003, FLS2-011]
+    depends_on: [T01]
+  T03:
+    title: Vite bundle code-splitting
+    backlog: [FLS2-004]
+    depends_on: [T02]
+  T04:
+    title: Publish health badge + executive KPI chrome
+    backlog: [FLS2-005, FLS2-012]
+    depends_on: [T03]
+  T05:
+    title: Timeline React Gantt API + UI
+    backlog: [FLS2-006]
+    depends_on: [T04]
+  T06:
+    title: Matrix health tier + sparkline
+    backlog: [FLS2-007]
+    depends_on: [T05]
+  T07:
+    title: Guided workspace identity
+    backlog: [FLS2-008]
+    depends_on: [T06]
+  T08:
+    title: Tour/wizard telemetry + Classic UI retirement doc
+    backlog: [FLS2-009, FLS2-010]
+    depends_on: [T07]
+  T09:
+    title: Playwright rescan + backlog v3 + closeout
+    depends_on: [T08]

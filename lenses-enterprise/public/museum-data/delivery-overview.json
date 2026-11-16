@@ -1,0 +1,50 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "feature_enabled": true,
+  "provider_kind": "local_fixture",
+  "resolved_at": "2026-04-11T12:00:00+00:00",
+  "workspace_summary": { "child_count": 3, "git_repo_count": 2 },
+  "repos": [
+    {
+      "project": "forgesdlc",
+      "is_git": true,
+      "git_head_short": "a1b2c3d",
+      "git_branch": "main",
+      "origin_url": "https://github.com/example/forgesdlc.git",
+      "ci_provider": "github_actions",
+      "workflows": [
+        {
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "a1b2c3d",
+          "run_url": "https://github.com/example/forgesdlc/actions/runs/123456"
+        }
+      ],
+      "trace_links": [
+        {
+          "kind": "pull_request",
+          "label": "PR #42",
+          "url": "https://github.com/example/forgesdlc/pull/42"
+        }
+      ],
+      "environments": [],
+      "releases": [],
+      "data_sources": ["workspace_scan", "local_fixture"]
+    },
+    {
+      "project": "blueprints",
+      "is_git": true,
+      "git_head_short": "",
+      "git_branch": "main",
+      "origin_url": "",
+      "workflows": [],
+      "trace_links": [],
+      "environments": [],
+      "releases": [],
+      "data_sources": ["workspace_scan"]
+    }
+  ],
+  "hints": []
+}

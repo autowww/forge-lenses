@@ -15,14 +15,18 @@ Artifact chain on the plan lens (left to right):
 |----------|------|----------------------------|
 | **`ROADMAP.md`** (optional) | Horizon, narrative, tables for charts | **Source** tab (iframe preview), **Roadmap summary** strip, **story Source** tab (section hits + canonical link) |
 | **`docs/requirements/WBS.md`** | Requirements, milestone → epic → story → **task (Spark)** | **Plan** tab tree and center; **Definition** / **Product** in story cockpit; **`/wbs/view`** links |
-| **`forge/charge.md`** | Operational status for active sparks | **Today** tab; **Execution** tab and **Source** tab in story cockpit |
+| **`forge/charge.md`** | Operational status (**Active Sparks** or **Active Epics** under Epic profile) | **Today** tab; **Spec flow** tab (`tab=spec-board`, Epic profile); story **Execution** when Spark-centric |
 | **Ember / Versona / journal** | Decisions and discipline sessions | **Decisions** tab; **Today** (pending Versona); evidence lists in the work graph |
 
 **APIs** (same query shape: `wbs_p`, `repo`, optional `roadmap_p`; story APIs add `id`):
 
 - **`GET /api/plan-spine`** — Single payload: WBS plan tree, Charge rows, roadmap summary metrics, paths to forge files.
 - **`GET /api/story-hub?id=…`** — Story cockpit: synthesized WBS slots, roadmap hits, execution (sparks + Charge rows), decisions, canonical source links.
-- **`GET /api/today-charge`** — **Today** tab: sections (in progress, blocked, banked, Versona, done) with links back to **`/plan?id=`**.
+- **`GET /api/today-charge`** — **Today** tab: sections (in progress, blocked, banked, Versona, done). Under the **Epic execution profile**, **`epic_rows`** replace **`spark_rows`**; dual-profile repos keep Spark Today unchanged.
+- **`GET /api/epic-spec-board`** — **Spec flow** tab (`tab=spec-board`): seven-column OpenSpec Kanban derived from WBS Epics, `openspec/changes/`, and Charge (not a second SoT).
+- **`GET /api/epic-hub?id=M#E#`** — Epic hub beside the board: proposal/spec excerpts, validate summary, size-gate checklist, **`dual_wiki`** freshness.
+- **`POST /api/epic-spec-board/transition`** — Drag writes Charge / OpenSpec phase (loopback only). Archive ≠ Product Spark Released.
+- **`POST /api/epic-spec-board/dual-wiki-refresh`** — Loopback rebuild of **local** handbook HTML (`scripts/refresh-dual-wiki.sh`). **Archive ≠ deployed**; does not call Firebase.
 
 ## URL query contract (deep links)
 
@@ -34,7 +38,7 @@ Supported parameters (see `lenses/plan_query.py`, mirrored in client `qs()`):
 | `wbs_p` | Relative path to `WBS.md` |
 | `roadmap_p` | Optional `ROADMAP.md` path |
 | `id` | Selected work item id in the tree |
-| `tab` | `plan` (default), `today`, or `source` |
+| `tab` | `plan` (default), `today`, `source`, **`spec-board`** (Epic execution profile only) |
 
 ## Responsive checks (manual)
 

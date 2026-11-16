@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import csv
-import io
 import re
 from dataclasses import dataclass, field
 
@@ -84,6 +82,8 @@ class WbsModel:
     epics: list[tuple[str, str, str]] = field(default_factory=list)  # (epic_key, heading, theme_label)
     stories: dict[str, WbsStory] = field(default_factory=dict)
     tasks: dict[str, WbsTask] = field(default_factory=dict)
+    # Prose under a "## Milestone M1 …" (or ###) heading until the next heading of same/higher level.
+    milestone_outcomes: dict[str, str] = field(default_factory=dict)
 
 
 def _table_kind(hdr: list[str]) -> str | None:
@@ -231,6 +231,20 @@ def _parse_task_table(
             out.stories[story_id].tasks.append(task)
 
 
+def _milestone_key_from_heading(title: str) -> str | None:
+    """Match standalone milestone id (M1) after the word Milestone, not M1E1."""
+    tl = title.lower()
+    if "milestone" not in tl:
+        return None
+    m = re.search(r"(?i)milestone[:\s—-]+(M\d+)\b", title)
+    if m:
+        return m.group(1)
+    m = re.search(r"(?i)\b(M\d+)\s*$", title.strip())
+    if m and not re.search(r"M\d+E", title):
+        return m.group(1)
+    return None
+
+
 def parse_wbs_markdown(rel_path: str, md: str) -> WbsModel:
     out = WbsModel(rel_path=rel_path)
     lines = md.splitlines()
@@ -244,6 +258,27 @@ def parse_wbs_markdown(rel_path: str, md: str) -> WbsModel:
             level = len(hm.group(1))
             title = hm.group(2).strip()
             tl = title.lower()
+            mk = _milestone_key_from_heading(title)
+            if mk and level <= 4:
+                j = i + 1
+                body_lines: list[str] = []
+                while j < len(lines):
+                    ln = lines[j]
+                    inner = HEADING_RE.match(ln)
+                    if inner:
+                        il = len(inner.group(1))
+                        itl = inner.group(2).strip().lower()
+                        if il <= level:
+                            break
+                        if "epic:" in itl and il <= 4:
+                            break
+                    body_lines.append(ln)
+                    j += 1
+                prose = "\n".join(body_lines).strip()
+                if prose:
+                    out.milestone_outcomes[mk] = prose
+                i = j
+                continue
             if "theme" in tl and level <= 4:
                 m = re.search(r"\b(T\d+)\b", title)
                 current_theme = m.group(1) if m else title
@@ -286,50 +321,3 @@ def parse_wbs_markdown(rel_path: str, md: str) -> WbsModel:
     return out
 
 
-def parse_wbs_csv(rel_path: str, text: str) -> WbsModel:
-    """Minimal CSV: look for columns containing story/task ids."""
-    out = WbsModel(rel_path=rel_path)
-    rdr = csv.reader(io.StringIO(text))
-    rows = list(rdr)
-    if not rows:
-        return out
-    hdr = [str(c).strip() for c in rows[0]]
-    for row in rows[1:]:
-        if len(row) < len(hdr):
-            row = row + [""] * (len(hdr) - len(row))
-        joined = " ".join(row)
-        for m in WBS_ID_RE.finditer(joined):
-            wid = m.group(1)
-            if "T" in wid.split("S")[-1] if "S" in wid else False:
-                out.tasks[wid] = WbsTask(
-                    id=wid,
-                    title="",
-                    story_id="",
-                    row=dict(zip(hdr, row)),
-                    blockers=[],
-                )
-            else:
-                out.stories[wid] = WbsStory(
-                    id=wid,
-                    title="",
-                    theme_label="",
-                    epic_label="",
-                    acceptance_summary="",
-                    product_paths=[],
-                    dependencies=[],
-                    priority="",
-                    row=dict(zip(hdr, row)),
-                )
-    return out
-
-
-def load_wbs_model(workspace_root, rel: str):
-    from pathlib import Path
-
-    p = Path(workspace_root) / rel.replace("\\", "/").strip("/")
-    if not p.is_file():
-        return None
-    text = p.read_text(encoding="utf-8", errors="replace")
-    if p.suffix.lower() == ".csv":
-        return parse_wbs_csv(rel, text)
-    return parse_wbs_markdown(rel, text)

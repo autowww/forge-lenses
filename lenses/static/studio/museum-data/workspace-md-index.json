@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "truncated": false,
+  "files": [
+    { "rel_path": "forge/charge.md", "category": "charge" },
+    { "rel_path": "forge/journal/README.md", "category": "journal" },
+    { "rel_path": "ember-logs/sample.md", "category": "ember" },
+    { "rel_path": "forge-logs/versona/pm/sample-session.md", "category": "forge_logs" }
+  ]
+}

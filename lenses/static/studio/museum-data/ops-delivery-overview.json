@@ -1,0 +1,227 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "feature_enabled": true,
+  "provider_kind": "local_fixture",
+  "resolved_at": "2026-04-11T12:00:00Z",
+  "workspace_summary": {
+    "child_count": 1,
+    "git_repo_count": 1
+  },
+  "services": [
+    {
+      "service_id": "svc-forge-web",
+      "display_name": "forge-web",
+      "description": "Customer-facing Forge handbook and product HTML.",
+      "owner_team": "team-platform",
+      "project": "forgesdlc",
+      "environment_ids": [
+        "staging",
+        "production"
+      ],
+      "repository": "forgesdlc"
+    }
+  ],
+  "slis": [
+    {
+      "sli_id": "sli-auth-p99",
+      "service_id": "svc-forge-web",
+      "name": "Auth handler p99 latency",
+      "metric": "latency_p99_ms",
+      "source": "prometheus"
+    }
+  ],
+  "slos": [
+    {
+      "slo_id": "slo-auth-latency",
+      "service_id": "svc-forge-web",
+      "sli_id": "sli-auth-p99",
+      "target_percent": 99.9,
+      "window_days": 30,
+      "story_ids": [
+        "S-1842"
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "INC-PROD-441",
+      "title": "Auth latency regression after 1.4.0",
+      "severity": "sev2",
+      "status": "resolved",
+      "classification": "change_related",
+      "started_at": "2026-04-08T11:05:00Z",
+      "resolved_at": "2026-04-08T13:40:00Z",
+      "service_id": "svc-forge-web",
+      "linked_release_version": "1.4.0",
+      "linked_environment_id": "production",
+      "linked_story_ids": [
+        "S-1842"
+      ],
+      "linked_promotion_id": "promo-stg-prod-1",
+      "source": "pagerduty",
+      "html_url": "https://pagerduty.example/incidents/441",
+      "traceability": {
+        "release_version": "1.4.0",
+        "environment_id": "production",
+        "story_ids": [
+          "S-1842"
+        ],
+        "promotion_id": "promo-stg-prod-1"
+      }
+    },
+    {
+      "incident_id": "INC-OPEN-P1",
+      "title": "Production checkout errors \u2014 open",
+      "severity": "critical",
+      "status": "open",
+      "classification": "unknown",
+      "started_at": "2026-04-11T15:30:00Z",
+      "resolved_at": "",
+      "service_id": "svc-forge-web",
+      "linked_release_version": "1.4.0",
+      "linked_environment_id": "production",
+      "linked_story_ids": [],
+      "source": "generic",
+      "traceability": {
+        "release_version": "1.4.0",
+        "environment_id": "production",
+        "story_ids": [],
+        "promotion_id": ""
+      }
+    },
+    {
+      "incident_id": "PD-7788",
+      "title": "Synthetic check: login 500 spike",
+      "severity": "high",
+      "status": "open",
+      "started_at": "2026-04-11T14:00:00Z",
+      "resolved_at": "",
+      "service_id": "svc-forge-web",
+      "linked_release_version": "1.4.0",
+      "linked_environment_id": "production",
+      "linked_story_ids": [
+        "S-1842"
+      ],
+      "linked_promotion_id": "",
+      "source": "pagerduty",
+      "html_url": "https://pagerduty.example/incidents/PD-7788",
+      "project": "forgesdlc",
+      "traceability": {
+        "release_version": "1.4.0",
+        "environment_id": "production",
+        "story_ids": [
+          "S-1842"
+        ],
+        "promotion_id": ""
+      }
+    }
+  ],
+  "postmortems": [
+    {
+      "postmortem_id": "PM-2026-04-auth",
+      "incident_id": "INC-PROD-441",
+      "template_id": "pm-tpl-change-correlated",
+      "status": "published",
+      "published_at": "2026-04-09T18:00:00Z",
+      "linked_story_ids": [
+        "S-1842"
+      ],
+      "linked_release_versions": [
+        "1.4.0"
+      ],
+      "evidence_urls": [
+        "https://grafana.example/d/auth-latency",
+        "https://wiki.example/postmortems/2026-04-auth"
+      ],
+      "summary": "Deploy 1.4.0 increased auth fan-out; rolled forward with connection pool tune."
+    }
+  ],
+  "error_budget_events": [
+    {
+      "event_id": "ebe-2026-04-08",
+      "service_id": "svc-forge-web",
+      "slo_id": "slo-auth-latency",
+      "at": "2026-04-08T11:10:00Z",
+      "burn_percent": 4.2,
+      "reason": "incident INC-PROD-441"
+    }
+  ],
+  "feature_flag_exposures": [
+    {
+      "flag_key": "auth_rate_limit_v2",
+      "service_id": "svc-forge-web",
+      "environment_id": "production",
+      "variant": "on",
+      "since": "2026-04-08T10:00:00Z",
+      "linked_story_ids": [
+        "S-1842"
+      ]
+    }
+  ],
+  "dora_metrics": {
+    "window_days": 30,
+    "window_ends_at": "2026-04-11T19:32:17Z",
+    "deployment_frequency": {
+      "production_successful_deploys": 1,
+      "per_day_approx": 0.033,
+      "computed_from": "CI/CD environment deployment_history (production tier)"
+    },
+    "lead_time_for_changes": {
+      "median_hours": null,
+      "sample_count": 0,
+      "computed_from": "Time from last successful main-branch pipeline finish to production deploy (matched heuristically)"
+    },
+    "change_failure_rate": {
+      "ratio": 1.0,
+      "failed_changes_count": 1,
+      "deployments_denominator": 1,
+      "computed_from": "Production incidents with release linkage or change_related / successful prod deploys in window"
+    },
+    "recovery": {
+      "mean_time_to_restore_hours": 2.58,
+      "resolved_incidents_in_window": 1,
+      "computed_from": "Mean (resolved_at - started_at) for incidents with timestamps in window"
+    },
+    "rework_signals": {
+      "failed_pipeline_runs": 0,
+      "blocked_promotions": 6,
+      "open_defects": 1
+    }
+  },
+  "rollback_signals": [
+    {
+      "signal_id": "rollback-hint:INC-OPEN-P1",
+      "severity": "high",
+      "incident_id": "INC-OPEN-P1",
+      "service_id": "svc-forge-web",
+      "message": "Open critical incident on production \u2014 consider rollback away from 1.4.0.",
+      "recommend_rollback_to": "1.3.9",
+      "linked_release_version": "1.4.0"
+    },
+    {
+      "signal_id": "rollback-hint:PD-7788",
+      "severity": "high",
+      "incident_id": "PD-7788",
+      "service_id": "svc-forge-web",
+      "message": "Open high incident on production \u2014 consider rollback away from 1.4.0.",
+      "recommend_rollback_to": "1.3.9",
+      "linked_release_version": "1.4.0"
+    }
+  ],
+  "postmortem_templates": [
+    {
+      "id": "pm-tpl-blameless-default",
+      "title": "Blameless postmortem (default)",
+      "linked_work_item_hint": "Link to tracking story / epic in WBS",
+      "sections_md": "## Summary\n- What happened? One paragraph.\n## Customer impact\n- Duration, scope, SLIs affected\n## Timeline\n- Detection \u2192 mitigation \u2192 recovery\n## Root causes\n- Technical and process\n## What went well\n\n## Action items\n| Owner | Action | Due |\n|-------|--------|-----|"
+    },
+    {
+      "id": "pm-tpl-change-correlated",
+      "title": "Change-correlated incident",
+      "linked_work_item_hint": "Tie to release version and promotion id from CI/CD",
+      "sections_md": "## Suspected change\n- Release / artifact / flag exposure\n## Evidence\n- Deploy time vs incident start; dashboards\n## Rollback / mitigation\n- What was executed\n## Follow-up\n- Tests, guardrails, feature flags"
+    }
+  ],
+  "hints": []
+}

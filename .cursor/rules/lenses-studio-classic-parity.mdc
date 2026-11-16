@@ -1,0 +1,19 @@
+---
+description: Dual UI surfaces — Lenses Studio (React) and Classic Lenses (server-rendered)
+globs: lenses/**/*.py,lenses-enterprise/**/*.tsx,lenses-enterprise/**/*.ts,desktop/**/*.js
+---
+
+# Lenses Studio and Classic parity
+
+forge-lenses ships **two** user interfaces over the **same** Python server and JSON APIs:
+
+- **Lenses Studio** — React SPA at `/studio/` (`lenses-enterprise/` → `lenses/static/studio/`).
+- **Classic Lenses** — Server-rendered HTML from `lenses/render.py`.
+
+**Studio first:** Prefer implementing new user-visible behavior in **Studio** first.
+
+**Classic in sync:** Duplicate the capability in **Classic** so both surfaces stay equivalent (same features; presentation may differ). A change that only lands in Studio should include a Classic follow-up or an explicit exception (note/ADR).
+
+Do **not** assume Classic will be removed or merged into Studio.
+
+See `docs/adr-001-lenses-studio-shell.md` and `lenses/website/interface-pages.md`.

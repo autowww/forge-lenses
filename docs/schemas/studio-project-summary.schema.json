@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/studio-project-summary.schema.json",
+  "title": "Studio project hub row outline",
+  "x-lenses-stability": "experimental",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "title"],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "maxLength": 120
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

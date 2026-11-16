@@ -1,0 +1,48 @@
+# Horizontal IA for Forge Lenses handbook (paired with docs/nav.yml section ids).
+version: 1
+brand_label: Forge Lenses
+home_href_md: docs/index.md
+top_level:
+  - id: product
+    label: Product
+    hub_href_md: docs/handbook-public/01-lenses-overview.md
+    lens_manifest_sections:
+      - product
+
+  - id: get-started
+    label: Get started
+    hub_href_md: docs/handbook-public/02-install-and-run.md
+    lens_manifest_sections:
+      - get-started
+
+  - id: learn
+    label: Learn
+    hub_href_md: docs/handbook-public/tutorials-101.md
+    lens_manifest_sections:
+      - tutorials-101
+      - tutorials-201
+      - tutorials-301
+
+  - id: studio-wizard
+    label: Studio & Wizard
+    hub_href_md: docs/handbook-public/04-studio-overview.md
+    lens_manifest_sections:
+      - studio-wizard
+
+  - id: enterprise
+    label: Enterprise
+    hub_href_md: docs/handbook-public/enterprise-index.md
+    lens_manifest_sections:
+      - enterprise
+
+  - id: builders
+    label: Builders
+    hub_href_md: docs/handbook-public/builders-api-overview.md
+    lens_manifest_sections:
+      - builders
+
+  - id: resources
+    label: Resources
+    hub_href_md: docs/handbook-public/cross-site-map.md
+    lens_manifest_sections:
+      - resources

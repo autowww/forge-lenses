@@ -1,7 +1,8 @@
 # For generator/build-lenses-docs.py and forge-autodoc tutorial build (dashboard server is stdlib).
 markdown>=3.5
 PyYAML>=6.0
+jsonschema>=4.26
 
 # Optional: PNG previews for handbook reference pages (docs/index.md links).
-# Requires a Chromium-based browser on the machine. Transitive deps: requests, websocket-client.
-# html2image>=2.0.7
+# Optional doc/board PNG captures: pip install playwright && playwright install chromium
+# playwright>=1.40.0

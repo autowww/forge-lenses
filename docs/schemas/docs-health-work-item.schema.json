@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lenses.forgesdlc.com/schemas/docs-health-work-item.schema.json",
+  "title": "Docs Health UI work item outline",
+  "x-lenses-stability": "stable",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "severity", "summary"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{3,}$"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "risk"]
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "doc_path_hint": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Markdown path relative to scanned repo when known."
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "issuer": "https://auth.example.com",
+  "authorization_endpoint": "https://auth.example.com/authorize",
+  "jwks_uri": "https://auth.example.com/.well-known/jwks.json"
+}

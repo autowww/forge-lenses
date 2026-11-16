@@ -1,0 +1,60 @@
+{
+  "registry_version": "2026.04.b6.v1",
+  "neutral_to_pdlc": {
+    "launch_record": {
+      "pdlc_stage_key": "measure_learn",
+      "pdlc_stage_label": "PDLC — Measure and learn",
+      "forge_labels": ["Post-release outcome", "Launch record"]
+    },
+    "outcome_signal_family": {
+      "pdlc_stage_key": "measure_learn",
+      "forge_demand_bridge": "Ore refresh input",
+      "forge_labels": ["Outcome signal", "Learning input"]
+    },
+    "learning_summary": {
+      "pdlc_stage_key": "prioritize",
+      "forge_labels": ["Learning summary", "Charge pre-read"]
+    },
+    "followon_ore_candidate": {
+      "pdlc_stage_key": "discover_shape",
+      "forge_labels": ["Ore candidate", "Demand signal (draft)"]
+    },
+    "demand_signal": {
+      "pdlc_stage_key": "prioritize",
+      "forge_labels": ["Ore", "Scoped demand", "Backlog input"]
+    }
+  },
+  "release_to_outcome_stage": {
+    "default_stage_key": "measure_learn",
+    "notes": "A shipped release enters neutral outcome observation; mapping is methodology-agnostic until bridge projection."
+  },
+  "signal_categories_expected_for_launch": [
+    "adoption_signal",
+    "retention_signal",
+    "support_signal",
+    "metric_snapshot"
+  ],
+  "followon_generation_rules": [
+    {
+      "rule_id": "low_adoption",
+      "description": "Adoption below expectation after launch window",
+      "signal_kinds": ["adoption_signal"],
+      "payload_keys": ["below_threshold", "adoption_gap"],
+      "ore_hint": "Demand to improve activation or reduce friction"
+    },
+    {
+      "rule_id": "support_pain",
+      "description": "Elevated support volume tied to launch scope",
+      "signal_kinds": ["support_signal", "customer_feedback_ref"],
+      "payload_keys": ["ticket_spike", "sentiment_poor"],
+      "ore_hint": "Demand for reliability or UX follow-up"
+    },
+    {
+      "rule_id": "experiment_regressed",
+      "description": "Experiment or guardrail shows negative movement",
+      "signal_kinds": ["experiment_result"],
+      "payload_keys": ["variant_worse", "guardrail_breach"],
+      "ore_hint": "Demand to revert, iterate, or deepen instrumentation"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "forge-lenses-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron shell for forge-lenses (Phase 1, dev-only — spawns python3 -m lenses)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "start:studio": "LENSES_STUDIO_UI=1 LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
+    "start:virtual-camera": "LENSES_STUDIO_UI=1 LENSES_VIRTUAL_CAMERA_STUDIO=1 LENSES_EXPERIMENTAL_VIRTUAL_CAMERA=1 LENSES_PORT=8096 electron . --no-sandbox",
+    "dev": "LENSES_EXPERIMENTAL_BLUEPRINTS_WIZARD=1 electron . --no-sandbox",
+    "build:enterprise": "cd ../lenses-enterprise && npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:boards": "playwright test e2e/studio-boards-electron.spec.ts e2e/studio-http-smoke.spec.ts",
+    "test:e2e:virtual-camera": "playwright test e2e/virtual-camera-studio.spec.ts",
+    "studio-explore": "node studio-explore/runner.mjs",
+    "studio-explore:full": "node studio-explore/runner.mjs --tour studio-explore/tours/full-studio-ui/tour.yaml"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "electron": "^33.3.0",
+    "js-yaml": "^4.1.0",
+    "playwright-core": "^1.50.0"
+  }
+}

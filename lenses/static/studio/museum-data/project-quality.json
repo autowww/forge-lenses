@@ -1,0 +1,185 @@
+{
+  "ok": true,
+  "schema_version": 1,
+  "feature_enabled": true,
+  "provider_kind": "local_fixture",
+  "resolved_at": "2026-04-11T12:00:00Z",
+  "project": "forgesdlc",
+  "quality_summary": {
+    "project": "forgesdlc",
+    "open_defects": 1,
+    "failed_gates": 2,
+    "gates_passed": 1,
+    "latest_run_by_suite": {
+      "ts-regression": {
+        "id": "run-20260411-reg",
+        "suite_id": "ts-regression",
+        "project": "forgesdlc",
+        "execution_kind": "automated",
+        "status": "failed",
+        "started_at": "2026-04-11T06:00:00Z",
+        "finished_at": "2026-04-11T06:22:00Z",
+        "passed": 118,
+        "failed": 2,
+        "skipped": 3,
+        "trigger": "ci",
+        "compared_to_run_id": "run-20260410-reg",
+        "evidence_urls": [
+          "https://ci.example/runs/20260411-reg/report"
+        ]
+      },
+      "ts-smoke-manual": {
+        "id": "run-20260411-smoke",
+        "suite_id": "ts-smoke-manual",
+        "project": "forgesdlc",
+        "execution_kind": "manual",
+        "status": "passed",
+        "started_at": "2026-04-11T09:00:00Z",
+        "finished_at": "2026-04-11T09:45:00Z",
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "executor": "qa_lead",
+        "evidence_urls": [
+          "https://wiki.example/qa/staging-smoke-2026-04-11"
+        ]
+      }
+    },
+    "release_quality": {
+      "ready": false,
+      "failed_gates": [
+        "qg-regression-green",
+        "qg-no-major-defects"
+      ],
+      "blocking_train_gates": [
+        "qg-regression-green",
+        "qg-no-major-defects"
+      ],
+      "summary": "Regression suite green: Latest run 'run-20260411-reg' status='failed' (need 'passed'); No open major/critical defects: 1 open defect(s) at or above major"
+    }
+  },
+  "gate_evaluations": [
+    {
+      "gate_id": "qg-regression-green",
+      "name": "Regression suite green",
+      "passed": false,
+      "detail": "Latest run 'run-20260411-reg' status='failed' (need 'passed')",
+      "applies_to_environments": [
+        "staging",
+        "production"
+      ],
+      "blocks_release_train": true
+    },
+    {
+      "gate_id": "qg-no-major-defects",
+      "name": "No open major/critical defects",
+      "passed": false,
+      "detail": "1 open defect(s) at or above major",
+      "applies_to_environments": [
+        "production"
+      ],
+      "blocks_release_train": true
+    },
+    {
+      "gate_id": "qg-coverage-floor",
+      "name": "Line coverage at least 80%",
+      "passed": true,
+      "detail": "Line coverage 84.2% (minimum 80.0%)",
+      "applies_to_environments": [],
+      "blocks_release_train": false
+    }
+  ],
+  "test_runs": [
+    {
+      "id": "run-20260411-reg",
+      "suite_id": "ts-regression",
+      "project": "forgesdlc",
+      "execution_kind": "automated",
+      "status": "failed",
+      "started_at": "2026-04-11T06:00:00Z",
+      "finished_at": "2026-04-11T06:22:00Z",
+      "passed": 118,
+      "failed": 2,
+      "skipped": 3,
+      "trigger": "ci",
+      "compared_to_run_id": "run-20260410-reg",
+      "evidence_urls": [
+        "https://ci.example/runs/20260411-reg/report"
+      ]
+    },
+    {
+      "id": "run-20260410-reg",
+      "suite_id": "ts-regression",
+      "project": "forgesdlc",
+      "execution_kind": "automated",
+      "status": "passed",
+      "started_at": "2026-04-10T06:00:00Z",
+      "finished_at": "2026-04-10T06:18:00Z",
+      "passed": 120,
+      "failed": 0,
+      "skipped": 3,
+      "trigger": "ci",
+      "evidence_urls": [
+        "https://ci.example/runs/20260410-reg/report"
+      ]
+    },
+    {
+      "id": "run-20260411-smoke",
+      "suite_id": "ts-smoke-manual",
+      "project": "forgesdlc",
+      "execution_kind": "manual",
+      "status": "passed",
+      "started_at": "2026-04-11T09:00:00Z",
+      "finished_at": "2026-04-11T09:45:00Z",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "executor": "qa_lead",
+      "evidence_urls": [
+        "https://wiki.example/qa/staging-smoke-2026-04-11"
+      ]
+    }
+  ],
+  "defects": [
+    {
+      "id": "DEF-441",
+      "project": "forgesdlc",
+      "test_case_id": "TC-RATE-002",
+      "story_ids": [
+        "S-1842"
+      ],
+      "title": "Flaky assertion on metrics export order",
+      "status": "open",
+      "severity": "major",
+      "release_version": "1.4.0-rc.3"
+    }
+  ],
+  "coverage_summaries": [
+    {
+      "project": "forgesdlc",
+      "line_percent": 84.2,
+      "branch_percent": 72.5,
+      "as_of": "2026-04-11T06:22:00Z",
+      "source": "coverage.py"
+    }
+  ],
+  "flaky_test_signals": [
+    {
+      "project": "forgesdlc",
+      "test_case_id": "TC-RATE-002",
+      "flake_rate_7d": 0.14,
+      "last_flake_at": "2026-04-11T05:00:00Z"
+    }
+  ],
+  "run_comparisons": [
+    {
+      "current_run_id": "run-20260411-reg",
+      "previous_run_id": "run-20260410-reg",
+      "suite_id": "ts-regression",
+      "delta_passed": -2,
+      "delta_failed": 2,
+      "delta_skipped": 0
+    }
+  ],
+  "hints": []
+}
