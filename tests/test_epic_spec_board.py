@@ -12,6 +12,7 @@ from lenses.epic_spec_board import (
     build_epic_spec_board_payload,
     derive_column,
     detect_execution_profile,
+    element_url_for_epic,
     match_change_to_epic,
     scan_openspec_changes,
 )
@@ -47,6 +48,25 @@ class ParseChargeEpicsTests(unittest.TestCase):
         self.assertEqual(rows[0]["change_slug"], "adopt")
         self.assertEqual(rows[0]["status"], "in progress")
         self.assertEqual(rows[0]["actor"], "eng")
+
+
+class ElementUrlTests(unittest.TestCase):
+    def test_element_url_from_map(self) -> None:
+        mapping = {
+            "repos": [
+                {
+                    "repo_name": "forge-agents",
+                    "epics": [
+                        {
+                            "epic_id": "M1E1",
+                            "room_id": "!abc:matrix.forgedc.net",
+                        }
+                    ],
+                }
+            ]
+        }
+        url = element_url_for_epic(mapping, repo_hint="forge-agents", epic_id="M1E1")
+        self.assertIn("!abc:matrix.forgedc.net", url)
 
 
 class DeriveColumnTests(unittest.TestCase):

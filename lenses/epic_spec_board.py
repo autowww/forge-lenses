@@ -41,6 +41,58 @@ _COLUMN_LABELS: dict[str, str] = {
 _VALIDATE_CACHE: dict[str, tuple[float, bool]] = {}
 
 
+def _repo_spaces_candidates(workspace_root: Path) -> list[Path]:
+    wr = workspace_root.resolve()
+    return [
+        wr / "forge-matrix" / "spaces" / "repo-spaces.json",
+        wr.parent / "forge-matrix" / "spaces" / "repo-spaces.json",
+        Path.home() / "Code" / "forge-matrix" / "spaces" / "repo-spaces.json",
+    ]
+
+
+def load_repo_spaces_map(workspace_root: Path) -> dict[str, Any] | None:
+    for path in _repo_spaces_candidates(workspace_root):
+        if not path.is_file():
+            continue
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except Exception:
+            import json
+
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+        if isinstance(data, dict) and isinstance(data.get("repos"), list):
+            data["_path"] = str(path)
+            return data
+    return None
+
+
+def element_url_for_epic(
+    repo_spaces: dict[str, Any] | None,
+    *,
+    repo_hint: str,
+    epic_id: str,
+) -> str:
+    if not repo_spaces:
+        return ""
+    epic_key = epic_id.strip().upper()
+    for repo in repo_spaces.get("repos") or []:
+        if str(repo.get("repo_name") or "") != repo_hint:
+            continue
+        for epic in repo.get("epics") or []:
+            if str(epic.get("epic_id") or "").upper() != epic_key:
+                continue
+            room_id = str(epic.get("room_id") or "").strip()
+            alias = str(epic.get("room_alias") or "").strip()
+            if room_id:
+                return f"https://element.forgedc.net/#/room/{room_id}"
+            if alias:
+                return f"https://element.forgedc.net/#/room/{alias}"
+    return ""
+
+
 def _norm_status(st: str) -> str:
     s = (st or "").strip().lower()
     if s.replace(" ", "") == "inprogress":
@@ -281,6 +333,7 @@ def build_epic_spec_board_payload(
     changes = scan_openspec_changes(base)
     blocked_ids = _epic_blocker_ids(charge_md)
     banked_ids = _epic_banking_ids(charge_md)
+    repo_spaces = load_repo_spaces_map(wr)
 
     cards: list[dict[str, Any]] = []
     for eid, title, _theme in wbs.epics:
@@ -308,6 +361,7 @@ def build_epic_spec_board_payload(
         if slug and meta:
             change_path = str(meta.get("path") or "")
 
+        element_url = element_url_for_epic(repo_spaces, repo_hint=repo_hint, epic_id=eid)
         cards.append(
             {
                 "epic_id": eid,
@@ -320,6 +374,7 @@ def build_epic_spec_board_payload(
                 "validate_ok": bool(meta.get("validate_ok")) if meta else False,
                 "overlays": overlays,
                 "plan_href": f"/plan?wbs_p={wbs_rel}&repo={repo_hint}&id={eid}&tab=spec-board",
+                "element_url": element_url,
             }
         )
 
@@ -442,7 +497,7 @@ def build_epic_hub_payload(
         charge_by_epic={str(r["epic_id"]).upper(): r for r in charge_rows},
     )
     proposal_full = (change_dir / "proposal.md").read_text(encoding="utf-8", errors="replace")
-    from lenses.dual_wiki import dual_wiki_hub_payload
+    from lenses.dual_wiki import dual_wiki_hub_payload, enrich_dual_wiki_links
 
     dual_wiki = dual_wiki_hub_payload(
         wr,
@@ -450,6 +505,21 @@ def build_epic_hub_payload(
         proposal_md=proposal_full,
         repo_hint=repo_hint,
     )
+    dual_wiki = enrich_dual_wiki_links(wr, dual_wiki)
+
+    apply_run: dict[str, Any] | None = None
+    if slug:
+        from lenses.epic_apply.runner import epic_run_dir, load_workcell_result
+
+        run_dir = epic_run_dir(wr, slug)
+        req_path = run_dir / "workcell-request.json"
+        result_doc = load_workcell_result(run_dir)
+        if req_path.is_file() or result_doc:
+            apply_run = {
+                "request_path": str(req_path) if req_path.is_file() else "",
+                "workcell_result": result_doc,
+                "run_dir": str(run_dir),
+            }
 
     return {
         "ok": True,
@@ -470,6 +540,7 @@ def build_epic_hub_payload(
             "wiki_stale": bool(dual_wiki.get("stale")),
         },
         "dual_wiki": dual_wiki,
+        "apply_run": apply_run,
         "repo_hint": repo_hint,
         "wbs_rel": wbs_rel,
         "roadmap_rel": roadmap_rel or "",
@@ -603,7 +674,23 @@ def apply_epic_spec_transition(
             )
         else:
             set_epic_charge_status(charge_path, eid, st)
-        return {"ok": True, "column": to_col, "epic_id": eid}
+        result: dict[str, Any] = {"ok": True, "column": to_col, "epic_id": eid}
+        if key == ("charged", "apply") and slug:
+            change_dir = base / str(changes.get(slug, {}).get("path") or f"openspec/changes/{slug}")
+            spec_excerpt = _read_first_spec_excerpt(change_dir, 6000)
+            from lenses.epic_apply.runner import run_epic_apply
+
+            apply_out = run_epic_apply(
+                wr,
+                repo_hint=repo_hint,
+                wbs_rel=wbs_rel,
+                epic_id=eid,
+                change_slug=slug,
+                openspec_dir=change_dir,
+                spec_excerpt=spec_excerpt,
+            )
+            result["apply_run"] = apply_out
+        return result
 
     return {
         "ok": False,
